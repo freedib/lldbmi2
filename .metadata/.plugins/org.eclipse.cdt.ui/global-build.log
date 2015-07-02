@@ -1,0 +1,158 @@
+19:49:43 **** Build of configuration Debug for project hello ****
+make all 
+Building file: ../src/hello.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/hello.d" -MT"src/hello.d" -o "src/hello.o" "../src/hello.c"
+Finished building: ../src/hello.c
+ 
+Building target: hello
+Invoking: MacOS X C Linker
+gcc  -o "hello"  ./src/hello.o   
+Finished building target: hello
+ 
+20:07:13 **** Incremental Build of configuration DebugF for project lldbmi2 ****
+make all 
+Building file: ../src/engine.cpp
+Invoking: GCC C++ Compiler
+g++ -std=c++0x -I/pro/ll/llvm/tools/lldb/include -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/engine.d" -MT"src/engine.d" -o "src/engine.o" "../src/engine.cpp"
+Finished building: ../src/engine.cpp
+ 
+Building file: ../src/events.cpp
+Invoking: GCC C++ Compiler
+g++ -std=c++0x -I/pro/ll/llvm/tools/lldb/include -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/events.d" -MT"src/events.d" -o "src/events.o" "../src/events.cpp"
+Finished building: ../src/events.cpp
+ 
+Building file: ../src/format.cpp
+Invoking: GCC C++ Compiler
+g++ -std=c++0x -I/pro/ll/llvm/tools/lldb/include -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/format.d" -MT"src/format.d" -o "src/format.o" "../src/format.cpp"
+Finished building: ../src/format.cpp
+ 
+Building file: ../src/lldbmi2.cpp
+Invoking: GCC C++ Compiler
+g++ -std=c++0x -I/pro/ll/llvm/tools/lldb/include -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/lldbmi2.d" -MT"src/lldbmi2.d" -o "src/lldbmi2.o" "../src/lldbmi2.cpp"
+Finished building: ../src/lldbmi2.cpp
+ 
+Building file: ../src/log.cpp
+Invoking: GCC C++ Compiler
+g++ -std=c++0x -I/pro/ll/llvm/tools/lldb/include -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/log.d" -MT"src/log.d" -o "src/log.o" "../src/log.cpp"
+Finished building: ../src/log.cpp
+ 
+Building file: ../src/test.cpp
+Invoking: GCC C++ Compiler
+g++ -std=c++0x -I/pro/ll/llvm/tools/lldb/include -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/test.d" -MT"src/test.d" -o "src/test.o" "../src/test.cpp"
+Finished building: ../src/test.cpp
+ 
+Building target: lldbmi2
+Invoking: MacOS X C++ Linker
+g++ -F/Applications/Xcode.app/Contents/SharedFrameworks -framework LLDB -o "lldbmi2"  ./src/engine.o ./src/events.o ./src/format.o ./src/lldbmi2.o ./src/log.o ./src/test.o   
+Finished building target: lldbmi2
+ 
+20:07:32 **** Incremental Build of configuration Release for project lldbmi2 ****
+make all 
+Building file: ../src/engine.cpp
+Invoking: GCC C++ Compiler
+g++ -std=c++0x -I/pro/ll/llvm/tools/lldb/include -O3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/engine.d" -MT"src/engine.d" -o "src/engine.o" "../src/engine.cpp"
+Finished building: ../src/engine.cpp
+ 
+Building file: ../src/events.cpp
+Invoking: GCC C++ Compiler
+g++ -std=c++0x -I/pro/ll/llvm/tools/lldb/include -O3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/events.d" -MT"src/events.d" -o "src/events.o" "../src/events.cpp"
+Finished building: ../src/events.cpp
+ 
+Building file: ../src/format.cpp
+Invoking: GCC C++ Compiler
+g++ -std=c++0x -I/pro/ll/llvm/tools/lldb/include -O3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/format.d" -MT"src/format.d" -o "src/format.o" "../src/format.cpp"
+Finished building: ../src/format.cpp
+ 
+Building file: ../src/lldbmi2.cpp
+Invoking: GCC C++ Compiler
+g++ -std=c++0x -I/pro/ll/llvm/tools/lldb/include -O3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/lldbmi2.d" -MT"src/lldbmi2.d" -o "src/lldbmi2.o" "../src/lldbmi2.cpp"
+Finished building: ../src/lldbmi2.cpp
+ 
+Building file: ../src/log.cpp
+Invoking: GCC C++ Compiler
+g++ -std=c++0x -I/pro/ll/llvm/tools/lldb/include -O3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/log.d" -MT"src/log.d" -o "src/log.o" "../src/log.cpp"
+Finished building: ../src/log.cpp
+ 
+Building file: ../src/test.cpp
+Invoking: GCC C++ Compiler
+g++ -std=c++0x -I/pro/ll/llvm/tools/lldb/include -O3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/test.d" -MT"src/test.d" -o "src/test.o" "../src/test.cpp"
+Finished building: ../src/test.cpp
+ 
+Building target: lldbmi2
+Invoking: MacOS X C++ Linker
+g++ -L/pro/ll/release/lib -o "lldbmi2"  ./src/engine.o ./src/events.o ./src/format.o ./src/lldbmi2.o ./src/log.o ./src/test.o   -llldb
+Finished building target: lldbmi2
+ 
+20:07:59 **** Incremental Build of configuration Release for project hello ****
+make all 
+Building file: ../src/hello.c
+Invoking: GCC C Compiler
+gcc -O3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/hello.d" -MT"src/hello.d" -o "src/hello.o" "../src/hello.c"
+Finished building: ../src/hello.c
+ 
+Building target: hello
+Invoking: MacOS X C Linker
+gcc  -o "hello"  ./src/hello.o   
+Finished building target: hello
+ 
+20:08:33 **** Incremental Build of configuration Release for project lldbmi2 ****
+make all 
+make: Nothing to be done for `all'.
+20:09:52 **** Incremental Build of configuration Debug for project hello ****
+make all 
+make: Nothing to be done for `all'.
+20:12:47 **** Incremental Build of configuration Debug for project hello ****
+make all 
+make: Nothing to be done for `all'.
+20:12:53 **** Incremental Build of configuration Release for project hello ****
+make all 
+make: Nothing to be done for `all'.
+20:13:01 **** Clean-only build of configuration Release for project hello ****
+make clean 
+rm -rf  ./src/hello.o  ./src/hello.d  hello
+ 
+20:13:01 **** Clean-only build of configuration Release for project lldbmi2 ****
+make clean 
+rm -rf  ./src/engine.o ./src/events.o ./src/format.o ./src/lldbmi2.o ./src/log.o ./src/test.o  ./src/engine.d ./src/events.d ./src/format.d ./src/lldbmi2.d ./src/log.d ./src/test.d  lldbmi2
+ 
+20:13:01 **** Build of configuration Release for project hello ****
+make all 
+Building file: ../src/hello.c
+Invoking: GCC C Compiler
+gcc -O3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/hello.d" -MT"src/hello.d" -o "src/hello.o" "../src/hello.c"
+Finished building: ../src/hello.c
+ 
+Building target: hello
+Invoking: MacOS X C Linker
+gcc  -o "hello"  ./src/hello.o   
+Finished building target: hello
+ 
+20:13:25 **** Build of configuration Debug for project lldbmi2 ****
+make all 
+make: Nothing to be done for `all'.
+20:13:29 **** Clean-only build of configuration Debug for project hello ****
+make clean 
+rm -rf  ./src/hello.o  ./src/hello.d  hello
+ 
+20:13:29 **** Incremental Build of configuration Debug for project hello ****
+make all 
+Building file: ../src/hello.c
+Invoking: GCC C Compiler
+gcc -O0 -g3 -Wall -c -fmessage-length=0 -MMD -MP -MF"src/hello.d" -MT"src/hello.d" -o "src/hello.o" "../src/hello.c"
+Finished building: ../src/hello.c
+ 
+Building target: hello
+Invoking: MacOS X C Linker
+gcc  -o "hello"  ./src/hello.o   
+Finished building target: hello
+ 
+20:13:37 **** Incremental Build of configuration Debug for project hello ****
+make all 
+make: Nothing to be done for `all'.
+20:15:15 **** Incremental Build of configuration Debug for project hello ****
+make all 
+make: Nothing to be done for `all'.
+20:17:05 **** Incremental Build of configuration Debug for project hello ****
+make all 
+make: Nothing to be done for `all'.

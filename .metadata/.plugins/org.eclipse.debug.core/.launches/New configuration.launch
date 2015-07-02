@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<launchConfiguration type="org.eclipse.tcf.te.tcf.launch.type.attach">
+<booleanAttribute key="org.eclipse.tcf.debug.DisconnectOnCtxExit" value="false"/>
+<stringAttribute key="org.eclipse.tcf.te.launch.UUID" value="a4c78e11-21ab-4a6b-b862-f724285986e2"/>
+</launchConfiguration>
