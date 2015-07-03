@@ -57,7 +57,7 @@ main (int argc, char **argv, char **envp)
 	memset (&state, '\0', sizeof(state));
 	state.ptyfd = EOF;
 	state.gdbPrompt = "GNU gdb (GDB) 7.7.1\n";
-	state.lldbmi2Prompt = "lldbmi2 gateway version 1.0, Copyright (C) 2015 Didier Bertrand\n";
+	state.lldbmi2Prompt = "lldbmi2 version 1.0, Copyright (C) 2015 Didier Bertrand\n";
 
 	state.logbuffer[0] = '\0';
 	for (narg=0; narg<argc; narg++) {
