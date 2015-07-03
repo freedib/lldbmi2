@@ -27,3 +27,7 @@ It could be adapted to Linux or Windows, but not very useful while GDB is fully 
 No remote debugging.
 
 No support for Non-stop debugging, Multi-process debugging and Reverse debugging until LLDB support them.
+
+# To do
+Finalize attaching to a process
+Implement gdb command -stack-list-arguments

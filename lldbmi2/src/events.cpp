@@ -161,6 +161,9 @@ onbreakpoint (STATE *pstate, SBProcess process)
 			cdtprintf ("=breakpoint-deleted,id=\"%d\"\n", bpid);
 		}
 	}
+//	else if (stopreason==eStopReasonSignal) {
+//		// raised when attaching to a process
+//	}
 	else if (stopreason==eStopReasonNone) {
 		// raised when a thread different from the selected thread stops
 	}

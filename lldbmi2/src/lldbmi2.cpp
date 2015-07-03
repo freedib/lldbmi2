@@ -14,16 +14,16 @@
 #include "lldbmi2.h"
 #include "engine.h"
 #include "log.h"
+#include "version.h"
 
 
 extern const char *testcommands[];
 
-void help ()
+void help (STATE *pstate)
 {
-	fprintf (stderr, "Name:\n");
-	fprintf (stderr, "   lldbmi2\n");
+	fprintf (stderr, "%s", pstate->lldbmi2Prompt);
 	fprintf (stderr, "Description:\n");
-	fprintf (stderr, "   An MI2 interface to LLDB\n");
+	fprintf (stderr, "   A MI2 interface to LLDB\n");
 	fprintf (stderr, "Syntax:\n");
 	fprintf (stderr, "   lldbmi2 --version [options]\n");
 	fprintf (stderr, "   lldbmi2 --interpreter mi2 [options]\n");
@@ -57,7 +57,7 @@ main (int argc, char **argv, char **envp)
 	memset (&state, '\0', sizeof(state));
 	state.ptyfd = EOF;
 	state.gdbPrompt = "GNU gdb (GDB) 7.7.1\n";
-	state.lldbmi2Prompt = "lldbmi2 version 1.0, Copyright (C) 2015 Didier Bertrand\n";
+	sprintf (state.lldbmi2Prompt, "lldbmi2 version %s, Copyright (C) 2015 Didier Bertrand\n", LLDBMI2_VERSION);
 
 	state.logbuffer[0] = '\0';
 	for (narg=0; narg<argc; narg++) {
@@ -102,7 +102,7 @@ main (int argc, char **argv, char **envp)
 		return EXIT_SUCCESS;
 	}
 	else if (!isInterpreter) {
-		help ();
+		help (&state);
 		return EXIT_FAILURE;
 	}
 

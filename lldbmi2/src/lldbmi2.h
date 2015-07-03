@@ -31,7 +31,7 @@ typedef struct {
 	char logfilename[PATH_MAX];
 	char logbuffer[BIG_LINE_MAX];
 	const char *gdbPrompt;
-	const char *lldbmi2Prompt;
+	char lldbmi2Prompt[NAME_MAX];
 	char threadgroup[NAME_MAX];
 	SBDebugger debugger;
 	SBProcess process;
