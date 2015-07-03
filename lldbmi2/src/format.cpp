@@ -32,6 +32,8 @@ formatbreakpoint (char *breakpointdesc, int descsize, SBBreakpoint breakpoint, S
 			"thread-groups=[\"%s\"],times=\"0\",original-location=\"%s\"}",
 			bpid,dispose,file_addr,func_name,filename,
 			filepath,line,pstate->threadgroup,originallocation);
+	if (strlen(breakpointdesc) >= descsize-1)
+		logprintf (LOG_ERROR, "breakpointdesc size (%d) too small\n", descsize);
 	return breakpointdesc;
 }
 
@@ -114,6 +116,8 @@ formatframe (char *framedesc, int descsize, SBFrame frame, bool withlevel)
 			snprintf (framedesc, descsize, "frame={%saddr=\"0x%016x\",func=\"%s\"}",
 					levelstring,file_addr,func_name);
 	}
+	if (strlen(framedesc) >= descsize-1)
+		logprintf (LOG_ERROR, "framedesc size (%d) too small\n", descsize);
 	return framedesc;
 }
 
@@ -178,6 +182,8 @@ formatvalue (char *vardesc, int descsize, SBValue var)
 		strlcpy (vardesc, varvalue, descsize);
 	else
 		snprintf (vardesc, descsize, "%s <%s>", var.GetValue(), var.GetName());
+	if (strlen(vardesc) >= descsize-1)
+		logprintf (LOG_ERROR, "vardesc size (%d) too small\n", descsize);
 	return vardesc;
 }
 
@@ -227,5 +233,7 @@ formatThreadInfo (char *threaddesc, int descsize, SBProcess process, int threadi
 			separator=",";
 		}
 	}
+	if (strlen(threaddesc) >= descsize-1)
+		logprintf (LOG_ERROR, "threaddesc size (%d) too small\n", descsize);
 	return threaddesc;
 }
