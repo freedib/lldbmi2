@@ -2,7 +2,7 @@
 
 A simple MI interface to LLDB.
 
-# CONTEXT
+# Context
 
 Since Apple has withdrawn its support for GDB. The options to debug an application with CDT on Mac OS X are:
 
@@ -23,5 +23,6 @@ LLDBMI2 is a lightweight alternative to LLDB-MI on Mac OS X.
 It should be useful until LLDB-MI gets enough maturity or better, if Eclipse supports directly LLDB.
 It could be adapted to Linux or Windows, but not very useful while GDB is fully operational on these platforms.
 
-# LIMITATIONS
+# Limitations
+No remote debugging.
 No support for Non-stop debugging, Multi-process debugging and Reverse debugging until LLDB support them.
