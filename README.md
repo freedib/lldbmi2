@@ -25,4 +25,5 @@ It could be adapted to Linux or Windows, but not very useful while GDB is fully 
 
 # Limitations
 No remote debugging.
+
 No support for Non-stop debugging, Multi-process debugging and Reverse debugging until LLDB support them.

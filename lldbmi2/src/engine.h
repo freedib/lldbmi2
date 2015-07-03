@@ -23,7 +23,7 @@ typedef struct {
 int         fromcdt      (STATE *pstate, char *line, int linesize);
 void        initializeSB (STATE *pstate);
 void        terminateSB  ();
-int         evalcdtline  (STATE *pstate, const char *cdtline, CDT_COMMAND *cdt_command);
+int         evalcdtline  (STATE *pstate, const char *cdtline, CDT_COMMAND *cc);
 int         scanargs     (CDT_COMMAND *cdt_command);
 
 

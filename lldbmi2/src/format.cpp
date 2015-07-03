@@ -142,7 +142,7 @@ getVariable (SBFrame frame, const char *expression)
 const char *
 formatvariables (char *varsdesc, int descsize, SBValueList varslist)
 {
-	char vardesc[NAME_MAX];
+	char vardesc[NAME_MAX*2];
 	*varsdesc = '\0';
 	const char *separator="";
 	for (int i=0; i<varslist.GetSize(); i++) {
@@ -154,6 +154,8 @@ formatvariables (char *varsdesc, int descsize, SBValueList varslist)
 			separator=",";
 		}
 	}
+	if (strlen(varsdesc) >= descsize-1)
+		logprintf (LOG_ERROR, "varsdesc size (%d) too small\n", descsize);
 	return varsdesc;
 }
 

@@ -9,11 +9,11 @@
 
 const char *testcommands[] = {
 //		"5-enable-pretty-printing",
-		"51-environment-cd /Users/didier/Projets/LLDB/hello/Debug",
+//		"51-environment-cd /Users/didier/Projets/LLDB/hello/Debug",
 //		"52-gdb-set solib-search-path /Users/didier/Projets/git-gasio/gasio/Debug",
 		"52-gdb-set env DYLD_LIBRARY_PATH = /gasio/Debug",
-		"52-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/LLDB/hello/Debug/hello",
-		"53-gdb-set --thread-group i1 args -h localhost",
+//		"52-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/LLDB/hello/Debug/hello",
+//		"53-gdb-set --thread-group i1 args -h localhost",
 //		"54-gdb-show --thread-group i1 language",
 //		"55-interpreter-exec --thread-group i1 console \"p/x (char)-1\"",
 //		"56-interpreter-exec --thread-group i1 console \"show endian\"",
@@ -23,7 +23,8 @@ const char *testcommands[] = {
 //		"60-break-delete 2",
 		"58-break-insert --thread-group i1 /Users/didier/Projets/LLDB/hello/src/hello.c:30",
 		"61-inferior-tty-set --thread-group i1 %1",	// stdout instead of /dev/ptyxx
-		"62-exec-run --thread-group i1",
+//		"62-exec-run --thread-group i1",
+		"62-target-attach --thread-group i1 hello",
 		"79-exec-continue --thread-group i1",
 //		"37info sharedlibrary",
 //		"63-list-thread-groups --available",

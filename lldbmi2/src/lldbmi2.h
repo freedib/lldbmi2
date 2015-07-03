@@ -18,8 +18,8 @@ using namespace lldb;
 #define FALSE 0
 #define TRUE  1
 
-#define MAX_THREADS 3
-
+#define MAX_THREADS 50
+#define BIG_LINE_MAX (LINE_MAX*5)
 
 typedef struct {
 	int  lockcdt;
@@ -29,8 +29,9 @@ typedef struct {
 	char cdtbuffer[LINE_MAX];
 	char cdtptyname[NAME_MAX];
 	char logfilename[PATH_MAX];
-	char logbuffer[LINE_MAX];
+	char logbuffer[BIG_LINE_MAX];
 	const char *gdbPrompt;
+	const char *lldbmi2Prompt;
 	char threadgroup[NAME_MAX];
 	SBDebugger debugger;
 	SBProcess process;

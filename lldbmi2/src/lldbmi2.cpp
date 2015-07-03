@@ -57,6 +57,7 @@ main (int argc, char **argv, char **envp)
 	memset (&state, '\0', sizeof(state));
 	state.ptyfd = EOF;
 	state.gdbPrompt = "GNU gdb (GDB) 7.7.1\n";
+	state.lldbmi2Prompt = "lldbmi2 gateway version 1.0, Copyright (C) 2015 Didier Bertrand\n";
 
 	state.logbuffer[0] = '\0';
 	for (narg=0; narg<argc; narg++) {
@@ -97,6 +98,7 @@ main (int argc, char **argv, char **envp)
 
 	if (isVersion) {		// if --gdb and real gsb version is 6.3.5, must alse set --gdb6
 		writetocdt (state.gdbPrompt);
+		writetocdt (state.lldbmi2Prompt);
 		return EXIT_SUCCESS;
 	}
 	else if (!isInterpreter) {
@@ -181,13 +183,16 @@ writetocdt (const char *line)
 void
 cdtprintf ( const char *format, ... )
 {
-	char buffer[LINE_MAX];
+	char buffer[BIG_LINE_MAX];
 	va_list args;
 
 	if (format!=NULL) {
-			va_start (args, format);
-			vsnprintf (buffer, sizeof(buffer), format, args);
-			va_end (args);
-			writetocdt (buffer);
+		va_start (args, format);
+		vsnprintf (buffer, sizeof(buffer), format, args);
+		va_end (args);
+		writetocdt (buffer);
+		if (strlen(buffer) >= sizeof(buffer)-1)
+			logprintf (LOG_ERROR, "cdtprintf buffer size (%d) too small\n", sizeof(buffer));
+
 	}
 }

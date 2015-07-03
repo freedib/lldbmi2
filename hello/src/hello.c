@@ -25,8 +25,8 @@ pthread_t tid;
 void *
 hellothread (void *arg)
 {
-	for (int loop=0; loop<4; loop++) {
-		sleep (1);
+	for (int loop=0; loop<10; loop++) {
+		sleep (10);
 		printf ("loop %d\n", loop);
 	}
 	return NULL;
@@ -52,12 +52,12 @@ int sub(int a, char * b, Z *z) {
 	fflush (stdout);
 	return a+d;
 }
-
 int main (int argc, char **argv, char **envp) {
 //	printf ("arg=%d, *envp=%s\n", argc, *envp);
 //	for (int a=0; a<argc; a++)
 //		printf ("argv[%d]=%s\n", a, argv[a]);
 //	printf ("\n");
+	printf ("PID=%d\n", getpid());
 	startthread ();
 	int c=12;
 	z.y = &y;

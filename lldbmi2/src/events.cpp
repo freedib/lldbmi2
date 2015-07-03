@@ -27,7 +27,7 @@ waitprocesslistener ()
 		pthread_join (sbTID, NULL);
 }
 
-// wvwnts thread
+// wait thread
 void *
 processlistener (void *arg)
 {
