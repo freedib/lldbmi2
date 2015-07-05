@@ -19,9 +19,11 @@ Since Apple has withdrawn its support for GDB. The options to debug an applicati
   - Many errror messages with Eclipse (command arguments nor recognized(.
   - The code is complex and not easy to debug for a newcomer.
 
-LLDBMI2 is a lightweight alternative to LLDB-MI on Mac OS X.
-It should be useful until LLDB-MI gets enough maturity or better, if Eclipse supports directly LLDB.
-It could be adapted to Linux or Windows, but not very useful while GDB is fully operational on these platforms.
+LLDBMI2 is a lightweight alternative to LLDB-MI on Mac OS X. It allows:
+- Debug a local pplication
+- Attach to a running process.
+
+It should be useful for Mac OS x users until LLDB-MI gets enough maturity or when Eclipse will support directly LLDB.
 
 # Limitations
 No remote debugging.

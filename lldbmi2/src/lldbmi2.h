@@ -35,6 +35,7 @@ typedef struct {
 	char threadgroup[NAME_MAX];
 	SBDebugger debugger;
 	SBProcess process;
+	SBListener listener;
 	int threadids[MAX_THREADS];
 } STATE;
 

@@ -17,6 +17,7 @@ void initializeSB (STATE *pstate)
 	SBDebugger::Initialize();
 	pstate->debugger = SBDebugger::Create();
 	pstate->debugger.SetAsync (true);
+	pstate->listener = SBListener("ProcessListener");
 }
 
 void terminateSB ()
@@ -257,29 +258,24 @@ fromcdt (STATE *pstate, char *line, int linesize)			// from cdt
 			int pid=0;
 			int groupdesclength = 0;
 			SBFileSpec execspec;
-			const char *filename, *filedir;
+			const char *filename=NULL, *filedir=NULL;
 			snprintf (groupsdesc, sizeof(groupsdesc), "id=\"%s\",type=\"process\"", pstate->threadgroup);
 			groupdesclength = strlen(groupsdesc);
 			if (process.IsValid()) {
 				pid=process.GetProcessID();
 				snprintf (groupsdesc+groupdesclength, sizeof(groupsdesc)-groupdesclength,
 						",pid=\"%d\"", pid);
+				groupdesclength = strlen(groupsdesc);
 			}
-			else
-				snprintf (groupsdesc+groupdesclength, sizeof(groupsdesc)-groupdesclength,
-						",pid=\"\"");
 			if (target.IsValid()) {
 				execspec = target.GetExecutable();
 				filename = execspec.GetFilename();
 				filedir = execspec.GetDirectory();
-				groupdesclength = strlen(groupsdesc);
+			}
+			if (filename!=NULL && filedir!=NULL)
 				snprintf (groupsdesc+groupdesclength, sizeof(groupsdesc)-groupdesclength,
 						",executable=\"%s/%s\"", filedir, filename);
-				cdtprintf ("%d^done,groups=[{%s}]\n(gdb)\n", cc.sequence, groupsdesc);
-			}
-			else {
-				cdtprintf ("%d^done,groups=[{%s}]\n(gdb)\n", cc.sequence, groupsdesc);
-			}
+			cdtprintf ("%d^done,groups=[{%s}]\n(gdb)\n", cc.sequence, groupsdesc);
 		}
 		else if (strcmp(cc.argv[nextarg],pstate->threadgroup) == 0) {
 			char threaddesc[LINE_MAX];
@@ -315,7 +311,7 @@ fromcdt (STATE *pstate, char *line, int linesize)			// from cdt
 			startprocesslistener(pstate);
 			SBThread thread = (cc.thread < 0)? process.GetSelectedThread(): process.GetThreadByIndexID (cc.thread);
 			cdtprintf ("=thread-group-started,id=\"%s\",pid=\"%lld\"\n", pstate->threadgroup, process.GetProcessID());
-			cdtprintf ("=thread-created,id=\"%d\",group-id=\"%s\"\n", thread.GetIndexID(), pstate->threadgroup);
+			CheckThreadsLife (pstate, process);
 			cdtprintf ("%d^running\n", cc.sequence);
 			cdtprintf ("*running,thread-id=\"all\"\n(gdb)\n");
 		}
@@ -335,12 +331,10 @@ fromcdt (STATE *pstate, char *line, int linesize)			// from cdt
 				strlcpy (processname, cc.argv[nextarg], PATH_MAX);
 		}
 		target = pstate->debugger.CreateTarget (NULL);
-		SBBroadcaster broadcaster = process.GetBroadcaster();
-		SBListener listener = SBListener("AttachListener");
 		if (pid > 0)
-			process = target.AttachToProcessWithID (listener, pid, error);
+			process = target.AttachToProcessWithID (pstate->listener, pid, error);
 		else if (processname[0]!='\0')
-			process = target.AttachToProcessWithName (listener, processname, false, error);
+			process = target.AttachToProcessWithName (pstate->listener, processname, false, error);
 		if (!process.IsValid()) {
 			cdtprintf ("%d^error,msg=\"%s\"\n(gdb)\n", cc.sequence, "Can not start process.");
 			logprintf (LOG_INFO, "process_error=%s\n", error.GetCString());
@@ -351,8 +345,8 @@ fromcdt (STATE *pstate, char *line, int linesize)			// from cdt
 			startprocesslistener(pstate);
 			SBThread thread = (cc.thread < 0)? process.GetSelectedThread(): process.GetThreadByIndexID (cc.thread);
 			cdtprintf ("=thread-group-started,id=\"%s\",pid=\"%lld\"\n", pstate->threadgroup, process.GetProcessID());
-			if (thread.IsValid())
-				cdtprintf ("=thread-created,id=\"%d\",group-id=\"%s\"\n", thread.GetIndexID(), pstate->threadgroup);
+			CheckThreadsLife (pstate, process);
+			cdtprintf ("%d^done\n(gdb)\n", cc.sequence);
 		}
 	}
 	else if (strcmp(cc.argv[0],"-exec-continue")==0) {

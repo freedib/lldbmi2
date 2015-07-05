@@ -89,7 +89,7 @@ formatframe (char *framedesc, int descsize, SBFrame frame, bool withlevel)
 	}
 
 	*framedesc = '\0';
-	const char *func_name="???";
+	const char *func_name="??";
 	if (function.IsValid()) {
 		const char *filename, *filedir;
 		int line = 0;
@@ -108,12 +108,13 @@ formatframe (char *framedesc, int descsize, SBFrame frame, bool withlevel)
 	}
 	else {
 		bool show_system_dylib_names = true;		// standard GDB = false
-		func_name = frame.GetFunctionName();
-		if (function.IsValid() && show_system_dylib_names)
+		if (show_system_dylib_names) {
+			func_name = frame.GetFunctionName();
 			snprintf (framedesc, descsize, "frame={%saddr=\"0x%016x\",func=\"%s\",args=[],file=\"%s\"}",
 					levelstring,file_addr,func_name, modulefilename);
+		}
 		else
-			snprintf (framedesc, descsize, "frame={%saddr=\"0x%016x\",func=\"%s\"}",
+			snprintf (framedesc, descsize, "frame={%saddr=\"0x%016x\",func=\"%s\",args=[]}",
 					levelstring,file_addr,func_name);
 	}
 	if (strlen(framedesc) >= descsize-1)

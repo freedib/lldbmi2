@@ -38,14 +38,13 @@ processlistener (void *arg)
 		return NULL;
 
 	SBBroadcaster broadcaster = process.GetBroadcaster();
-	SBListener listener = SBListener("ProcessListener");
-	if (!listener.IsValid())
+	if (!pstate->listener.IsValid())
 		return NULL;
-	listener.StartListeningForEvents (broadcaster, UINT32_MAX);
+	pstate->listener.StartListeningForEvents (broadcaster, UINT32_MAX);
 
 	while (!pstate->eof) {
 		SBEvent event;
-		bool gotevent = listener.WaitForEventForBroadcaster (1000, broadcaster, event);
+		bool gotevent = pstate->listener.WaitForEventForBroadcaster (1000, broadcaster, event);
 	    if (!gotevent || !event.IsValid())
 			continue;
 		uint32_t eventtype = event.GetType();
@@ -129,7 +128,7 @@ onbreakpoint (STATE *pstate, SBProcess process)
 	SBThread thread = process.GetSelectedThread();
 	int stopreason = thread.GetStopReason();
 //	logprintf (LOG_EVENTS, "stopreason=%d\n", stopreason);
-	if (stopreason==eStopReasonBreakpoint || stopreason==eStopReasonPlanComplete) {
+	if (stopreason==eStopReasonBreakpoint || stopreason==eStopReasonPlanComplete || stopreason==eStopReasonSignal) {
 		int bpid=0;
 		const char *dispose = "keep";
 		char reasondesc[LINE_MAX];
@@ -161,9 +160,9 @@ onbreakpoint (STATE *pstate, SBProcess process)
 			cdtprintf ("=breakpoint-deleted,id=\"%d\"\n", bpid);
 		}
 	}
-//	else if (stopreason==eStopReasonSignal) {
-//		// raised when attaching to a process
-//	}
+	else if (stopreason==eStopReasonSignal) {
+		// raised when attaching to a process
+	}
 	else if (stopreason==eStopReasonNone) {
 		// raised when a thread different from the selected thread stops
 	}
@@ -203,8 +202,7 @@ CheckThreadsLife (STATE *pstate, SBProcess process)
 					if (pstate->threadids[indexlist]==0) {
 						pstate->threadids[indexlist] = threadindexid;
 						stillalive[indexlist] = true;
-						if (indexlist>0)							// message for first one yet sent
-							cdtprintf ("=thread-created,id=\"%d\",group-id=\"%s\"\n", threadindexid, pstate->threadgroup);
+						cdtprintf ("=thread-created,id=\"%d\",group-id=\"%s\"\n", threadindexid, pstate->threadgroup);
 						break;
 					}
 				}
