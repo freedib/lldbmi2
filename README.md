@@ -31,7 +31,7 @@ No remote debugging.
 No support for Non-stop debugging, Multi-process debugging and Reverse debugging until LLDB support them.
 
 # To do
-fix bug in -break-insert messages attaching to a process (seems to work anyway)
-fix bug in -gdb show language. should return c instead of auto (seems to work anyway)
-fix bug in -data-evaluate-expression. alway return 8 actually (used when drilling in frames)
-Implement gdb command -stack-list-arguments
+- Fix bug in -break-insert messages attaching to a process (seems to work anyway)
+- Fix bug in -gdb show language. should return c instead of auto (seems to work anyway)
+- Fix bug in -data-evaluate-expression. alway return 8 actually (used when drilling in frames)
+- Implement gdb command -stack-list-arguments
