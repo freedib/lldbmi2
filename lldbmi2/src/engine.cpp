@@ -128,6 +128,8 @@ fromcdt (STATE *pstate, char *line, int linesize)			// from cdt
 		cdtprintf ("%d^done\n(gdb)\n", cc.sequence);
 	}
 	else if (strcmp(cc.argv[0],"-gdb-show")==0) {
+		// 21-gdb-show --thread-group i1 language
+		// TODO: language should be c when attaching to a process
 		cdtprintf ("%d^done,value=\"auto\"\n(gdb)\n", cc.sequence);
 	}
 	else if (strcmp(cc.argv[0],"-enable-pretty-printing")==0) {
@@ -147,6 +149,7 @@ fromcdt (STATE *pstate, char *line, int linesize)			// from cdt
 			cdtprintf ("%d^done\n(gdb)\n", cc.sequence);
 	}
 	else if (strcmp(cc.argv[0],"-data-evaluate-expression")==0) {
+		// TODO: data-evaluate-expression --thread 1 --frame 3 b
 		// data-evaluate-expression --thread-group i1 "sizeof (void*)"
 		cdtprintf ("%d^done,value=\"8\"\n(gdb)\n", cc.sequence);
 	}
@@ -199,6 +202,7 @@ fromcdt (STATE *pstate, char *line, int linesize)			// from cdt
 		}
 	}
 	else if (strcmp(cc.argv[0],"-break-insert")==0) {
+		// TODO: when insert n attached process, func is null and address invalid
 		// break-insert --thread-group i1 -f /Users/didier/Projets/LLDB/hello/src/hello.c:17
 		// break-insert --thread-group i1 -t -f main
 		int isoneshot=0;
@@ -456,8 +460,36 @@ fromcdt (STATE *pstate, char *line, int linesize)			// from cdt
 		char framedesc[LINE_MAX];
 		for (int iframe=startframe; iframe<endframe; iframe++) {
 			SBFrame frame = thread.GetFrameAtIndex(iframe);
-			formatframe(framedesc,sizeof(framedesc),frame,true);
+			formatframe (framedesc, sizeof(framedesc), frame, WITH_LEVEL);
 			cdtprintf ("%s%s", separator, framedesc);
+			separator=",";
+		}
+		cdtprintf ("]\n(gdb)\n");
+	}
+	else if (strcmp(cc.argv[0],"-stack-list-arguments")==0) {
+		// stack-list-arguments --thread 1 1 (print-values) {1 2 (min max)}
+		int printvalues=0, startframe=0, endframe=-1;
+		if (cc.argv[nextarg] != NULL)
+				if (isdigit(*cc.argv[nextarg]))
+					sscanf (cc.argv[nextarg++], "%d", &printvalues);
+		if (cc.argv[nextarg] != NULL)
+				if (isdigit(*cc.argv[nextarg]))
+					sscanf (cc.argv[nextarg++], "%d", &startframe);
+		if (cc.argv[nextarg] != NULL)
+			if (isdigit(*cc.argv[nextarg]))
+				sscanf (cc.argv[nextarg++], "%d", &endframe);
+		SBThread thread = (cc.thread < 0)? process.GetSelectedThread(): process.GetThreadByIndexID (cc.thread);
+		if (endframe<0)
+			endframe = getNumFrames (thread);
+		else
+			++endframe;
+		const char *separator="";
+		cdtprintf ("%d^done,stack-args=[", cc.sequence);
+		char argsdesc[LINE_MAX];
+		for (int iframe=startframe; iframe<endframe; iframe++) {
+			SBFrame frame = thread.GetFrameAtIndex(iframe);
+			formatframe (argsdesc, sizeof(argsdesc), frame, JUST_LEVEL_AND_ARGS);
+			cdtprintf ("%s%s", separator, argsdesc);
 			separator=",";
 		}
 		cdtprintf ("]\n(gdb)\n");

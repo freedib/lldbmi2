@@ -150,7 +150,7 @@ onbreakpoint (STATE *pstate, SBProcess process)
 			reasondesc[0] = '\0';
 		SBFrame frame = thread.GetSelectedFrame();
 		char framedesc[LINE_MAX];
-		formatframe (framedesc,sizeof(framedesc),frame,false);
+		formatframe (framedesc, sizeof(framedesc), frame, WITH_ARGS);
 		int threadindexid=thread.GetIndexID();
 		cdtprintf ("*stopped,%s%s,thread-id=\"%d\",stopped-threads=\"all\"\n(gdb)\n",
 					reasondesc,framedesc,threadindexid);

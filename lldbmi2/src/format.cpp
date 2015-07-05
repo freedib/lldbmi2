@@ -69,14 +69,14 @@ int getNumFrames (SBThread thread)
 
 // format a frame description into a GDB string
 const char *
-formatframe (char *framedesc, int descsize, SBFrame frame, bool withlevel)
+formatframe (char *framedesc, int descsize, SBFrame frame, FrameDetails details)
 {
 	int frameid = frame.GetFrameID();
 	SBAddress addr = frame.GetPCAddress();
 	uint32_t file_addr = addr.GetFileAddress();
 	SBFunction function = addr.GetFunction();
 	char levelstring[NAME_MAX];
-	if (withlevel)
+	if (details&WITH_LEVEL)
 		snprintf (levelstring, sizeof(levelstring), "level=\"%d\",", frameid);
 	else
 		levelstring[0] = '\0';
@@ -90,6 +90,7 @@ formatframe (char *framedesc, int descsize, SBFrame frame, bool withlevel)
 
 	*framedesc = '\0';
 	const char *func_name="??";
+	char argsstring[LINE_MAX];
 	if (function.IsValid()) {
 		const char *filename, *filedir;
 		int line = 0;
@@ -99,23 +100,35 @@ formatframe (char *framedesc, int descsize, SBFrame frame, bool withlevel)
 		filename = filespec.GetFilename();
 		filedir = filespec.GetDirectory();
 		line = line_entry.GetLine();
-		SBValueList args = frame.GetVariables(1,0,0,0);
-		char argsdesc[LINE_MAX];
-		formatvariables (argsdesc, sizeof(argsdesc), args);
-		snprintf (framedesc, descsize, "frame={%saddr=\"0x%016x\",func=\"%s\",args=[%s],file=\"%s\","
-							"fullname=\"%s/%s\",line=\"%d\"}",
-							levelstring,file_addr,func_name,argsdesc,filename,filedir,filename,line);
-	}
-	else {
-		bool show_system_dylib_names = true;		// standard GDB = false
-		if (show_system_dylib_names) {
-			func_name = frame.GetFunctionName();
-			snprintf (framedesc, descsize, "frame={%saddr=\"0x%016x\",func=\"%s\",args=[],file=\"%s\"}",
-					levelstring,file_addr,func_name, modulefilename);
+		if (details&WITH_ARGS) {
+			SBValueList args = frame.GetVariables(1,0,0,0);
+			char argsdesc[LINE_MAX];
+			formatvariables (argsdesc, sizeof(argsdesc), args);
+			snprintf (argsstring, sizeof(argsstring), "%sargs=[%s]", (details==JUST_LEVEL_AND_ARGS)?"":",", argsdesc);
 		}
 		else
-			snprintf (framedesc, descsize, "frame={%saddr=\"0x%016x\",func=\"%s\",args=[]}",
-					levelstring,file_addr,func_name);
+			argsstring[0] = '\0';
+		if (details==JUST_LEVEL_AND_ARGS)
+			snprintf (framedesc, descsize, "frame={%s%s}",
+								levelstring,argsstring);
+		else
+			snprintf (framedesc, descsize, "frame={%saddr=\"0x%016x\",func=\"%s\"%s,file=\"%s\","
+								"fullname=\"%s/%s\",line=\"%d\"}",
+								levelstring,file_addr,func_name,argsstring,filename,filedir,filename,line);
+	}
+	else {
+		if (details&WITH_ARGS)
+			snprintf (argsstring, sizeof(argsstring), "%sargs=[]", (details==JUST_LEVEL_AND_ARGS)?"":",");
+		else
+			argsstring[0] = '\0';
+		if (details==JUST_LEVEL_AND_ARGS)
+			snprintf (framedesc, descsize, "frame={%s%s}",
+					levelstring,argsstring);
+		else {
+			func_name = frame.GetFunctionName();
+			snprintf (framedesc, descsize, "frame={%saddr=\"0x%016x\",func=\"%s\"%s,file=\"%s\"}",
+					levelstring,file_addr,func_name, argsstring, modulefilename);
+		}
 	}
 	if (strlen(framedesc) >= descsize-1)
 		logprintf (LOG_ERROR, "framedesc size (%d) too small\n", descsize);
@@ -224,7 +237,7 @@ formatThreadInfo (char *threaddesc, int descsize, SBProcess process, int threadi
 				SBFrame frame = thread.GetFrameAtIndex(0);
 				if (frame.IsValid()) {
 					char framedesc[LINE_MAX];
-					formatframe (framedesc, sizeof(framedesc), frame, true);
+					formatframe (framedesc, sizeof(framedesc), frame, WITH_LEVEL_AND_ARGS);
 					int desclength = strlen(threaddesc);
 					snprintf (threaddesc+desclength, descsize-desclength,
 						"%s{id=\"%d\",target-id=\"Thread 0x%x of process %d\",%s,state=\"stopped\"}",
