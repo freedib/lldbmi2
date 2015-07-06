@@ -7,27 +7,27 @@
 
 // test commands will pause after a exec-run or exec-continue or target-attach
 
-#define TEST_ATTACH
+//#define TEST_ATTACH
 
 const char *testcommands[] = {
 //	"5-enable-pretty-printing",
 	"51-environment-cd /Users/didier/Projets/git-lldbmi2/hello/Debug",
 //	"52-gdb-set solib-search-path /Users/didier/Projets/git-gasio/gasio/Debug",
 //	"52-gdb-set env DYLD_LIBRARY_PATH = /gasio/Debug",
-#ifndef ATTACH
+#ifndef TEST_ATTACH
 	"52-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/hello/Debug/hello",
 #endif
 //	"53-gdb-set --thread-group i1 args -h localhost",
 //	"54-gdb-show --thread-group i1 language",
 //	"55-interpreter-exec --thread-group i1 console \"p/x (char)-1\"",
 //	"56-interpreter-exec --thread-group i1 console \"show endian\"",
-//	"57-data-evaluate-expression \"sizeof (void*)\"",
+	"57-data-evaluate-expression \"sizeof (void*)\"",
 	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/hello/src/hello.c:69",
 //	"59-break-insert --thread-group i1 -t -f main",
 //	"60-break-delete 2",
 	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/hello/src/hello.c:30",
 	"61-inferior-tty-set --thread-group i1 %1",	// stdout instead of /dev/ptyxx
-#ifndef ATTACH
+#ifndef TEST_ATTACH
 	"62-exec-run --thread-group i1",
 #else
 	"62-target-attach --thread-group i1 hello",

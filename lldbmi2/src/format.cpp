@@ -152,7 +152,11 @@ getVariable (SBFrame frame, const char *expression)
 		}
 	}
 	if (var.IsValid())
-		logprintf (LOG_INFO, "getVariable: tries=%d, name-%s, value=%s\n", tries,var.GetName(), var.GetValue());
+		logprintf (LOG_INFO, "getVariable: success expr=%s, tries=%d, name-%s, value=%s\n",
+				expression, tries,var.GetName(), var.GetValue());
+	else
+		logprintf (LOG_INFO, "getVariable: error expr=%s tries=%d, name-%s, value=%s\n",
+				expression, tries,var.GetName(), var.GetValue());
 	return var;
 }
 

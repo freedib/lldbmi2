@@ -148,11 +148,6 @@ fromcdt (STATE *pstate, char *line, int linesize)			// from cdt
 		else
 			cdtprintf ("%d^done\n(gdb)\n", cc.sequence);
 	}
-	else if (strcmp(cc.argv[0],"-data-evaluate-expression")==0) {
-		// TODO: data-evaluate-expression --thread 1 --frame 3 b
-		// data-evaluate-expression --thread-group i1 "sizeof (void*)"
-		cdtprintf ("%d^done,value=\"8\"\n(gdb)\n", cc.sequence);
-	}
 	else if (strcmp(cc.argv[0],"-interpreter-exec")==0) {
 		//18-interpreter-exec --thread-group i1 console "show endian"
 		//   ~"The target endianness is set automatically (currently little endian)\n"
@@ -313,7 +308,7 @@ fromcdt (STATE *pstate, char *line, int linesize)			// from cdt
 			pstate->running = true;
 			pstate->process = process;
 			startprocesslistener(pstate);
-			SBThread thread = (cc.thread < 0)? process.GetSelectedThread(): process.GetThreadByIndexID (cc.thread);
+			SBThread thread = process.GetSelectedThread();
 			cdtprintf ("=thread-group-started,id=\"%s\",pid=\"%lld\"\n", pstate->threadgroup, process.GetProcessID());
 			CheckThreadsLife (pstate, process);
 			cdtprintf ("%d^running\n", cc.sequence);
@@ -347,7 +342,7 @@ fromcdt (STATE *pstate, char *line, int linesize)			// from cdt
 			pstate->running = true;
 			pstate->process = process;
 			startprocesslistener(pstate);
-			SBThread thread = (cc.thread < 0)? process.GetSelectedThread(): process.GetThreadByIndexID (cc.thread);
+			SBThread thread = process.GetSelectedThread();
 			cdtprintf ("=thread-group-started,id=\"%s\",pid=\"%lld\"\n", pstate->threadgroup, process.GetProcessID());
 			CheckThreadsLife (pstate, process);
 			cdtprintf ("%d^done\n(gdb)\n", cc.sequence);
@@ -357,22 +352,15 @@ fromcdt (STATE *pstate, char *line, int linesize)			// from cdt
 		// 37-exec-continue --thread 1
 		// 37^running
 		// *running,thread-id="1"
+		// Ignore a --thread argument. restart all threads
 		if (process.IsValid()) {
 			int state = process.GetState ();
 			if (state == eStateStopped) {
-				SBThread thread = (cc.thread < 0)? process.GetSelectedThread(): process.GetThreadByIndexID (cc.thread);
+				SBThread thread = process.GetSelectedThread();
 				cdtprintf ("%d^running\n", cc.sequence);
 				cdtprintf ("*running,thread-id=\"%d\"\n(gdb)\n", thread.GetIndexID());
-				if (cc.thread < 0) {
-					process.Continue();
-					pstate->running = true;
-				}
-				else if (thread.IsValid()) {
-					process.Continue();
-					pstate->running = true;
-				}
-				else
-					cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
+				process.Continue();
+				pstate->running = true;
 			}
 		}
 		else
@@ -390,7 +378,7 @@ fromcdt (STATE *pstate, char *line, int linesize)			// from cdt
 		if (process.IsValid()) {
 			int state = process.GetState ();
 			if (state == eStateStopped) {
-				SBThread thread = (cc.thread < 0)? process.GetSelectedThread(): process.GetThreadByIndexID (cc.thread);
+				SBThread thread = process.GetSelectedThread();
 				if (thread.IsValid()) {
 					cdtprintf ("%d^running\n", cc.sequence);
 					cdtprintf ("*running,thread-id=\"%d\"\n(gdb)\n", thread.GetIndexID());
@@ -413,7 +401,7 @@ fromcdt (STATE *pstate, char *line, int linesize)			// from cdt
 		if (process.IsValid()) {
 			int state = process.GetState ();
 			if (state == eStateStopped) {
-				SBThread thread = (cc.thread < 0)? process.GetSelectedThread(): process.GetThreadByIndexID (cc.thread);
+				SBThread thread = process.GetSelectedThread();
 				if (thread.IsValid()) {
 					cdtprintf ("%d^running\n", cc.sequence);
 					cdtprintf ("*running,thread-id=\"all\"\n(gdb)\n");
@@ -434,7 +422,7 @@ fromcdt (STATE *pstate, char *line, int linesize)			// from cdt
 			if (isdigit(*cc.argv[nextarg]))
 				sscanf (cc.argv[nextarg++], "%d", &maxdepth);
 		if (process.IsValid()) {
-			SBThread thread = (cc.thread < 0)? process.GetSelectedThread(): process.GetThreadByIndexID (cc.thread);
+			SBThread thread = process.GetSelectedThread();
 			int numframes = getNumFrames (thread);
 			cdtprintf ("%d^done,depth=\"%d\"\n(gdb)\n", cc.sequence, numframes);
 		}
@@ -450,7 +438,7 @@ fromcdt (STATE *pstate, char *line, int linesize)			// from cdt
 		if (cc.argv[nextarg] != NULL)
 			if (isdigit(*cc.argv[nextarg]))
 				sscanf (cc.argv[nextarg++], "%d", &endframe);
-		SBThread thread = (cc.thread < 0)? process.GetSelectedThread(): process.GetThreadByIndexID (cc.thread);
+		SBThread thread = process.GetSelectedThread();
 		if (endframe<0)
 			endframe = getNumFrames (thread);
 		else
@@ -478,7 +466,7 @@ fromcdt (STATE *pstate, char *line, int linesize)			// from cdt
 		if (cc.argv[nextarg] != NULL)
 			if (isdigit(*cc.argv[nextarg]))
 				sscanf (cc.argv[nextarg++], "%d", &endframe);
-		SBThread thread = (cc.thread < 0)? process.GetSelectedThread(): process.GetThreadByIndexID (cc.thread);
+		SBThread thread = process.GetSelectedThread();
 		if (endframe<0)
 			endframe = getNumFrames (thread);
 		else
@@ -515,9 +503,9 @@ fromcdt (STATE *pstate, char *line, int linesize)			// from cdt
 			strlcpy (printvalues, cc.argv[nextarg], sizeof(printvalues));
 		bool isValid = false;
 		if (process.IsValid()) {
-			SBThread thread = (cc.thread < 0)? process.GetSelectedThread(): process.GetThreadByIndexID (cc.thread);
+			SBThread thread = process.GetSelectedThread();
 			if (thread.IsValid()) {
-				SBFrame frame = (cc.frame < 0)? thread.GetSelectedFrame(): thread.GetFrameAtIndex (cc.frame);
+				SBFrame frame = thread.GetSelectedFrame();
 				if (frame.IsValid()) {
 					SBFunction function = frame.GetFunction();
 					if (function.IsValid()) {
@@ -547,8 +535,8 @@ fromcdt (STATE *pstate, char *line, int linesize)			// from cdt
 				strlcat (expression, cc.argv[nextarg++], sizeof(expression));
 				sep = " ";
 			}
-			SBThread thread = (cc.thread < 0)? process.GetSelectedThread(): process.GetThreadByIndexID (cc.thread);
-			SBFrame frame = (cc.frame < 0)? thread.GetSelectedFrame(): thread.GetFrameAtIndex (cc.frame);
+			SBThread thread = process.GetSelectedThread();
+			SBFrame frame = thread.GetSelectedFrame();
 			// Find then Evaluate to avoid recreate variable
 			SBValue var = getVariable (frame, expression);
 			if (var.IsValid()) {
@@ -559,7 +547,7 @@ fromcdt (STATE *pstate, char *line, int linesize)			// from cdt
 				cdtprintf ("%d^done,name=\"%s\",numchild=\"%d\",value=\"%s\","
 							"type=\"%s\",thread-id=\"%d\",has_more=\"0\"\n(gdb)\n",
 							cc.sequence, varname, varchildren, formatvalue(vardesc,sizeof(vardesc),var),
-							vartype.GetDisplayTypeName(), cc.thread);
+							vartype.GetDisplayTypeName(), thread.GetIndexID());
 			}
 			else
 				cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
@@ -578,8 +566,8 @@ fromcdt (STATE *pstate, char *line, int linesize)			// from cdt
 				sscanf (cc.argv[nextarg++], "%d", &numvars);
 		if (nextarg<cc.argc)
 			strlcpy (expression, cc.argv[nextarg++], sizeof(expression));
-		SBThread thread = (cc.thread < 0)? process.GetSelectedThread(): process.GetThreadByIndexID (cc.thread);
-		SBFrame frame = (cc.frame < 0)? thread.GetSelectedFrame(): thread.GetFrameAtIndex (cc.frame);
+		SBThread thread = process.GetSelectedThread();
+		SBFrame frame = thread.GetSelectedFrame();
 		// Find then Evaluate to avoid recreate variable
 		SBValue var = getVariable (frame, expression);
 		if (var.IsValid()) {
@@ -605,37 +593,12 @@ fromcdt (STATE *pstate, char *line, int linesize)			// from cdt
 		// 61-var-list-children var5.y
 		// 52^done,numchild="3",children=[child={name="var5.a",exp="a",numchild="0",type="int",thread-id="1"},child={name="var5.b",exp="b",numchild="1",type="char *",thread-id="1"},child={name="var5.y",exp="y",numchild="4",type="Y *",thread-id="1"}],has_more="0"
 		//|52^done,numchild="3",children=[child={name="z->a",exp="a",numchild="0",type"int",thread-id="1"},child={name="z->b",exp="b",numchild="1",type"char *",thread-id="1"},child={name="z->y",exp="y",numchild="4",type"Y *",thread-id="1"}]",has_more="0"\n(gdb)\n|
-
-		/*
-		18,033 50-var-list-children var2
-		118,035 50^done,numchild="1",children=[child={name="var2.*argv",exp="*argv",numchild="1",type="char \
-		*",thread-id="1"}],has_more="0"
-		118,035 (gdb)
-		118,041 51-var-info-path-expression var2.*argv
-		118,043 51^done,path_expr="*(argv)"
-		118,043 (gdb)
-		118,070 52-var-evaluate-expression var2.*argv
-		118,072 52^done,value="0x7fff5fbff780 \"/Users/didier/Projets/LLDB/hello/Debug/hello\""
-		118,072 (gdb)
-
-
-		968,645 50-var-list-children argv
-		968,647 50^done,numchild="1",children=[child={name="*(argv)",exp="*argv",numchild="1",type="char *",\
-		thread-id="1"}]",has_more="0"
-		968,648 (gdb)
-		968,649 51-var-info-path-expression *(argv)
-		969,643 51^done,path_expr="$0"
-		969,644 (gdb)
-		969,649 52-var-evaluate-expression *(argv)
-		969,655 52^done,value="0x00007fff5fbfff10"
-		*/
-
 		char expression[NAME_MAX];
 		*expression = '\0';
 		if (nextarg<cc.argc)
 			strlcpy (expression, cc.argv[nextarg++], sizeof(expression));
-		SBThread thread = (cc.thread < 0)? process.GetSelectedThread(): process.GetThreadByIndexID (cc.thread);
-		SBFrame frame = (cc.frame < 0)? thread.GetSelectedFrame(): thread.GetFrameAtIndex (cc.frame);
+		SBThread thread = process.GetSelectedThread();
+		SBFrame frame = thread.GetSelectedFrame();
 		SBValue var = getVariable (frame, expression);
 		if (var.IsValid()) {
 			const char *varname = var.GetName();
@@ -682,8 +645,8 @@ fromcdt (STATE *pstate, char *line, int linesize)			// from cdt
 		*expression = '\0';
 		if (nextarg<cc.argc)
 			strlcpy (expression, cc.argv[nextarg++], sizeof(expression));
-		SBThread thread = (cc.thread < 0)? process.GetSelectedThread(): process.GetThreadByIndexID (cc.thread);
-		SBFrame frame = (cc.frame < 0)? thread.GetSelectedFrame(): thread.GetFrameAtIndex (cc.frame);
+		SBThread thread = process.GetSelectedThread();
+		SBFrame frame = thread.GetSelectedFrame();
 		SBValue var = getVariable (frame, expression);
 		if (var.IsValid()) {
 			SBStream stream;
@@ -694,25 +657,32 @@ fromcdt (STATE *pstate, char *line, int linesize)			// from cdt
 		else
 			cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
 	}
-	else if (strcmp(cc.argv[0],"-var-evaluate-expression")==0) {
+	else if (strcmp(cc.argv[0],"-var-evaluate-expression")==0 || strcmp(cc.argv[0],"-data-evaluate-expression")==0) {
 		// 36-var-evaluate-expression --thread-group i1 "sizeof (void*)"
 		// 36^done,value="50 '2'"
 		// 58-var-evaluate-expression var5.y
 		// 58^done,value="0x100001028 <y>"
 		// 66-var-evaluate-expression var5.y.a
 		// 66^done,value="0"
+		// 36-data-evaluate-expression --thread-group i1 "sizeof (void*)"
+		// 36^done,value="8"
 		char expression[NAME_MAX];
 		if (nextarg<cc.argc)
 			strlcpy (expression, cc.argv[nextarg++], sizeof(expression));
-		SBThread thread = (cc.thread < 0)? process.GetSelectedThread(): process.GetThreadByIndexID (cc.thread);
-		SBFrame frame = (cc.frame < 0)? thread.GetSelectedFrame(): thread.GetFrameAtIndex (cc.frame);
-		SBValue var = getVariable (frame, expression);
-		if (var.IsValid()) {
-			char vardesc[NAME_MAX];
-			cdtprintf ("%d^done,value=\"%s\"\n(gdb)\n", cc.sequence, formatvalue (vardesc,sizeof(vardesc),var));
+		if (strcmp(expression,"sizeof (void*)")==0)
+			cdtprintf ("%d^done,value=\"8\"\n(gdb)\n", cc.sequence);
+		else {
+			// TODO: review cc_thread and cc_frame. should do a select thread and select frame with --thread and --frame
+			SBThread thread = process.GetSelectedThread();
+			SBFrame frame = thread.GetSelectedFrame();
+			SBValue var = getVariable (frame, expression);
+			if (var.IsValid()) {
+				char vardesc[NAME_MAX];
+				cdtprintf ("%d^done,value=\"%s\"\n(gdb)\n", cc.sequence, formatvalue (vardesc,sizeof(vardesc),var));
+			}
+			else
+				cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
 		}
-		else
-			cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
 	}
 	else if (strcmp(cc.argv[0],"-var-set-format")==0) {
 		// 36-var-set-format var3 natural
@@ -728,7 +698,6 @@ fromcdt (STATE *pstate, char *line, int linesize)			// from cdt
 			strlcpy (expression, cc.argv[nextarg++], sizeof(expression));
 		if (nextarg<cc.argc)
 			strlcpy (format, cc.argv[nextarg++], sizeof(format));
-
 		Format formatcode;
 		if (strcmp(format,"binary")==0)
 			formatcode = eFormatBinary;
@@ -740,9 +709,8 @@ fromcdt (STATE *pstate, char *line, int linesize)			// from cdt
 			formatcode = eFormatHex;
 		else
 			formatcode = eFormatDefault;
-
-		SBThread thread = (cc.thread < 0)? process.GetSelectedThread(): process.GetThreadByIndexID (cc.thread);
-		SBFrame frame = (cc.frame < 0)? thread.GetSelectedFrame(): thread.GetFrameAtIndex (cc.frame);
+		SBThread thread = process.GetSelectedThread();
+		SBFrame frame = thread.GetSelectedFrame();
 		SBValue var = getVariable (frame, expression);
 		if (var.IsValid()) {
 			var.SetFormat(formatcode);
@@ -876,10 +844,20 @@ evalcdtline (STATE *pstate, const char *cdtline, CDT_COMMAND *cc)
 			strlcpy (cc->threadgroup, cc->argv[++field], sizeof(cc->threadgroup));
 			strlcpy (pstate->threadgroup, cc->threadgroup, sizeof(pstate));
 		}
-		else if (strcmp(cc->argv[field],"--thread") == 0)
+		else if (strcmp(cc->argv[field],"--thread") == 0) {
+			int actual_thread = cc->thread;
 			sscanf (cc->argv[++field], "%d", &cc->thread);
-		else if (strcmp(cc->argv[field],"--frame") == 0)
+			if (cc->thread!=actual_thread && cc->thread>=0)
+				pstate->process.SetSelectedThreadByIndexID (cc->thread);
+		}
+		else if (strcmp(cc->argv[field],"--frame") == 0) {
+			int actual_frame = cc->frame;
 			sscanf (cc->argv[++field], "%d", &cc->frame);
+			if (cc->frame!=actual_frame && cc->frame>=0) {
+				SBThread thread = pstate->process.GetSelectedThread();
+				thread.SetSelectedFrame (cc->frame);
+			}
+		}
 		else if (strcmp(cc->argv[field],"--available") == 0)
 			cc->available = 1;
 		else if (strcmp(cc->argv[field],"--all") == 0)
