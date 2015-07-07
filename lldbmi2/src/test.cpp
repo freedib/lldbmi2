@@ -11,21 +11,21 @@
 
 const char *testcommands[] = {
 //	"5-enable-pretty-printing",
-	"51-environment-cd /Users/didier/Projets/git-lldbmi2/hello/Debug",
+	"51-environment-cd /Users/didier/Projets/git-lldbmi2/test_hello_c/Debug",
 //	"52-gdb-set solib-search-path /Users/didier/Projets/git-gasio/gasio/Debug",
 //	"52-gdb-set env DYLD_LIBRARY_PATH = /gasio/Debug",
 #ifndef TEST_ATTACH
-	"52-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/hello/Debug/hello",
+	"52-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_c/Debug/hello",
 #endif
 //	"53-gdb-set --thread-group i1 args -h localhost",
 //	"54-gdb-show --thread-group i1 language",
 //	"55-interpreter-exec --thread-group i1 console \"p/x (char)-1\"",
 //	"56-interpreter-exec --thread-group i1 console \"show endian\"",
 	"57-data-evaluate-expression \"sizeof (void*)\"",
-	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/hello/src/hello.c:75",
+	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_c/src/hello.c:75",
 //	"59-break-insert --thread-group i1 -t -f main",
 //	"60-break-delete 2",
-	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/hello/src/hello.c:33",
+	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_c/src/hello.c:33",
 	"61-inferior-tty-set --thread-group i1 %1",	// stdout instead of /dev/ptyxx
 #ifndef TEST_ATTACH
 	"62-exec-run --thread-group i1",
