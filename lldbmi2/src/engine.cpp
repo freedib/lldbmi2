@@ -10,6 +10,7 @@
 #include "format.h"
 #include "events.h"
 #include "log.h"
+#include "language.h"
 
 
 void initializeSB (STATE *pstate)
@@ -73,7 +74,7 @@ fromcdt (STATE *pstate, char *line, int linesize)			// from cdt
 	}
 	else if (strcmp (cc.argv[0],"-gdb-exit")==0) {
 		pstate->eof = true;
-		if (target.IsValid()) {
+		if (process.IsValid()) {
 			process.Kill();
 			process.Destroy();
 		}
@@ -129,8 +130,16 @@ fromcdt (STATE *pstate, char *line, int linesize)			// from cdt
 	}
 	else if (strcmp(cc.argv[0],"-gdb-show")==0) {
 		// 21-gdb-show --thread-group i1 language
-		// TODO: language should be c when attaching to a process
-		cdtprintf ("%d^done,value=\"auto\"\n(gdb)\n", cc.sequence);
+		SBThread thread = process.GetSelectedThread();
+		if (thread.IsValid()) {
+			SBFrame frame = thread.GetSelectedFrame();
+			SBCompileUnit compileunit = frame.GetCompileUnit();
+			LanguageType languagetype = compileunit.GetLanguage();
+			const char *languagename = GetNameForLanguageType(languagetype);
+			cdtprintf ("%d^done,value=\"%s\"\n(gdb)\n", cc.sequence, languagename);
+		}
+		else
+			cdtprintf ("%d^done,value=\"auto\"\n(gdb)\n", cc.sequence);
 	}
 	else if (strcmp(cc.argv[0],"-enable-pretty-printing")==0) {
 		cdtprintf ("%d^done\n", cc.sequence);
@@ -197,7 +206,7 @@ fromcdt (STATE *pstate, char *line, int linesize)			// from cdt
 		}
 	}
 	else if (strcmp(cc.argv[0],"-break-insert")==0) {
-		// TODO: when insert n attached process, func is null and address invalid
+		// TODO: when insert an attached process, func is null and address invalid
 		// break-insert --thread-group i1 -f /Users/didier/Projets/LLDB/hello/src/hello.c:17
 		// break-insert --thread-group i1 -t -f main
 		int isoneshot=0;
@@ -231,10 +240,30 @@ fromcdt (STATE *pstate, char *line, int linesize)			// from cdt
 			cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
 	}
 	else if (strcmp(cc.argv[0],"-break-delete")==0) {
-		// break-delete 1
-		int breakpoint_id=0;
-		sscanf (cc.argv[nextarg], "%d", &breakpoint_id);
-		target.BreakpointDelete(breakpoint_id);
+		// 11-break-delete 1
+		// 11^done
+		int bpid=0;
+		sscanf (cc.argv[nextarg], "%d", &bpid);
+		target.BreakpointDelete(bpid);
+		cdtprintf ("%d^done\n(gdb)\n", cc.sequence);
+	}
+	else if (strcmp(cc.argv[0],"-break-enable")==0) {
+		// 11-break-enable 1
+		// 11^done
+		int bpid=0;
+		sscanf (cc.argv[nextarg], "%d", &bpid);
+		SBBreakpoint breakpoint = target.FindBreakpointByID (bpid);
+		breakpoint.SetEnabled(1);
+		cdtprintf ("%d^done\n(gdb)\n", cc.sequence);
+	}
+	else if (strcmp(cc.argv[0],"-break-disable")==0) {
+		// 11-break-disable 1
+		// 11^done
+		int bpid=0;
+		sscanf (cc.argv[nextarg], "%d", &bpid);
+		SBBreakpoint breakpoint = target.FindBreakpointByID (bpid);
+		breakpoint.SetEnabled(0);
+		cdtprintf ("%d^done\n(gdb)\n", cc.sequence);
 	}
 	else if (strcmp(cc.argv[0],"-list-thread-groups")==0) {
 		// list-thread-groups --available
@@ -346,6 +375,21 @@ fromcdt (STATE *pstate, char *line, int linesize)			// from cdt
 			cdtprintf ("=thread-group-started,id=\"%s\",pid=\"%lld\"\n", pstate->threadgroup, process.GetProcessID());
 			CheckThreadsLife (pstate, process);
 			cdtprintf ("%d^done\n(gdb)\n", cc.sequence);
+		}
+	}
+	else if (strcmp(cc.argv[0],"-target-detach")==0) {
+		// target-detach --thread-group i1
+		pstate->eof = true;
+		if (process.IsValid()) {
+			SBThread thread = process.GetSelectedThread();
+			int tid = thread.IsValid()? thread.GetIndexID():0;
+			cdtprintf (
+				"=thread-exited,id=\"%d\",group-id=\"%s\"\n"
+				"=thread-group-exited,id=\"%s\",exit-code=\"0\"\n"
+				"%d^done\n(gdb)\n",
+				tid, pstate->threadgroup, pstate->threadgroup, cc.sequence);
+			process.Kill();
+			process.Destroy();
 		}
 	}
 	else if (strcmp(cc.argv[0],"-exec-continue")==0) {
@@ -672,7 +716,6 @@ fromcdt (STATE *pstate, char *line, int linesize)			// from cdt
 		if (strcmp(expression,"sizeof (void*)")==0)
 			cdtprintf ("%d^done,value=\"8\"\n(gdb)\n", cc.sequence);
 		else {
-			// TODO: review cc_thread and cc_frame. should do a select thread and select frame with --thread and --frame
 			SBThread thread = process.GetSelectedThread();
 			SBFrame frame = thread.GetSelectedFrame();
 			SBValue var = getVariable (frame, expression);

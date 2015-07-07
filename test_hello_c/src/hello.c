@@ -1,3 +1,6 @@
+
+// test program for LLDBMI2
+
 #include <stdio.h>
 #include <pthread.h>
 #include <unistd.h>
@@ -31,6 +34,7 @@ hellothread (void *arg)
 	}
 	return NULL;
 }
+
 int
 startthread ()
 {
@@ -39,6 +43,7 @@ startthread ()
 		tid = 0;
 	return ret;
 }
+
 void
 waitthread ()
 {
@@ -52,6 +57,7 @@ int sub(int a, char * b, Z *z) {
 	fflush (stdout);
 	return a+d;
 }
+
 int main (int argc, char **argv, char **envp) {
 //	printf ("arg=%d, *envp=%s\n", argc, *envp);
 //	for (int a=0; a<argc; a++)

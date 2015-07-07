@@ -22,10 +22,10 @@ const char *testcommands[] = {
 //	"55-interpreter-exec --thread-group i1 console \"p/x (char)-1\"",
 //	"56-interpreter-exec --thread-group i1 console \"show endian\"",
 	"57-data-evaluate-expression \"sizeof (void*)\"",
-	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/hello/src/hello.c:69",
+	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/hello/src/hello.c:75",
 //	"59-break-insert --thread-group i1 -t -f main",
 //	"60-break-delete 2",
-	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/hello/src/hello.c:30",
+	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/hello/src/hello.c:33",
 	"61-inferior-tty-set --thread-group i1 %1",	// stdout instead of /dev/ptyxx
 #ifndef TEST_ATTACH
 	"62-exec-run --thread-group i1",

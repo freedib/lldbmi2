@@ -16,7 +16,7 @@ Since Apple has withdrawn its support for GDB. The options to debug an applicati
   - This program is promising, but is not yet mature.
   - With Eclipse, it must be run in a manual remote debugging session implying to open a shell window and start manually a debug server with the program being debugged as argument (if there is a better way, doc do not mention it).
   - The actual version doesn’t display nor update variables correctly.
-  - Many errror messages with Eclipse (command arguments nor recognized(.
+  - Many error messages with Eclipse (command arguments nor recognized).
   - The code is complex and not easy to debug for a newcomer.
 
 LLDBMI2 is a lightweight alternative to LLDB-MI on Mac OS X. It allows:
@@ -29,9 +29,3 @@ It should be useful for Mac OS x users until LLDB-MI gets enough maturity or whe
 No remote debugging.
 
 No support for Non-stop debugging, Multi-process debugging and Reverse debugging until LLDB support them.
-
-# To do
-- Fix bug in -break-insert messages attaching to a process (seems to work anyway)
-- Fix bug in -gdb show language. should return c instead of auto (seems to work anyway)
-- Fix bug in -data-evaluate-expression. alway return 8 actually (used when drilling in frames)
-- Implement gdb command -stack-list-arguments
