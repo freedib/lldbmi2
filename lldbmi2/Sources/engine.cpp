@@ -18,7 +18,7 @@ void initializeSB (STATE *pstate)
 	SBDebugger::Initialize();
 	pstate->debugger = SBDebugger::Create();
 	pstate->debugger.SetAsync (true);
-	pstate->listener = SBListener("ProcessListener");
+	pstate->listener = pstate->debugger.GetListener();
 }
 
 void terminateSB ()
@@ -358,10 +358,12 @@ fromCDT (STATE *pstate, char *line, int linesize)			// from cdt
 				strlcpy (processname, cc.argv[nextarg], PATH_MAX);
 		}
 		target = pstate->debugger.CreateTarget (NULL);
+	//	pstate->debugger.SetAsync (false);
 		if (pid > 0)
 			process = target.AttachToProcessWithID (pstate->listener, pid, error);
 		else if (processname[0]!='\0')
 			process = target.AttachToProcessWithName (pstate->listener, processname, false, error);
+	//	pstate->debugger.SetAsync (true);
 		if (!process.IsValid()) {
 			cdtprintf ("%d^error,msg=\"%s\"\n(gdb)\n", cc.sequence, "Can not start process.");
 			logprintf (LOG_INFO, "process_error=%s\n", error.GetCString());

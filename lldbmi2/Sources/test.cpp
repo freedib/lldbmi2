@@ -9,9 +9,9 @@
 
 // remove comment above wanted commands set
 //#define TEST_C
-#define TEST_C_VARS
+//#define TEST_C_VARS
 //#define TEST_CPP
-//#define TEST_ATTACH
+#define TEST_ATTACH
 //#define TEST_OTHER
 
 
@@ -85,21 +85,13 @@ const char *testcommands[] = {
 #ifdef TEST_ATTACH
 const char *testcommands[] = {
 	"51-environment-cd /Users/didier/Projets/git-lldbmi2/test_hello_c/Debug",
-	"62-target-attach --thread-group i1 hello",
-	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_c/Sources/hello.c:77",
+	"62-target-attach --thread-group i1 test_hello_c",
 	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_c/Sources/hello.c:33",
 	"61-inferior-tty-set --thread-group i1 %1",	// stdout instead of /dev/ptyxx
-	"64-list-thread-groups",
 	"65-list-thread-groups i1",
 	"69-thread-info 1",
 	"79-thread-info 2",
-	"77-exec-step --thread-group i1",
-	"68-stack-info-depth --thread 1 11",
-	"66-stack-list-frames --thread 1",
-	"67-stack-list-locals --thread 1 --frame 0 1",
-	"76-exec-next --thread-group i1",
-	"78-exec-finish --thread-group i1",
-	"79-exec-continue --thread-group i1",
+	"22-gdb-show --thread-group i1 language",
 	"67-stack-list-locals --thread 2 --frame 0 1",
 	"68-stack-list-arguments --thread 2 --frame 0 1",
 	"80-gdb-exit",

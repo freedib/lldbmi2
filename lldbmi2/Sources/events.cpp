@@ -37,76 +37,76 @@ processListener (void *arg)
  	if (!process.IsValid())
 		return NULL;
 
-	SBBroadcaster broadcaster = process.GetBroadcaster();
 	if (!pstate->listener.IsValid())
 		return NULL;
-	pstate->listener.StartListeningForEvents (broadcaster, UINT32_MAX);
 
 	while (!pstate->eof) {
 		SBEvent event;
-		bool gotevent = pstate->listener.WaitForEventForBroadcaster (1000, broadcaster, event);
-	    if (!gotevent || !event.IsValid())
+		bool gotevent = pstate->listener.WaitForEvent (1000, event);
+		if (!gotevent || !event.IsValid())
 			continue;
 		uint32_t eventtype = event.GetType();
-		StateType processstate = process.GetState();
-
-		SBThread thread;
-		switch (eventtype) {
-		case SBProcess::eBroadcastBitStateChanged:
-			logprintf (LOG_EVENTS|LOG_RAW, "eBroadcastBitStateChanged\n");
-			switch (processstate) {
-			case eStateRunning:
-				logprintf (LOG_EVENTS, "eStateRunning\n");
+		if (SBProcess::EventIsProcessEvent(event)) {
+			StateType processstate = process.GetState();
+			switch (eventtype) {
+			case SBProcess::eBroadcastBitStateChanged:
+				logprintf (LOG_EVENTS|LOG_RAW, "eBroadcastBitStateChanged\n");
+				switch (processstate) {
+				case eStateRunning:
+					logprintf (LOG_EVENTS, "eStateRunning\n");
+					break;
+				case eStateExited:
+					logprintf (LOG_EVENTS, "eStateExited\n");
+					checkThreadsLife (pstate, process);		// not useful. threads are not stopped before exit
+					cdtprintf (
+						"=thread-group-exited,id=\"%s\",exit-code=\"0\"\n"
+						"*stopped,reason=\"exited-normally\"\n\(gdb)\n",
+						pstate->threadgroup, pstate->threadgroup);
+					pstate->eof = true;
+					break;
+				case eStateStopped:
+					logprintf (LOG_EVENTS, "eStateStopped\n");
+					onBreakpoint (pstate, process);
+					break;
+				default:
+					logprintf (LOG_WARN, "unexpected process state %d\n", processstate);
+					break;
+				}
 				break;
-			case eStateExited:
-				logprintf (LOG_EVENTS, "eStateExited\n");
-				checkThreadsLife (pstate, process);		// not useful. threads are not stopped before exit
-				cdtprintf (
-					"=thread-group-exited,id=\"%s\",exit-code=\"0\"\n"
-					"*stopped,reason=\"exited-normally\"\n\(gdb)\n",
-					pstate->threadgroup, pstate->threadgroup);
-				pstate->eof = true;
+			case SBProcess::eBroadcastBitInterrupt:
+				logprintf (LOG_EVENTS, "eBroadcastBitInterrupt\n");
 				break;
-			case eStateStopped:
-				logprintf (LOG_EVENTS, "eStateStopped\n");
-				onBreakpoint (pstate, process);
+			case SBProcess::eBroadcastBitProfileData:
+				logprintf (LOG_EVENTS, "eBroadcastBitProfileData\n");
+				break;
+			case SBProcess::eBroadcastBitSTDOUT:
+			case SBProcess::eBroadcastBitSTDERR:
+				// pass stdout and stderr from application to pty
+				long iobytes;
+				char iobuffer[LINE_MAX];
+				logprintf (LOG_EVENTS, "eBroadcastBitSTDOUT\n");
+				iobytes = process.GetSTDOUT (iobuffer, sizeof(iobuffer));
+				if (iobytes > 0) {
+					// remove \r
+					char *ps=iobuffer, *pd=iobuffer;
+					do {
+						if (*ps=='\r' && *(ps+1)=='\n') {
+							++ps;
+							--iobytes;
+						}
+						*pd++ = *ps++;
+					} while (*(ps-1));
+					write ((pstate->ptyfd!=EOF)?pstate->ptyfd:STDOUT_FILENO, iobuffer, iobytes);
+				}
+				logdata (LOG_PROG_IN, iobuffer, iobytes);
 				break;
 			default:
-				logprintf (LOG_WARN, "unexpected process state %d\n", processstate);
+				logprintf (LOG_WARN, "unknown event type %s\n", eventtype);
 				break;
 			}
-			break;
-		case SBProcess::eBroadcastBitInterrupt:
-			logprintf (LOG_EVENTS, "eBroadcastBitInterrupt\n");
-			break;
-		case SBProcess::eBroadcastBitProfileData:
-			logprintf (LOG_EVENTS, "eBroadcastBitProfileData\n");
-			break;
-		case SBProcess::eBroadcastBitSTDOUT:
-		case SBProcess::eBroadcastBitSTDERR:
-			// pass stdout and stderr from application to pty
-			long iobytes;
-			char iobuffer[LINE_MAX];
-			logprintf (LOG_EVENTS, "eBroadcastBitSTDOUT\n");
-			iobytes = process.GetSTDOUT (iobuffer, sizeof(iobuffer));
-			if (iobytes > 0) {
-				// remove \r
-				char *ps=iobuffer, *pd=iobuffer;
-				do {
-					if (*ps=='\r' && *(ps+1)=='\n') {
-						++ps;
-						--iobytes;
-					}
-					*pd++ = *ps++;
-				} while (*(ps-1));
-				write ((pstate->ptyfd!=EOF)?pstate->ptyfd:STDOUT_FILENO, iobuffer, iobytes);
-			}
-			logdata (LOG_PROG_IN, iobuffer, iobytes);
-			break;
-		default:
-			logprintf (LOG_WARN, "unknown event type %s\n", eventtype);
-			break;
 		}
+		else
+			logprintf (LOG_EVENTS, "event type %s\n", eventtype);
 	}
 	logprintf (LOG_EVENTS, "processlistener exited\n");
 	usleep (1000000);
