@@ -7,17 +7,17 @@
 #include <string.h>
 
 typedef struct {
-	short b;
-	long c;
-	long long d;
+	short m;
+	long n;
+	long long o;
 } Y;
 
 typedef struct {
 	int a;
 	char *b;
 	Y *y;
-	int k[2][4];
-	char *l[3];
+	int k[2][3];
+	char *l[4];
 } Z;
 
 Y y;
@@ -28,7 +28,7 @@ pthread_t tid;
 void *
 hellothread (void *arg)
 {
-	for (int loop=0; loop<10; loop++) {
+	for (int loop=0; loop<20; loop++) {
 		sleep (10);
 		printf ("loop %d\n", loop);
 	}
@@ -64,13 +64,15 @@ int main (int argc, char **argv, char **envp) {
 //		printf ("argv[%d]=%s\n", a, argv[a]);
 //	printf ("\n");
 	printf ("PID=%d\n", getpid());
+	y.m=11; y.n=22; y.o=33L;
+	Z *pz = &z;
 	startthread ();
 	int c=12;
 	z.y = &y;
 	char *b="22";
-	z.b = b;
-	z.a = 11;
-	z.k[0][0] = 1;	z.k[2][0] = 3;
+	pz->b = b;
+	pz->a = 11;
+	pz->k[1][1] = 4;
 	z.l[1]="string 2";
 	c = sub (67, b, &z);
 	printf ("c=%d\n", c);

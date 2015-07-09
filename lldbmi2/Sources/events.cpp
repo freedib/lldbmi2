@@ -3,25 +3,25 @@
 #include <thread>
 
 #include "lldbmi2.h"
-#include "events.h"
 #include "format.h"
 #include "log.h"
+#include "events.h"
 
 
 static pthread_t sbTID;
 
 
 int
-startprocesslistener (STATE *pstate)
+startProcessListener (STATE *pstate)
 {
-	int ret = pthread_create (&sbTID, NULL, &processlistener, pstate);
+	int ret = pthread_create (&sbTID, NULL, &processListener, pstate);
 	if (ret)
 		sbTID = 0;
 	return ret;
 }
 
 void
-waitprocesslistener ()
+waitProcessListener ()
 {
 	if (sbTID)
 		pthread_join (sbTID, NULL);
@@ -29,7 +29,7 @@ waitprocesslistener ()
 
 // wait thread
 void *
-processlistener (void *arg)
+processListener (void *arg)
 {
 	STATE *pstate = (STATE *) arg;
 	SBProcess process = pstate->process;
@@ -60,7 +60,7 @@ processlistener (void *arg)
 				break;
 			case eStateExited:
 				logprintf (LOG_EVENTS, "eStateExited\n");
-				CheckThreadsLife (pstate, process);		// not useful. threads are not stopped before exit
+				checkThreadsLife (pstate, process);		// not useful. threads are not stopped before exit
 				cdtprintf (
 					"=thread-group-exited,id=\"%s\",exit-code=\"0\"\n"
 					"*stopped,reason=\"exited-normally\"\n\(gdb)\n",
@@ -69,7 +69,7 @@ processlistener (void *arg)
 				break;
 			case eStateStopped:
 				logprintf (LOG_EVENTS, "eStateStopped\n");
-				onbreakpoint (pstate, process);
+				onBreakpoint (pstate, process);
 				break;
 			default:
 				logprintf (LOG_WARN, "unexpected process state %d\n", processstate);
@@ -115,15 +115,15 @@ processlistener (void *arg)
 
 
 void
-onbreakpoint (STATE *pstate, SBProcess process)
+onBreakpoint (STATE *pstate, SBProcess process)
 {
 //	-3-38-5.140 <<=  |=breakpoint-modified,bkpt={number="breakpoint 1",type="breakpoint",disp="del",enabled="y",addr="0x0000000100000f06",func="main",file="hello.c",fullname="hello.c",line="33",thread-groups=["i1"],times="1",original-location="hello.c:33"}\n|
 //	-3-38-5.140 <<=  |*stopped,reason="breakpoint-hit",disp="keep",bkptno="breakpoint 1",frame={addr="0x0000000100000f06",func="main",args=[],file="hello.c",fullname="hello.c",line="33"},thread-id="1",stopped-threads="all"\n|
-//	-3-40-7.049 <<=  |*stopped,reason="breakpoint-hit",disp="keep",bkptno="1",frame={addr="0000000000000f06",func="main",args=[],file="hello.c",fullname="/Users/didier/Projets/LLDB/hello/Debug/../src/hello.c",line="33"},thread-id="1",stopped-threads="all"(gdb)\n|
+//	-3-40-7.049 <<=  |*stopped,reason="breakpoint-hit",disp="keep",bkptno="1",frame={addr="0000000000000f06",func="main",args=[],file="hello.c",fullname="/Users/didier/Projets/LLDB/hello/Debug/../Sources/hello.c",line="33"},thread-id="1",stopped-threads="all"(gdb)\n|
 
-	pstate->running = false;
-	CheckThreadsLife (pstate, process);
-	UpdateSelectedThread (process);				// search which thread is stopped
+	pstate->pause_testing = false;
+	checkThreadsLife (pstate, process);
+	updateSelectedThread (process);				// search which thread is stopped
 	SBTarget target = process.GetTarget();
 	SBThread thread = process.GetSelectedThread();
 	int stopreason = thread.GetStopReason();
@@ -139,7 +139,7 @@ onbreakpoint (STATE *pstate, SBProcess process)
 				if (breakpoint.IsOneShot())
 					dispose = "del";
 				char breakpointdesc[LINE_MAX];
-				formatbreakpoint (breakpointdesc, sizeof(breakpointdesc), breakpoint, pstate);
+				formatBreakpoint (breakpointdesc, sizeof(breakpointdesc), breakpoint, pstate);
 				cdtprintf ("=breakpoint-modified,bkpt=%s\n", breakpointdesc);
 				snprintf (reasondesc, sizeof(reasondesc), "reason=\"breakpoint-hit\",disp=\"%s\",bkptno=\"%d\",", dispose, bpid);
 			}
@@ -150,11 +150,11 @@ onbreakpoint (STATE *pstate, SBProcess process)
 			reasondesc[0] = '\0';
 		SBFrame frame = thread.GetSelectedFrame();
 		char framedesc[LINE_MAX];
-		formatframe (framedesc, sizeof(framedesc), frame, WITH_ARGS);
+		formatFrame (framedesc, sizeof(framedesc), frame, WITH_ARGS);
 		int threadindexid=thread.GetIndexID();
 		cdtprintf ("*stopped,%s%s,thread-id=\"%d\",stopped-threads=\"all\"\n(gdb)\n",
 					reasondesc,framedesc,threadindexid);
-	//	cdtprintf ("*stopped,reason=\"breakpoint-hit\",disp=\"keep\",bkptno=\"1\",frame={addr=\"0x0000000100000f06\",func=\"main\",args=[],file=\"../src/hello.c\",fullname=\"/Users/didier/Projets/LLDB/hello/src/hello.c\",line=\"33\"},thread-id=\"1\",stopped-threads=\"all\"\n(gdb) \n");
+	//	cdtprintf ("*stopped,reason=\"breakpoint-hit\",disp=\"keep\",bkptno=\"1\",frame={addr=\"0x0000000100000f06\",func=\"main\",args=[],file=\"../Sources/hello.c\",fullname=\"/Users/didier/Projets/LLDB/hello/Sources/hello.c\",line=\"33\"},thread-id=\"1\",stopped-threads=\"all\"\n(gdb) \n");
 		if (strcmp(dispose,"del")==0) {
 			target.BreakpointDelete(bpid);
 			cdtprintf ("=breakpoint-deleted,id=\"%d\"\n", bpid);
@@ -175,7 +175,7 @@ onbreakpoint (STATE *pstate, SBProcess process)
 
 
 void
-CheckThreadsLife (STATE *pstate, SBProcess process)
+checkThreadsLife (STATE *pstate, SBProcess process)
 {
     if (!process.IsValid())
         return;
@@ -222,7 +222,7 @@ CheckThreadsLife (STATE *pstate, SBProcess process)
 
 
 void
-UpdateSelectedThread (SBProcess process)
+updateSelectedThread (SBProcess process)
 {
     if (!process.IsValid())
         return;

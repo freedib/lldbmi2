@@ -20,11 +20,11 @@ typedef struct {
 } CDT_COMMAND;
 
 
-int         fromcdt      (STATE *pstate, char *line, int linesize);
+int         fromCDT      (STATE *pstate, char *line, int linesize);
 void        initializeSB (STATE *pstate);
 void        terminateSB  ();
-int         evalcdtline  (STATE *pstate, const char *cdtline, CDT_COMMAND *cc);
-int         scanargs     (CDT_COMMAND *cdt_command);
+int         evalCDTLine  (STATE *pstate, const char *cdtline, CDT_COMMAND *cc);
+int         scanArgs     (CDT_COMMAND *cdt_command);
 
 
 #endif // ENGINE_H

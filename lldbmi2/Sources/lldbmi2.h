@@ -25,7 +25,7 @@ typedef struct {
 	int  lockcdt;
 	int  ptyfd;
 	bool eof;
-	bool running;
+	bool pause_testing;
 	char cdtbuffer[LINE_MAX];
 	char cdtptyname[NAME_MAX];
 	char logfilename[PATH_MAX];
@@ -42,7 +42,7 @@ typedef struct {
 
 const char *getTestCommand (int *idTestCommand);
 void        writetocdt     (const char *line);
-void        cdtprintf      ( const char *format, ... );
+void        cdtprintf      (const char *format, ... );
 
 
 #endif	// LLDBMIG_H

@@ -52,7 +52,7 @@ setlogfile (char *logfilename, int filenamesize, const char *progname, const cha
 		}
 	}
 #if 0
-	fprintf (stderr, "%s\n", logfile);
+	fprintf (stderr, "%s\n", logfilename);
 #endif
 }
 
@@ -128,6 +128,8 @@ getheader ( unsigned scope )
 		return "###";
 	case LOG_ARGS:
 		return "@@@";
+	case LOG_STDERR:
+		return "+++";
 	default:
 		return "???";
 	}
@@ -153,6 +155,8 @@ logprintf ( unsigned scope, const char *format, ... )
 			vsnprintf (log_buffer, buffer_size, format, args);
 			va_end (args);
 			write(log_fd, log_buffer, strlen(log_buffer));
+			if (scope==LOG_ERROR || scope==LOG_STDERR)
+				fprintf (stderr, "%s", log_buffer);
 		}
 	}
 }

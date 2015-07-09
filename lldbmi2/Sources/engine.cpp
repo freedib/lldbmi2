@@ -6,11 +6,11 @@
 #include <fcntl.h>
 
 #include "lldbmi2.h"
-#include "engine.h"
-#include "format.h"
 #include "events.h"
+#include "format.h"
 #include "log.h"
-#include "language.h"
+#include "names.h"
+#include "engine.h"
 
 
 void initializeSB (STATE *pstate)
@@ -23,7 +23,7 @@ void initializeSB (STATE *pstate)
 
 void terminateSB ()
 {
-	waitprocesslistener ();
+	waitProcessListener ();
 	SBDebugger::Terminate();
 }
 
@@ -33,7 +33,7 @@ void terminateSB ()
 //   execute the command
 //   respond on stdout
 int
-fromcdt (STATE *pstate, char *line, int linesize)			// from cdt
+fromCDT (STATE *pstate, char *line, int linesize)			// from cdt
 {
 	char *endofline;
 	char cdtline[LINE_MAX];			// must be the same size as state.cdtbuffer
@@ -68,7 +68,7 @@ fromcdt (STATE *pstate, char *line, int linesize)			// from cdt
 	else
 		return WAIT_DATA;
 
-	nextarg = evalcdtline (pstate, cdtline, &cc);
+	nextarg = evalCDTLine (pstate, cdtline, &cc);
 
 	if (nextarg==0) {
 	}
@@ -135,7 +135,7 @@ fromcdt (STATE *pstate, char *line, int linesize)			// from cdt
 			SBFrame frame = thread.GetSelectedFrame();
 			SBCompileUnit compileunit = frame.GetCompileUnit();
 			LanguageType languagetype = compileunit.GetLanguage();
-			const char *languagename = GetNameForLanguageType(languagetype);
+			const char *languagename = getNameForLanguageType(languagetype);
 			cdtprintf ("%d^done,value=\"%s\"\n(gdb)\n", cc.sequence, languagename);
 		}
 		else
@@ -207,7 +207,7 @@ fromcdt (STATE *pstate, char *line, int linesize)			// from cdt
 	}
 	else if (strcmp(cc.argv[0],"-break-insert")==0) {
 		// TODO: when insert an attached process, func is null and address invalid
-		// break-insert --thread-group i1 -f /Users/didier/Projets/LLDB/hello/src/hello.c:17
+		// break-insert --thread-group i1 -f /Users/didier/Projets/LLDB/hello/Sources/hello.c:17
 		// break-insert --thread-group i1 -t -f main
 		int isoneshot=0;
 		char path[LINE_MAX];
@@ -234,7 +234,7 @@ fromcdt (STATE *pstate, char *line, int linesize)			// from cdt
 				breakpoint.SetOneShot(true);
 			char breakpointdesc[LINE_MAX];
 			cdtprintf ("%d^done,bkpt=%s\n(gdb)\n", cc.sequence,
-					formatbreakpoint (breakpointdesc, sizeof(breakpointdesc), breakpoint, pstate));
+					formatBreakpoint (breakpointdesc, sizeof(breakpointdesc), breakpoint, pstate));
 		}
 		else
 			cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
@@ -272,11 +272,10 @@ fromcdt (STATE *pstate, char *line, int linesize)			// from cdt
 		//    ^done,groups=[{id="i1",type="process",pid="1186",executable="/Users/didier/Projets/LLDB/hello/Debug/hello"}]
 		// list-thread-groups i1
 		//    ^done,threads=[{id="1",target-id="Thread 0x1503 of process 1186",frame={level="0",addr="0x0000000100000f46",
-		//    func="main",args=[],file="../src/hello.c",fullname="/Users/didier/Projets/LLDB/hello/src/hello.c",
+		//    func="main",args=[],file="../Sources/hello.c",fullname="/Users/didier/Projets/LLDB/hello/Sources/hello.c",
 		//    line="15"},state="stopped"}]
-
-//		233857.215 <<=  |65^done,threads=[{id="1",target-id="Thread 0x89b52 of process 94273",frame={level="0",addr="0x0000000000000ebf",func="main",args=[{name="argc",value="3"},{name="argv",value="0x00007fff5fbffeb0"},{name="envp",value="0x00007fff5fbffed0"}],file="hello.c",fullname="/Users/didier/Projets/LLDB/hello/Debug/../src/hello.c",line="69"},state="stopped"},{id="2",target-id="Thread 0x89b61 of process 94273",frame={level="0",addr="0x000000000001648a",func="__semwait_signal"},state="stopped"}]\n(gdb)\n|
-//		         491,415 47^done,threads=[{id="2",target-id="Thread 0x110f of process 96806",frame={level="0",addr="0x00007fff88a3848a",func="??",args=[]},state="stopped"},{id="1",target-id="Thread 0x1003 of process 96806",frame={level="0",addr="0x0000000100000ebf",func="main",args=[{name="argc",value="1"},{name="argv",value="0x7fff5fbff5c0"},{name="envp",value="0x7fff5fbff5d0"}],file="../src/hello.c",fullname="/Users/didier/Projets/LLDB/hello/src/hello.c",line="69"},state="stopped"}]
+		//		233857.215 <<=  |65^done,threads=[{id="1",target-id="Thread 0x89b52 of process 94273",frame={level="0",addr="0x0000000000000ebf",func="main",args=[{name="argc",value="3"},{name="argv",value="0x00007fff5fbffeb0"},{name="envp",value="0x00007fff5fbffed0"}],file="hello.c",fullname="/Users/didier/Projets/LLDB/hello/Debug/../Sources/hello.c",line="69"},state="stopped"},{id="2",target-id="Thread 0x89b61 of process 94273",frame={level="0",addr="0x000000000001648a",func="__semwait_signal"},state="stopped"}]\n(gdb)\n|
+		//		         491,415 47^done,threads=[{id="2",target-id="Thread 0x110f of process 96806",frame={level="0",addr="0x00007fff88a3848a",func="??",args=[]},state="stopped"},{id="1",target-id="Thread 0x1003 of process 96806",frame={level="0",addr="0x0000000100000ebf",func="main",args=[{name="argc",value="1"},{name="argv",value="0x7fff5fbff5c0"},{name="envp",value="0x7fff5fbff5d0"}],file="../Sources/hello.c",fullname="/Users/didier/Projets/LLDB/hello/Sources/hello.c",line="69"},state="stopped"}]
 
 		if (cc.available > 0) {
 			cdtprintf ("%d^error,msg=\"%s\"\n(gdb)\n", cc.sequence, "Can not fetch data now.");
@@ -306,7 +305,7 @@ fromcdt (STATE *pstate, char *line, int linesize)			// from cdt
 			cdtprintf ("%d^done,groups=[{%s}]\n(gdb)\n", cc.sequence, groupsdesc);
 		}
 		else if (strcmp(cc.argv[nextarg],pstate->threadgroup) == 0) {
-			char threaddesc[LINE_MAX];
+			char threaddesc[BIG_LINE_MAX];
 			formatThreadInfo (threaddesc, sizeof(threaddesc), process, -1);
 			if (threaddesc[0] != '\0')
 				cdtprintf ("%d^done,threads=[%s]\n(gdb)\n", cc.sequence, threaddesc);
@@ -334,12 +333,12 @@ fromcdt (STATE *pstate, char *line, int linesize)			// from cdt
 			logprintf (LOG_INFO, "process_error=%s\n", error.GetCString());
 		}
 		else {
-			pstate->running = true;
+			pstate->pause_testing = true;
 			pstate->process = process;
-			startprocesslistener(pstate);
+			startProcessListener(pstate);
 			SBThread thread = process.GetSelectedThread();
 			cdtprintf ("=thread-group-started,id=\"%s\",pid=\"%lld\"\n", pstate->threadgroup, process.GetProcessID());
-			CheckThreadsLife (pstate, process);
+			checkThreadsLife (pstate, process);
 			cdtprintf ("%d^running\n", cc.sequence);
 			cdtprintf ("*running,thread-id=\"all\"\n(gdb)\n");
 		}
@@ -368,12 +367,12 @@ fromcdt (STATE *pstate, char *line, int linesize)			// from cdt
 			logprintf (LOG_INFO, "process_error=%s\n", error.GetCString());
 		}
 		else {
-			pstate->running = true;
+			pstate->pause_testing = true;
 			pstate->process = process;
-			startprocesslistener(pstate);
+			startProcessListener (pstate);
 			SBThread thread = process.GetSelectedThread();
 			cdtprintf ("=thread-group-started,id=\"%s\",pid=\"%lld\"\n", pstate->threadgroup, process.GetProcessID());
-			CheckThreadsLife (pstate, process);
+			checkThreadsLife (pstate, process);
 			cdtprintf ("%d^done\n(gdb)\n", cc.sequence);
 		}
 	}
@@ -404,7 +403,7 @@ fromcdt (STATE *pstate, char *line, int linesize)			// from cdt
 				cdtprintf ("%d^running\n", cc.sequence);
 				cdtprintf ("*running,thread-id=\"%d\"\n(gdb)\n", thread.GetIndexID());
 				process.Continue();
-				pstate->running = true;
+				pstate->pause_testing = true;
 			}
 		}
 		else
@@ -492,7 +491,7 @@ fromcdt (STATE *pstate, char *line, int linesize)			// from cdt
 		char framedesc[LINE_MAX];
 		for (int iframe=startframe; iframe<endframe; iframe++) {
 			SBFrame frame = thread.GetFrameAtIndex(iframe);
-			formatframe (framedesc, sizeof(framedesc), frame, WITH_LEVEL);
+			formatFrame (framedesc, sizeof(framedesc), frame, WITH_LEVEL);
 			cdtprintf ("%s%s", separator, framedesc);
 			separator=",";
 		}
@@ -520,7 +519,7 @@ fromcdt (STATE *pstate, char *line, int linesize)			// from cdt
 		char argsdesc[LINE_MAX];
 		for (int iframe=startframe; iframe<endframe; iframe++) {
 			SBFrame frame = thread.GetFrameAtIndex(iframe);
-			formatframe (argsdesc, sizeof(argsdesc), frame, JUST_LEVEL_AND_ARGS);
+			formatFrame (argsdesc, sizeof(argsdesc), frame, JUST_LEVEL_AND_ARGS);
 			cdtprintf ("%s%s", separator, argsdesc);
 			separator=",";
 		}
@@ -556,7 +555,7 @@ fromcdt (STATE *pstate, char *line, int linesize)			// from cdt
 						isValid = true;
 						SBValueList localvars = frame.GetVariables(0,1,0,0);
 						char varsdesc[BIG_LINE_MAX];			// may be very big
-						formatvariables (varsdesc,sizeof(varsdesc),localvars);
+						formatVariables (varsdesc,sizeof(varsdesc),localvars);
 						cdtprintf ("%d^done,locals=[%s]\n(gdb)\n", cc.sequence, varsdesc);
 					}
 				}
@@ -582,7 +581,7 @@ fromcdt (STATE *pstate, char *line, int linesize)			// from cdt
 			SBThread thread = process.GetSelectedThread();
 			SBFrame frame = thread.GetSelectedFrame();
 			// Find then Evaluate to avoid recreate variable
-			SBValue var = getVariable (frame, expression);
+			SBValue var = createVariable (frame, expression);
 			if (var.IsValid()) {
 				const char *varname = var.GetName();
 				int varchildren = var.GetNumChildren();
@@ -590,7 +589,7 @@ fromcdt (STATE *pstate, char *line, int linesize)			// from cdt
 				char vardesc[NAME_MAX];
 				cdtprintf ("%d^done,name=\"%s\",numchild=\"%d\",value=\"%s\","
 							"type=\"%s\",thread-id=\"%d\",has_more=\"0\"\n(gdb)\n",
-							cc.sequence, varname, varchildren, formatvalue(vardesc,sizeof(vardesc),var),
+							cc.sequence, varname, varchildren, formatValue(vardesc,sizeof(vardesc),var),
 							vartype.GetDisplayTypeName(), thread.GetIndexID());
 			}
 			else
@@ -603,30 +602,25 @@ fromcdt (STATE *pstate, char *line, int linesize)			// from cdt
 		// 47-var-update 1 var2
 		// 47^done,changelist=[]
 		// 41^done,changelist=[{name="var3",value="44",in_scope="true",type_changed="false",has_more="0"}]
-		int numvars=1;
+		int printvalues=1;
 		char expression[NAME_MAX];
-		if (cc.argv[nextarg] != NULL)
+		if (cc.argv[nextarg] != NULL)							// print-values
 			if (isdigit(*cc.argv[nextarg]))
-				sscanf (cc.argv[nextarg++], "%d", &numvars);
-		if (nextarg<cc.argc)
+				sscanf (cc.argv[nextarg++], "%d", &printvalues);
+		if (nextarg<cc.argc)									// variable name
 			strlcpy (expression, cc.argv[nextarg++], sizeof(expression));
 		SBThread thread = process.GetSelectedThread();
 		SBFrame frame = thread.GetSelectedFrame();
-		// Find then Evaluate to avoid recreate variable
-		SBValue var = getVariable (frame, expression);
+		SBValue var = getVariable (frame, expression);			// find variable
+		char changedesc[LINE_MAX];
+		changedesc[0] = '\0';
 		if (var.IsValid()) {
-			const char *varname = var.GetName();
-			if (var.GetValueDidChange()) {
-				const char *varinscope = var.IsInScope()? "true": "false";
-				char changelist[NAME_MAX], vardesc[NAME_MAX];
-				snprintf (changelist, sizeof(changelist),
-					"name=\"%s\",value=\"%s\",in_scope=\"%s\",type_changed=\"false\",has_more=\"0\"",
-					varname, formatvalue(vardesc,sizeof(vardesc),var), varinscope);
-					cdtprintf ("%d^done,changelist=[{%s}]\n(gdb)\n", cc.sequence, changelist);
-			}
-			else
-				cdtprintf ("%d^done,changelist=[]\n(gdb)\n", cc.sequence);
+			char fullname[NAME_MAX];
+			fullname[0] = '\0';
+			bool separatorvisible = false;
+			formatChangedList (changedesc, sizeof(changedesc), fullname, sizeof(fullname), var, separatorvisible);
 		}
+		cdtprintf ("%d^done,changelist=[%s]\n(gdb)\n", cc.sequence, changedesc);
 	}
 	else if (strcmp(cc.argv[0],"-var-list-children")==0) {
 		// 34-var-list-children var2
@@ -689,17 +683,21 @@ fromcdt (STATE *pstate, char *line, int linesize)			// from cdt
 		*expression = '\0';
 		if (nextarg<cc.argc)
 			strlcpy (expression, cc.argv[nextarg++], sizeof(expression));
-		SBThread thread = process.GetSelectedThread();
-		SBFrame frame = thread.GetSelectedFrame();
-		SBValue var = getVariable (frame, expression);
-		if (var.IsValid()) {
-			SBStream stream;
-			var.GetExpressionPath(stream);
-			const char *varexppath = stream.GetData();
-			cdtprintf ("%d^done,path_expr=\"%s\"\n(gdb)\n", cc.sequence, varexppath);
+		if (*expression!='$')		// it is yet a path
+			cdtprintf ("%d^done,path_expr=\"%s\"\n(gdb)\n", cc.sequence, expression);
+		else {
+			SBThread thread = process.GetSelectedThread();
+			SBFrame frame = thread.GetSelectedFrame();
+			SBValue var = getVariable (frame, expression);
+			if (var.IsValid()) {
+				SBStream stream;
+				var.GetExpressionPath(stream,true);
+				const char *varexppath = stream.GetData();
+				cdtprintf ("%d^done,path_expr=\"%s\"\n(gdb)\n", cc.sequence, varexppath);
+			}
+			else
+				cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
 		}
-		else
-			cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
 	}
 	else if (strcmp(cc.argv[0],"-var-evaluate-expression")==0 || strcmp(cc.argv[0],"-data-evaluate-expression")==0) {
 		// 36-var-evaluate-expression --thread-group i1 "sizeof (void*)"
@@ -718,10 +716,10 @@ fromcdt (STATE *pstate, char *line, int linesize)			// from cdt
 		else {
 			SBThread thread = process.GetSelectedThread();
 			SBFrame frame = thread.GetSelectedFrame();
-			SBValue var = getVariable (frame, expression);
+			SBValue var = createVariable (frame, expression);
 			if (var.IsValid()) {
 				char vardesc[NAME_MAX];
-				cdtprintf ("%d^done,value=\"%s\"\n(gdb)\n", cc.sequence, formatvalue (vardesc,sizeof(vardesc),var));
+				cdtprintf ("%d^done,value=\"%s\"\n(gdb)\n", cc.sequence, formatValue (vardesc,sizeof(vardesc),var));
 			}
 			else
 				cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
@@ -759,7 +757,7 @@ fromcdt (STATE *pstate, char *line, int linesize)			// from cdt
 			var.SetFormat(formatcode);
 			char vardesc[NAME_MAX];
 			cdtprintf ("%d^done,format=\"%s\",value=\"%s\"\n(gdb)\n",
-					cc.sequence, format, formatvalue(vardesc,sizeof(vardesc),var));
+					cc.sequence, format, formatValue(vardesc,sizeof(vardesc),var));
 		}
 		else
 			cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
@@ -822,46 +820,12 @@ fromcdt (STATE *pstate, char *line, int linesize)			// from cdt
 }
 
 
-// convert argument line in a argv vector
-// take care of "
-int
-scanargs (CDT_COMMAND *cc)
-{
-	cc->argc=0;
-	char *pa=cc->arguments, *ps;
-	while (*pa) {
-		if (cc->argc>=MAX_ARGS-2) {		// keep place for final NULL
-			logprintf (LOG_ERROR, "arguments table too small (%d)\n", MAX_ARGS);
-			break;
-		}
-		while (isspace(*pa))
-			++pa;
-		if (*pa=='"') {
-			ps = ++pa;
-			while (*pa && *pa!='"' && *(pa-1)!='\\')
-				++pa;
-			if (*pa == '"')
-				*pa++ = '\0';
-		}
-		else {
-			ps = pa;
-			while (*pa && !isspace(*pa))
-				++pa;
-			if (isspace(*pa))
-				*pa++ = '\0';
-		}
-		cc->argv[cc->argc++] = ps;
-	}
-	cc->argv[cc->argc] = NULL;
-	return cc->argc;
-}
-
 // decode command line and fill the cc CDT_COMMAND structure
 //   get sequence number
 //   convert arguments line in a argv vector
 //   decode optional (--option) arguments
 int
-evalcdtline (STATE *pstate, const char *cdtline, CDT_COMMAND *cc)
+evalCDTLine (STATE *pstate, const char *cdtline, CDT_COMMAND *cc)
 {
 	cc->sequence = 0;
 	cc->argc = 0;
@@ -879,7 +843,7 @@ evalcdtline (STATE *pstate, const char *cdtline, CDT_COMMAND *cc)
 	cc->threadgroup[0] = '\0';
 	cc->thread = cc->frame = cc->available = cc->all = -1;
 
-	fields = scanargs (cc);
+	fields = scanArgs (cc);
 
 	int field;
 	for (field=1; field<fields; field++) {				// arg 0 is the command
@@ -914,4 +878,39 @@ evalcdtline (STATE *pstate, const char *cdtline, CDT_COMMAND *cc)
 	}
 
 	return field;
+}
+
+
+// convert argument line in a argv vector
+// take care of "
+int
+scanArgs (CDT_COMMAND *cc)
+{
+	cc->argc=0;
+	char *pa=cc->arguments, *ps;
+	while (*pa) {
+		if (cc->argc>=MAX_ARGS-2) {		// keep place for final NULL
+			logprintf (LOG_ERROR, "arguments table too small (%d)\n", MAX_ARGS);
+			break;
+		}
+		while (isspace(*pa))
+			++pa;
+		if (*pa=='"') {
+			ps = ++pa;
+			while (*pa && *pa!='"' && *(pa-1)!='\\')
+				++pa;
+			if (*pa == '"')
+				*pa++ = '\0';
+		}
+		else {
+			ps = pa;
+			while (*pa && !isspace(*pa))
+				++pa;
+			if (isspace(*pa))
+				*pa++ = '\0';
+		}
+		cc->argv[cc->argc++] = ps;
+	}
+	cc->argv[cc->argc] = NULL;
+	return cc->argc;
 }

@@ -9,33 +9,49 @@
 #include <iostream>
 using namespace std;
 
-class Test {
-private:
+struct K {
+	int kk;
+};
+
+class AB {
+public:
 	int a;
 	int b;
 public:
-	void seta (int v);
-	void setb (int v);
+	AB ();
+	void seta  (int v);
+	void setb  (int v);
 	int  sumab ();
 };
 
-void Test::seta (int v) {
+AB::AB () {
+	a = 0;
+	b = 0;
+}
+
+void AB::seta (int v) {
 	a = v;
 }
 
-void Test::setb (int v) {
+void AB::setb (int v) {
 	b = v;
 }
 
-int Test::sumab () {
+int AB::sumab () {
 	return a+b;
 }
 
-
 int main() {
-	Test test;
-	test.seta(1);
-	test.setb(2);
-	cout << "!!!Hello World " << test.sumab() << endl; // prints !!!Hello World!!!
+	bool go = true;
+	if (go) {
+		AB ab;
+		struct K k;
+		k.kk = 1;
+		int z=0;
+		ab.seta(1+z++);
+		ab.setb(2+z++);
+		z = ab.sumab();
+		cout << "!!!Hello World " << z << endl; // prints !!!Hello World!!!
+	}
 	return 0;
 }

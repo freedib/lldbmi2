@@ -1,139 +1,477 @@
-231145.209 @@@  /Users/didier/Projets/git-lldbmi2/lldbmi2/Debug/lldbmi2 --log --interpreter mi2 --nx 
-231145.428 <<=  |(gdb)\n|
-231145.439 >>=  |1-list-features\n|
-231145.439 >>=  |1-list-features|
-231145.439 <<=  |1^done,features=["frozen-varobjs","pending-breakpoints","thread-info","data-read-memory-bytes","breakpoint-notifications","ada-task-info","python"]\n(gdb)\n|
-231145.485 >>=  |2-gdb-version\n|
-231145.485 >>=  |2-gdb-version|
-231145.485 <<=  |~"GNU gdb (GDB) 7.7.1\n"\n|
-231145.486 <<=  |~"lldbmi2 version 1.0.21, Copyright (C) 2015 Didier Bertrand\n"\n|
-231145.486 <<=  |2^done\n(gdb)\n|
-231145.498 >>=  |3-environment-cd /Users/didier/Projets/git-lldbmi2/test_hello_cpp\n|
-231145.499 >>=  |3-environment-cd /Users/didier/Projets/git-lldbmi2/test_hello_cpp|
-231145.499 <<=  |3^done\n(gdb)\n|
-231145.504 >>=  |4-gdb-set breakpoint pending on\n|
-231145.504 >>=  |4-gdb-set breakpoint pending on|
-231145.504 <<=  |4^done\n(gdb)\n|
-231145.507 >>=  |5-gdb-set detach-on-fork on\n|
-231145.507 >>=  |5-gdb-set detach-on-fork on|
-231145.507 <<=  |5^done\n(gdb)\n|
-231145.512 >>=  |6-enable-pretty-printing\n|
-231145.512 >>=  |6-enable-pretty-printing|
-231145.513 <<=  |6^done\n|
-231145.563 >>=  |7-gdb-set python print-stack none\n|
-231145.563 >>=  |7-gdb-set python print-stack none|
-231145.563 <<=  |7^done\n(gdb)\n|
-231145.581 >>=  |8-gdb-set print object on\n|
-231145.581 >>=  |8-gdb-set print object on|
-231145.581 <<=  |8^done\n(gdb)\n|
-231145.585 >>=  |9-gdb-set print sevenbit-strings on\n|
-231145.585 >>=  |9-gdb-set print sevenbit-strings on|
-231145.585 <<=  |9^done\n(gdb)\n|
-231145.588 >>=  |10-gdb-set host-charset UTF-8\n|
-231145.588 >>=  |10-gdb-set host-charset UTF-8|
-231145.588 <<=  |10^done\n(gdb)\n|
-231145.598 >>=  |11-gdb-set target-charset UTF-8\n|
-231145.598 >>=  |11-gdb-set target-charset UTF-8|
-231145.598 <<=  |11^done\n(gdb)\n|
-231145.603 >>=  |12-gdb-set target-wide-charset UTF-32\n|
-231145.603 >>=  |12-gdb-set target-wide-charset UTF-32|
-231145.603 <<=  |12^done\n(gdb)\n|
-231145.608 >>=  |13-gdb-set dprintf-style call\n|
-231145.608 >>=  |13-gdb-set dprintf-style call|
-231145.608 <<=  |13^done\n(gdb)\n|
-231145.614 >>=  |14source .gdbinit\n|
-231145.614 >>=  |14source .gdbinit|
-231145.614 <<=  |14^done\n(gdb)\n|
-231145.617 >>=  |15-gdb-set target-async off\n|
-231145.617 >>=  |15-gdb-set target-async off|
-231145.617 <<=  |15^done\n(gdb)\n|
-231145.623 >>=  |16-gdb-set auto-solib-add on\n|
-231145.623 >>=  |16-gdb-set auto-solib-add on|
-231145.623 <<=  |16^done\n(gdb)\n|
-231145.627 >>=  |17-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_cpp/Debug/test_hello_cpp\n|
-231145.628 >>=  |17-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_cpp/Debug/test_hello_cpp|
-231145.931 <<=  |17^done\n(gdb)\n|
-231145.931 >>=  |18-list-thread-groups\n|
-231145.931 >>=  |18-list-thread-groups|
-231145.931 <<=  |18^done,groups=[{id="i1",type="process",executable="/Users/didier/Projets/git-lldbmi2/test_hello_cpp/Debug/test_hello_cpp"}]\n(gdb)\n|
-231145.934 >>=  |19-gdb-show --thread-group i1 language\n|
-231145.934 >>=  |19-gdb-show --thread-group i1 language|
-231145.934 <<=  |19^done,value="auto"\n(gdb)\n|
-231145.938 >>=  |20-gdb-set --thread-group i1 language c\n|
-231145.938 >>=  |20-gdb-set --thread-group i1 language c|
-231145.938 <<=  |20^done\n(gdb)\n|
-231145.941 >>=  |21-interpreter-exec --thread-group i1 console "p/x (char)-1"\n|
-231145.941 >>=  |21-interpreter-exec --thread-group i1 console "p/x (char)-1"|
-231145.941 <<=  |~"$1 = 0xff\n"\n21^done\n(gdb)\n|
-231145.945 >>=  |22-data-evaluate-expression --thread-group i1 "sizeof (void*)"\n|
-231145.945 >>=  |22-data-evaluate-expression --thread-group i1 "sizeof (void*)"|
-231145.945 <<=  |22^done,value="8"\n(gdb)\n|
-231145.949 >>=  |23-gdb-set --thread-group i1 language auto\n|
-231145.949 >>=  |23-gdb-set --thread-group i1 language auto|
-231145.949 <<=  |23^done\n(gdb)\n|
-231145.959 >>=  |24-interpreter-exec --thread-group i1 console "show endian"\n|
-231145.959 >>=  |24-interpreter-exec --thread-group i1 console "show endian"|
-231145.959 <<=  |~"The target endianness is set automatically (currently little endian)\n"\n24^done\n(gdb)\n|
-231145.967 >>=  |25-break-insert -f /Users/didier/Projets/git-lldbmi2/test_hello_cpp/src/hello.cpp:38\n|
-231145.967 >>=  |25-break-insert -f /Users/didier/Projets/git-lldbmi2/test_hello_cpp/src/hello.cpp:38|
-231145.972 <<=  |25^done,bkpt={number="1",type="breakpoint",disp="keep",enabled="y",addr="0x0000000000000fd6",func="main",file="hello.cpp",fullname="/Users/didier/Projets/git-lldbmi2/test_hello_cpp/Debug/../src/hello.cpp",line="38",thread-groups=["i1"],times="0",original-location=""}\n(gdb)\n|
-231145.980 >>=  |26-inferior-tty-set --thread-group i1 /dev/ttyp0\n|
-231145.980 >>=  |26-inferior-tty-set --thread-group i1 /dev/ttyp0|
-231145.980 ---  pty = 5
-231145.980 <<=  |26^done\n(gdb)\n|
-231145.986 >>=  |27-exec-run --thread-group i1\n|
-231145.986 >>=  |27-exec-run --thread-group i1|
-231145.986 ---  launchInfo: args=0 env=0, pwd=/Users/didier/Projets/git-lldbmi2/test_hello_cpp
-231146.332 <<=  |=thread-group-started,id="i1",pid="4462"\n|
-231146.336 ---  thread threadindexid=1 stopreason=3
-231146.336 <<=  |=thread-created,id="1",group-id="i1"\n|
-231146.344 <<=  |27^running\n|
-231146.344 <<=  |*running,thread-id="all"\n(gdb)\n|
-231146.344 >>=  |28-list-thread-groups --available\n29-list-thread-groups\n|
-231146.344 >>=  |28-list-thread-groups --available|
-231146.344 <<=  |28^error,msg="Can not fetch data now."\n(gdb)\n|
-231146.344 >>=  ||
-231146.344 >>=  |29-list-thread-groups|
-231146.344 <<=  |29^done,groups=[{id="i1",type="process",pid="4462",executable="/Users/didier/Projets/git-lldbmi2/test_hello_cpp/Debug/test_hello_cpp"}]\n(gdb)\n|
-231146.404 ###  eStateStopped
-231146.405 ---  thread threadindexid=1 stopreason=3
-231146.405 <<=  |=breakpoint-modified,bkpt={number="1",type="breakpoint",disp="keep",enabled="y",addr="0x0000000000000fd6",func="main",file="hello.cpp",fullname="/Users/didier/Projets/git-lldbmi2/test_hello_cpp/Debug/../src/hello.cpp",line="38",thread-groups=["i1"],times="0",original-location=""}\n|
-231146.405 <<=  |*stopped,reason="breakpoint-hit",disp="keep",bkptno="1",frame={addr="0x0000000000000fd6",func="main",args=[],file="hello.cpp",fullname="/Users/didier/Projets/git-lldbmi2/test_hello_cpp/Debug/../src/hello.cpp",line="38"},thread-id="1",stopped-threads="all"\n(gdb)\n|
-231146.426 >>=  |30-list-thread-groups\n|
-231146.426 >>=  |30-list-thread-groups|
-231146.426 <<=  |30^done,groups=[{id="i1",type="process",pid="4462",executable="/Users/didier/Projets/git-lldbmi2/test_hello_cpp/Debug/test_hello_cpp"}]\n(gdb)\n|
-231146.620 >>=  |31-list-thread-groups i1\n|
-231146.620 >>=  |31-list-thread-groups i1|
-231146.621 <<=  |31^done,threads=[{id="1",target-id="Thread 0x2c7f0 of process 4462",frame={level="0",addr="0x0000000000000fd6",func="main",args=[],file="hello.cpp",fullname="/Users/didier/Projets/git-lldbmi2/test_hello_cpp/Debug/../src/hello.cpp",line="38"},state="stopped"}]\n(gdb)\n|
-231146.636 >>=  |32-stack-info-depth --thread 1 11\n|
-231146.636 >>=  |32-stack-info-depth --thread 1 11|
-231146.638 <<=  |32^done,depth="3"\n(gdb)\n|
-231146.803 >>=  |33-thread-info 1\n34-list-thread-groups\n|
-231146.803 >>=  |33-thread-info 1|
-231146.803 <<=  |33^error,msg="Can not fetch data now."\n(gdb)\n|
-231146.803 >>=  ||
-231146.804 >>=  |34-list-thread-groups|
-231146.804 <<=  |34^done,groups=[{id="i1",type="process",pid="4462",executable="/Users/didier/Projets/git-lldbmi2/test_hello_cpp/Debug/test_hello_cpp"}]\n(gdb)\n|
-231147.078 >>=  |35-stack-list-locals --thread 1 --frame 0 1\n|
-231147.078 >>=  |35-stack-list-locals --thread 1 --frame 0 1|
-231147.084 <<=  |35^done,locals=[{name="test",value="(null) <test>"}]\n(gdb)\n|
-231147.259 >>=  |36-var-create --thread 1 --frame 0 - * test\n|
-231147.259 >>=  |36-var-create --thread 1 --frame 0 - * test|
-231147.259 ---  getVariable: success expr=test, tries=1, name-test, value=(null)
-231147.260 <<=  |36^done,name="test",numchild="2",value="(null) <test>",type="Test",thread-id="1",has_more="0"\n(gdb)\n|
-231147.790 >>=  |37-stack-list-frames --thread 1\n|
-231147.790 >>=  |37-stack-list-frames --thread 1|
-231147.790 <<=  |37^done,stack=[|
-231147.790 <<=  |frame={level="0",addr="0x0000000000000fd6",func="main",file="hello.cpp",fullname="/Users/didier/Projets/git-lldbmi2/test_hello_cpp/Debug/../src/hello.cpp",line="38"}|
-231147.790 <<=  |,frame={level="1",addr="0x00000000000035c9",func="start",file="libdyld.dylib"}|
-231147.790 <<=  |,frame={level="2",addr="0x00000000000035c9",func="start",file="libdyld.dylib"}|
-231147.791 <<=  |]\n(gdb)\n|
-231149.053 >>=  |38-interpreter-exec --thread-group i1 console kill\n|
-231149.053 >>=  |38-interpreter-exec --thread-group i1 console kill|
-231149.053 <<=  |=thread-exited,id="1",group-id="i1"\n=thread-group-exited,id="i1",exit-code="0"\n38^done\n(gdb)\n|
-231149.078 ###  eBroadcastBitSTDOUT
-231149.078 <<<  ||
-231149.078 ###  eStateExited
-231149.078 <<=  |=thread-group-exited,id="i1",exit-code="0"\n*stopped,reason="exited-normally"\n(gdb)\n|
-231149.078 ###  processlistener exited
-231149.283 ---  main loop exited
+230745.381 @@@  /Users/didier/Projets/git-lldbmi2/lldbmi2/Debug/lldbmi2 --log --interpreter mi2 --nx 
+230745.573 <<=  |(gdb)\n|
+230745.585 >>=  |1-list-features\n|
+230745.585 >>=  |1-list-features|
+230745.585 <<=  |1^done,features=["frozen-varobjs","pending-breakpoints","thread-info","data-read-memory-bytes","breakpoint-notifications","ada-task-info","python"]\n(gdb)\n|
+230745.650 >>=  |2-gdb-version\n|
+230745.650 >>=  |2-gdb-version|
+230745.650 <<=  |~"GNU gdb (GDB) 7.7.1\n"\n|
+230745.676 <<=  |~"lldbmi2 version 1.0.26, Copyright (C) 2015 Didier Bertrand\n"\n|
+230745.695 <<=  |2^done\n(gdb)\n|
+230745.705 >>=  |3-environment-cd /Users/didier/Projets/git-lldbmi2/test_hello_cpp\n|
+230745.705 >>=  |3-environment-cd /Users/didier/Projets/git-lldbmi2/test_hello_cpp|
+230745.705 <<=  |3^done\n(gdb)\n|
+230745.709 >>=  |4-gdb-set breakpoint pending on\n|
+230745.709 >>=  |4-gdb-set breakpoint pending on|
+230745.709 <<=  |4^done\n(gdb)\n|
+230745.715 >>=  |5-gdb-set detach-on-fork on\n|
+230745.715 >>=  |5-gdb-set detach-on-fork on|
+230745.715 <<=  |5^done\n(gdb)\n|
+230745.720 >>=  |6-enable-pretty-printing\n|
+230745.720 >>=  |6-enable-pretty-printing|
+230745.720 <<=  |6^done\n|
+230745.729 >>=  |7-gdb-set python print-stack none\n|
+230745.729 >>=  |7-gdb-set python print-stack none|
+230745.729 <<=  |7^done\n(gdb)\n|
+230745.732 >>=  |8-gdb-set print object on\n|
+230745.732 >>=  |8-gdb-set print object on|
+230745.732 <<=  |8^done\n(gdb)\n|
+230745.734 >>=  |9-gdb-set print sevenbit-strings on\n|
+230745.734 >>=  |9-gdb-set print sevenbit-strings on|
+230745.734 <<=  |9^done\n(gdb)\n|
+230745.741 >>=  |10-gdb-set host-charset UTF-8\n|
+230745.742 >>=  |10-gdb-set host-charset UTF-8|
+230745.742 <<=  |10^done\n(gdb)\n|
+230745.744 >>=  |11-gdb-set target-charset UTF-8\n|
+230745.744 >>=  |11-gdb-set target-charset UTF-8|
+230745.744 <<=  |11^done\n(gdb)\n|
+230745.746 >>=  |12-gdb-set target-wide-charset UTF-32\n|
+230745.746 >>=  |12-gdb-set target-wide-charset UTF-32|
+230745.746 <<=  |12^done\n(gdb)\n|
+230745.753 >>=  |13-gdb-set dprintf-style call\n|
+230745.753 >>=  |13-gdb-set dprintf-style call|
+230745.753 <<=  |13^done\n(gdb)\n|
+230745.757 >>=  |14source .gdbinit\n|
+230745.757 >>=  |14source .gdbinit|
+230745.757 <<=  |14^done\n(gdb)\n|
+230745.761 >>=  |15-gdb-set target-async off\n|
+230745.761 >>=  |15-gdb-set target-async off|
+230745.761 <<=  |15^done\n(gdb)\n|
+230745.766 >>=  |16-gdb-set auto-solib-add on\n|
+230745.766 >>=  |16-gdb-set auto-solib-add on|
+230745.766 <<=  |16^done\n(gdb)\n|
+230745.782 >>=  |17-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_cpp/Debug/test_hello_cpp\n|
+230745.782 >>=  |17-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_cpp/Debug/test_hello_cpp|
+230746.164 <<=  |17^done\n(gdb)\n|
+230746.167 >>=  |18-gdb-show --thread-group i1 language\n|
+230746.167 >>=  |18-gdb-show --thread-group i1 language|
+230746.167 <<=  |18^done,value="auto"\n(gdb)\n|
+230746.170 >>=  |19-gdb-set --thread-group i1 language c\n|
+230746.171 >>=  |19-gdb-set --thread-group i1 language c|
+230746.171 <<=  |19^done\n(gdb)\n|
+230746.174 >>=  |20-interpreter-exec --thread-group i1 console "p/x (char)-1"\n|
+230746.174 >>=  |20-interpreter-exec --thread-group i1 console "p/x (char)-1"|
+230746.174 <<=  |~"$1 = 0xff\n"\n20^done\n(gdb)\n|
+230746.177 >>=  |21-data-evaluate-expression --thread-group i1 "sizeof (void*)"\n|
+230746.177 >>=  |21-data-evaluate-expression --thread-group i1 "sizeof (void*)"|
+230746.177 <<=  |21^done,value="8"\n(gdb)\n|
+230746.181 >>=  |22-gdb-set --thread-group i1 language auto\n|
+230746.181 >>=  |22-gdb-set --thread-group i1 language auto|
+230746.181 <<=  |22^done\n(gdb)\n|
+230746.183 >>=  |23-interpreter-exec --thread-group i1 console "show endian"\n|
+230746.183 >>=  |23-interpreter-exec --thread-group i1 console "show endian"|
+230746.183 <<=  |~"The target endianness is set automatically (currently little endian)\n"\n23^done\n(gdb)\n|
+230746.202 >>=  |24-list-thread-groups\n|
+230746.203 >>=  |24-list-thread-groups|
+230746.203 <<=  |24^done,groups=[{id="i1",type="process",executable="/Users/didier/Projets/git-lldbmi2/test_hello_cpp/Debug/test_hello_cpp"}]\n(gdb)\n|
+230746.214 >>=  |25-break-insert -f /Users/didier/Projets/git-lldbmi2/test_hello_cpp/Sources/hello.cpp:47\n|
+230746.214 >>=  |25-break-insert -f /Users/didier/Projets/git-lldbmi2/test_hello_cpp/Sources/hello.cpp:47|
+230746.218 <<=  |25^done,bkpt={number="1",type="breakpoint",disp="keep",enabled="y",addr="0x0000000000000f91",func="main",file="hello.cpp",fullname="/Users/didier/Projets/git-lldbmi2/test_hello_cpp/Debug/../Sources/hello.cpp",line="47",thread-groups=["i1"],times="0",original-location=""}\n(gdb)\n|
+230746.241 >>=  |26-inferior-tty-set --thread-group i1 /dev/ttyp0\n|
+230746.241 >>=  |26-inferior-tty-set --thread-group i1 /dev/ttyp0|
+230746.241 ---  pty = 5
+230746.241 <<=  |26^done\n(gdb)\n|
+230746.247 >>=  |27-exec-run --thread-group i1\n|
+230746.247 >>=  |27-exec-run --thread-group i1|
+230746.247 ---  launchInfo: args=0 env=0, pwd=/Users/didier/Projets/git-lldbmi2/test_hello_cpp
+230746.599 <<=  |=thread-group-started,id="i1",pid="16789"\n|
+230746.599 ---  thread threadindexid=1 stopreason=1
+230746.599 <<=  |=thread-created,id="1",group-id="i1"\n|
+230746.599 <<=  |27^running\n|
+230746.599 <<=  |*running,thread-id="all"\n(gdb)\n|
+230746.603 >>=  |28-list-thread-groups --available\n|
+230746.605 >>=  |28-list-thread-groups --available|
+230746.605 <<=  |28^error,msg="Can not fetch data now."\n(gdb)\n|
+230746.695 ###  eStateStopped
+230746.695 ---  thread threadindexid=1 stopreason=3
+230746.695 <<=  |=breakpoint-modified,bkpt={number="1",type="breakpoint",disp="keep",enabled="y",addr="0x0000000000000f91",func="main",file="hello.cpp",fullname="/Users/didier/Projets/git-lldbmi2/test_hello_cpp/Debug/../Sources/hello.cpp",line="47",thread-groups=["i1"],times="0",original-location=""}\n|
+230746.695 <<=  |*stopped,reason="breakpoint-hit",disp="keep",bkptno="1",frame={addr="0x0000000000000f91",func="main",args=[],file="hello.cpp",fullname="/Users/didier/Projets/git-lldbmi2/test_hello_cpp/Debug/../Sources/hello.cpp",line="47"},thread-id="1",stopped-threads="all"\n(gdb)\n|
+230748.573 >>=  |29-list-thread-groups\n|
+230748.573 >>=  |29-list-thread-groups|
+230748.573 <<=  |29^done,groups=[{id="i1",type="process",pid="16789",executable="/Users/didier/Projets/git-lldbmi2/test_hello_cpp/Debug/test_hello_cpp"}]\n(gdb)\n|
+230748.667 >>=  |30-list-thread-groups i1\n|
+230748.667 >>=  |30-list-thread-groups i1|
+230748.673 <<=  |30^done,threads=[{id="1",target-id="Thread 0x6e440 of process 16789",frame={level="0",addr="0x0000000000000f91",func="main",args=[],file="hello.cpp",fullname="/Users/didier/Projets/git-lldbmi2/test_hello_cpp/Debug/../Sources/hello.cpp",line="47"},state="stopped"}]\n(gdb)\n|
+230748.692 >>=  |31-stack-info-depth --thread 1 11\n|
+230748.692 >>=  |31-stack-info-depth --thread 1 11|
+230748.692 <<=  |31^done,depth="3"\n(gdb)\n|
+230749.384 >>=  |32-thread-info 1\n33-list-thread-groups\n|
+230749.384 >>=  |32-thread-info 1|
+230749.384 <<=  |32^error,msg="Can not fetch data now."\n(gdb)\n|
+230749.384 >>=  ||
+230749.384 >>=  |33-list-thread-groups|
+230749.384 <<=  |33^done,groups=[{id="i1",type="process",pid="16789",executable="/Users/didier/Projets/git-lldbmi2/test_hello_cpp/Debug/test_hello_cpp"}]\n(gdb)\n|
+230749.788 >>=  |34-stack-list-locals --thread 1 --frame 0 1\n|
+230749.788 >>=  |34-stack-list-locals --thread 1 --frame 0 1|
+230749.852 <<=  |34^done,locals=[{name="go",value="true"},{name="ab",value="{...}"},{name="k",value="{...}"},{name="z",value="0"}]\n(gdb)\n|
+230749.862 >>=  |35-stack-list-frames --thread 1\n|
+230749.862 >>=  |35-stack-list-frames --thread 1|
+230749.862 <<=  |35^done,stack=[|
+230749.870 <<=  |frame={level="0",addr="0x0000000000000f91",func="main",file="hello.cpp",fullname="/Users/didier/Projets/git-lldbmi2/test_hello_cpp/Debug/../Sources/hello.cpp",line="47"}|
+230749.879 <<=  |,frame={level="1",addr="0x00000000000035c9",func="start",file="libdyld.dylib"}|
+230749.881 <<=  |,frame={level="2",addr="0x00000000000035c9",func="start",file="libdyld.dylib"}|
+230749.884 <<=  |]\n(gdb)\n|
+230750.054 >>=  |36-var-create --thread 1 --frame 0 - * go\n37-var-create --thread 1 --frame 0 - * ab\n38-var-create --thread 1 --frame 0 - * k\n39-var-create --thread 1 --frame 0 - * z\n|
+230750.054 >>=  |36-var-create --thread 1 --frame 0 - * go|
+230750.055 <<=  |36^done,name="go",numchild="0",value="true",type="bool",thread-id="1",has_more="0"\n(gdb)\n|
+230750.055 >>=  ||
+230750.055 >>=  |37-var-create --thread 1 --frame 0 - * ab|
+230750.104 <<=  |37^done,name="ab",numchild="2",value="{...}",type="AB",thread-id="1",has_more="0"\n(gdb)\n|
+230750.104 >>=  ||
+230750.104 >>=  |38-var-create --thread 1 --frame 0 - * k|
+230750.105 <<=  |38^done,name="k",numchild="1",value="{...}",type="K",thread-id="1",has_more="0"\n(gdb)\n|
+230750.105 >>=  ||
+230750.105 >>=  |39-var-create --thread 1 --frame 0 - * z|
+230750.105 <<=  |39^done,name="z",numchild="0",value="0",type="int",thread-id="1",has_more="0"\n(gdb)\n|
+230751.632 >>=  |40-var-list-children k\n|
+230751.632 >>=  |40-var-list-children k|
+230751.632 ---  getVariable: success expr=k, name-k, value=(null)
+230751.632 <<=  |40^done,numchild="1",children=[child={name="k.kk",exp="kk",numchild="0",type="int",thread-id="1"}]",has_more="0"\n(gdb)\n|
+230751.638 >>=  |41-var-info-path-expression k.kk\n|
+230751.638 >>=  |41-var-info-path-expression k.kk|
+230751.638 <<=  |41^done,path_expr="k.kk"\n(gdb)\n|
+230751.702 >>=  |42-var-evaluate-expression k.kk\n|
+230751.702 >>=  |42-var-evaluate-expression k.kk|
+230752.036 <<=  |42^done,value="0"\n(gdb)\n|
+230752.317 >>=  |43-var-list-children ab\n|
+230752.317 >>=  |43-var-list-children ab|
+230752.317 ---  getVariable: success expr=ab, name-ab, value=(null)
+230752.318 <<=  |43^done,numchild="2",children=[child={name="ab.a",exp="a",numchild="0",type="int",thread-id="1"},child={name="ab.b",exp="b",numchild="0",type="int",thread-id="1"}]",has_more="0"\n(gdb)\n|
+230752.329 >>=  |44-var-info-path-expression ab.a\n45-var-info-path-expression ab.b\n|
+230752.329 >>=  |44-var-info-path-expression ab.a|
+230752.329 <<=  |44^done,path_expr="ab.a"\n(gdb)\n|
+230752.329 >>=  ||
+230752.329 >>=  |45-var-info-path-expression ab.b|
+230752.329 <<=  |45^done,path_expr="ab.b"\n(gdb)\n|
+230752.443 >>=  |46-var-evaluate-expression ab.a\n47-var-evaluate-expression ab.b\n|
+230752.443 >>=  |46-var-evaluate-expression ab.a|
+230752.448 <<=  |46^done,value="0"\n(gdb)\n|
+230752.448 >>=  ||
+230752.448 >>=  |47-var-evaluate-expression ab.b|
+230752.452 <<=  |47^done,value="0"\n(gdb)\n|
+230754.361 >>=  |48-exec-next --thread 1 1\n|
+230754.362 >>=  |48-exec-next --thread 1 1|
+230754.362 <<=  |48^running\n|
+230754.362 <<=  |*running,thread-id="1"\n(gdb)\n|
+230754.366 ###  eStateRunning
+230754.369 ###  eStateStopped
+230754.369 ---  thread threadindexid=1 stopreason=8
+230754.369 <<=  |*stopped,frame={addr="0x0000000000000f9a",func="main",args=[],file="hello.cpp",fullname="/Users/didier/Projets/git-lldbmi2/test_hello_cpp/Debug/../Sources/hello.cpp",line="49"},thread-id="1",stopped-threads="all"\n(gdb)\n|
+230754.426 >>=  |49-stack-list-locals --thread 1 --frame 0 1\n|
+230754.426 >>=  |49-stack-list-locals --thread 1 --frame 0 1|
+230754.429 <<=  |49^done,locals=[{name="go",value="true"},{name="ab",value="{...}"},{name="k",value="{...}"},{name="z",value="0"}]\n(gdb)\n|
+230754.433 >>=  |50-stack-info-depth --thread 1 11\n|
+230754.433 >>=  |50-stack-info-depth --thread 1 11|
+230754.433 <<=  |50^done,depth="3"\n(gdb)\n|
+230754.447 >>=  |51-var-update 1 go\n52-var-update 1 ab\n53-var-update 1 k\n54-var-update 1 z\n|
+230754.447 >>=  |51-var-update 1 go|
+230754.448 ---  getVariable: success expr=go, name-go, value=true
+230754.448 ---  formatChangedList: varname=go, fullname=go, changed=0
+230754.448 <<=  |51^done,changelist=[]\n(gdb)\n|
+230754.448 >>=  ||
+230754.448 >>=  |52-var-update 1 ab|
+230754.448 ---  getVariable: success expr=ab, name-ab, value=(null)
+230754.448 ---  formatChangedList: varname=ab, fullname=ab, changed=0
+230754.448 ---  formatChangedList: varname=a, fullname=ab.a, changed=0
+230754.448 ---  formatChangedList: varname=b, fullname=ab.b, changed=0
+230754.448 <<=  |52^done,changelist=[]\n(gdb)\n|
+230754.448 >>=  ||
+230754.448 >>=  |53-var-update 1 k|
+230754.448 ---  getVariable: success expr=k, name-k, value=(null)
+230754.448 ---  formatChangedList: varname=k, fullname=k, changed=0
+230754.448 ---  formatChangedList: varname=kk, fullname=k.kk, changed=0
+230754.448 <<=  |53^done,changelist=[]\n(gdb)\n|
+230754.448 >>=  ||
+230754.448 >>=  |54-var-update 1 z|
+230754.448 ---  getVariable: success expr=z, name-z, value=0
+230754.448 ---  formatChangedList: varname=z, fullname=z, changed=0
+230754.448 <<=  |54^done,changelist=[]\n(gdb)\n|
+230754.475 >>=  |55-thread-info 1\n56-list-thread-groups\n|
+230754.475 >>=  |55-thread-info 1|
+230754.475 <<=  |55^error,msg="Can not fetch data now."\n(gdb)\n|
+230754.475 >>=  ||
+230754.475 >>=  |56-list-thread-groups|
+230754.476 <<=  |56^done,groups=[{id="i1",type="process",pid="16789",executable="/Users/didier/Projets/git-lldbmi2/test_hello_cpp/Debug/test_hello_cpp"}]\n(gdb)\n|
+230755.111 >>=  |57-stack-list-frames --thread 1\n|
+230755.111 >>=  |57-stack-list-frames --thread 1|
+230755.111 <<=  |57^done,stack=[|
+230755.113 <<=  |frame={level="0",addr="0x0000000000000f9a",func="main",file="hello.cpp",fullname="/Users/didier/Projets/git-lldbmi2/test_hello_cpp/Debug/../Sources/hello.cpp",line="49"}|
+230755.113 <<=  |,frame={level="1",addr="0x00000000000035c9",func="start",file="libdyld.dylib"}|
+230755.113 <<=  |,frame={level="2",addr="0x00000000000035c9",func="start",file="libdyld.dylib"}|
+230755.113 <<=  |]\n(gdb)\n|
+230756.151 >>=  |58-exec-next --thread 1 1\n|
+230756.151 >>=  |58-exec-next --thread 1 1|
+230756.151 <<=  |58^running\n|
+230756.151 <<=  |*running,thread-id="1"\n(gdb)\n|
+230756.155 ###  eStateRunning
+230756.156 ###  eStateStopped
+230756.156 ---  thread threadindexid=1 stopreason=8
+230756.156 <<=  |*stopped,frame={addr="0x0000000000000fa1",func="main",args=[],file="hello.cpp",fullname="/Users/didier/Projets/git-lldbmi2/test_hello_cpp/Debug/../Sources/hello.cpp",line="50"},thread-id="1",stopped-threads="all"\n(gdb)\n|
+230756.218 >>=  |59-stack-list-locals --thread 1 --frame 0 1\n|
+230756.218 >>=  |59-stack-list-locals --thread 1 --frame 0 1|
+230756.221 <<=  |59^done,locals=[{name="go",value="true"},{name="ab",value="{...}"},{name="k",value="{...}"},{name="z",value="0"}]\n(gdb)\n|
+230756.223 >>=  |60-stack-info-depth --thread 1 11\n|
+230756.223 >>=  |60-stack-info-depth --thread 1 11|
+230756.223 <<=  |60^done,depth="3"\n(gdb)\n|
+230756.251 >>=  |61-var-update 1 go\n62-var-update 1 ab\n63-var-update 1 k\n64-var-update 1 z\n|
+230756.251 >>=  |61-var-update 1 go|
+230756.251 ---  getVariable: success expr=go, name-go, value=true
+230756.251 ---  formatChangedList: varname=go, fullname=go, changed=0
+230756.251 <<=  |61^done,changelist=[]\n(gdb)\n|
+230756.251 >>=  ||
+230756.251 >>=  |62-var-update 1 ab|
+230756.251 ---  getVariable: success expr=ab, name-ab, value=(null)
+230756.251 ---  formatChangedList: varname=ab, fullname=ab, changed=0
+230756.251 ---  formatChangedList: varname=a, fullname=ab.a, changed=0
+230756.251 ---  formatChangedList: varname=b, fullname=ab.b, changed=0
+230756.251 <<=  |62^done,changelist=[]\n(gdb)\n|
+230756.251 >>=  ||
+230756.251 >>=  |63-var-update 1 k|
+230756.252 ---  getVariable: success expr=k, name-k, value=(null)
+230756.252 ---  formatChangedList: varname=k, fullname=k, changed=0
+230756.252 ---  formatChangedList: varname=kk, fullname=k.kk, changed=0
+230756.252 <<=  |63^done,changelist=[]\n(gdb)\n|
+230756.252 >>=  ||
+230756.252 >>=  |64-var-update 1 z|
+230756.252 ---  getVariable: success expr=z, name-z, value=0
+230756.252 ---  formatChangedList: varname=z, fullname=z, changed=0
+230756.252 <<=  |64^done,changelist=[]\n(gdb)\n|
+230756.266 >>=  |65-thread-info 1\n66-list-thread-groups\n|
+230756.266 >>=  |65-thread-info 1|
+230756.266 <<=  |65^error,msg="Can not fetch data now."\n(gdb)\n|
+230756.266 >>=  ||
+230756.266 >>=  |66-list-thread-groups|
+230756.266 <<=  |66^done,groups=[{id="i1",type="process",pid="16789",executable="/Users/didier/Projets/git-lldbmi2/test_hello_cpp/Debug/test_hello_cpp"}]\n(gdb)\n|
+230756.836 >>=  |67-stack-list-frames --thread 1\n|
+230756.837 >>=  |67-stack-list-frames --thread 1|
+230756.837 <<=  |67^done,stack=[|
+230756.837 <<=  |frame={level="0",addr="0x0000000000000fa1",func="main",file="hello.cpp",fullname="/Users/didier/Projets/git-lldbmi2/test_hello_cpp/Debug/../Sources/hello.cpp",line="50"}|
+230756.837 <<=  |,frame={level="1",addr="0x00000000000035c9",func="start",file="libdyld.dylib"}|
+230756.837 <<=  |,frame={level="2",addr="0x00000000000035c9",func="start",file="libdyld.dylib"}|
+230756.837 <<=  |]\n(gdb)\n|
+230758.447 >>=  |68-exec-next --thread 1 1\n|
+230758.447 >>=  |68-exec-next --thread 1 1|
+230758.447 <<=  |68^running\n|
+230758.447 <<=  |*running,thread-id="1"\n(gdb)\n|
+230758.449 ###  eStateRunning
+230758.449 ###  eStateStopped
+230758.449 ---  thread threadindexid=1 stopreason=8
+230758.449 <<=  |*stopped,frame={addr="0x0000000000000fa8",func="main",args=[],file="hello.cpp",fullname="/Users/didier/Projets/git-lldbmi2/test_hello_cpp/Debug/../Sources/hello.cpp",line="51"},thread-id="1",stopped-threads="all"\n(gdb)\n|
+230758.523 >>=  |69-stack-list-locals --thread 1 --frame 0 1\n|
+230758.523 >>=  |69-stack-list-locals --thread 1 --frame 0 1|
+230758.525 <<=  |69^done,locals=[{name="go",value="true"},{name="ab",value="{...}"},{name="k",value="{...}"},{name="z",value="0"}]\n(gdb)\n|
+230758.525 >>=  |70-stack-info-depth --thread 1 11\n|
+230758.525 >>=  |70-stack-info-depth --thread 1 11|
+230758.525 <<=  |70^done,depth="3"\n(gdb)\n|
+230758.549 >>=  |71-var-update 1 go\n72-var-update 1 ab\n73-var-update 1 k\n74-var-update 1 z\n|
+230758.549 >>=  |71-var-update 1 go|
+230758.549 ---  getVariable: success expr=go, name-go, value=true
+230758.549 ---  formatChangedList: varname=go, fullname=go, changed=0
+230758.549 <<=  |71^done,changelist=[]\n(gdb)\n|
+230758.549 >>=  ||
+230758.549 >>=  |72-var-update 1 ab|
+230758.549 ---  getVariable: success expr=ab, name-ab, value=(null)
+230758.549 ---  formatChangedList: varname=ab, fullname=ab, changed=0
+230758.550 ---  formatChangedList: varname=a, fullname=ab.a, changed=0
+230758.550 ---  formatChangedList: varname=b, fullname=ab.b, changed=0
+230758.550 <<=  |72^done,changelist=[]\n(gdb)\n|
+230758.550 >>=  ||
+230758.550 >>=  |73-var-update 1 k|
+230758.550 ---  getVariable: success expr=k, name-k, value=(null)
+230758.550 ---  formatChangedList: varname=k, fullname=k, changed=0
+230758.550 ---  formatChangedList: varname=kk, fullname=k.kk, changed=1
+230758.550 <<=  |73^done,changelist=[{name="k.kk",value="1",in_scope="true",type_changed="false",has_more="0"}]\n(gdb)\n|
+230758.550 >>=  ||
+230758.550 >>=  |74-var-update 1 z|
+230758.550 ---  getVariable: success expr=z, name-z, value=0
+230758.550 ---  formatChangedList: varname=z, fullname=z, changed=0
+230758.550 <<=  |74^done,changelist=[]\n(gdb)\n|
+230758.599 >>=  |75-thread-info 1\n76-list-thread-groups\n|
+230758.599 >>=  |75-thread-info 1|
+230758.599 <<=  |75^error,msg="Can not fetch data now."\n(gdb)\n|
+230758.599 >>=  ||
+230758.599 >>=  |76-list-thread-groups|
+230758.599 <<=  |76^done,groups=[{id="i1",type="process",pid="16789",executable="/Users/didier/Projets/git-lldbmi2/test_hello_cpp/Debug/test_hello_cpp"}]\n(gdb)\n|
+230759.149 >>=  |77-stack-list-frames --thread 1\n|
+230759.149 >>=  |77-stack-list-frames --thread 1|
+230759.149 <<=  |77^done,stack=[|
+230759.149 <<=  |frame={level="0",addr="0x0000000000000fa8",func="main",file="hello.cpp",fullname="/Users/didier/Projets/git-lldbmi2/test_hello_cpp/Debug/../Sources/hello.cpp",line="51"}|
+230759.149 <<=  |,frame={level="1",addr="0x00000000000035c9",func="start",file="libdyld.dylib"}|
+230759.149 <<=  |,frame={level="2",addr="0x00000000000035c9",func="start",file="libdyld.dylib"}|
+230759.149 <<=  |]\n(gdb)\n|
+230800.191 >>=  |78-exec-next --thread 1 1\n|
+230800.191 >>=  |78-exec-next --thread 1 1|
+230800.191 <<=  |78^running\n|
+230800.191 <<=  |*running,thread-id="1"\n(gdb)\n|
+230800.193 ###  eStateRunning
+230800.209 ###  eStateStopped
+230800.209 ---  thread threadindexid=1 stopreason=8
+230800.209 <<=  |*stopped,frame={addr="0x0000000000000fc6",func="main",args=[],file="hello.cpp",fullname="/Users/didier/Projets/git-lldbmi2/test_hello_cpp/Debug/../Sources/hello.cpp",line="52"},thread-id="1",stopped-threads="all"\n(gdb)\n|
+230800.266 >>=  |79-stack-list-locals --thread 1 --frame 0 1\n|
+230800.266 >>=  |79-stack-list-locals --thread 1 --frame 0 1|
+230800.267 <<=  |79^done,locals=[{name="go",value="true"},{name="ab",value="{...}"},{name="k",value="{...}"},{name="z",value="1"}]\n(gdb)\n|
+230800.272 >>=  |80-stack-info-depth --thread 1 11\n|
+230800.272 >>=  |80-stack-info-depth --thread 1 11|
+230800.273 <<=  |80^done,depth="3"\n(gdb)\n|
+230800.281 >>=  |81-stack-info-depth --thread 1\n|
+230800.281 >>=  |81-stack-info-depth --thread 1|
+230800.281 <<=  |81^done,depth="3"\n(gdb)\n|
+230800.283 >>=  |82-var-update 1 go\n83-var-update 1 ab\n84-var-update 1 k\n85-var-update 1 z\n|
+230800.283 >>=  |82-var-update 1 go|
+230800.283 ---  getVariable: success expr=go, name-go, value=true
+230800.283 ---  formatChangedList: varname=go, fullname=go, changed=0
+230800.283 <<=  |82^done,changelist=[]\n(gdb)\n|
+230800.283 >>=  ||
+230800.283 >>=  |83-var-update 1 ab|
+230800.284 ---  getVariable: success expr=ab, name-ab, value=(null)
+230800.284 ---  formatChangedList: varname=ab, fullname=ab, changed=0
+230800.284 ---  formatChangedList: varname=a, fullname=ab.a, changed=0
+230800.284 ---  formatChangedList: varname=b, fullname=ab.b, changed=0
+230800.284 <<=  |83^done,changelist=[]\n(gdb)\n|
+230800.284 >>=  ||
+230800.284 >>=  |84-var-update 1 k|
+230800.284 ---  getVariable: success expr=k, name-k, value=(null)
+230800.284 ---  formatChangedList: varname=k, fullname=k, changed=0
+230800.284 ---  formatChangedList: varname=kk, fullname=k.kk, changed=0
+230800.284 <<=  |84^done,changelist=[]\n(gdb)\n|
+230800.284 >>=  ||
+230800.284 >>=  |85-var-update 1 z|
+230800.284 ---  getVariable: success expr=z, name-z, value=1
+230800.284 ---  formatChangedList: varname=z, fullname=z, changed=1
+230800.284 <<=  |85^done,changelist=[{name="z",value="1",in_scope="true",type_changed="false",has_more="0"}]\n(gdb)\n|
+230800.300 >>=  |86-thread-info 1\n87-list-thread-groups\n|
+230800.300 >>=  |86-thread-info 1|
+230800.300 <<=  |86^error,msg="Can not fetch data now."\n(gdb)\n|
+230800.300 >>=  ||
+230800.300 >>=  |87-list-thread-groups|
+230800.301 <<=  |87^done,groups=[{id="i1",type="process",pid="16789",executable="/Users/didier/Projets/git-lldbmi2/test_hello_cpp/Debug/test_hello_cpp"}]\n(gdb)\n|
+230800.743 >>=  |88-stack-list-frames --thread 1\n|
+230800.743 >>=  |88-stack-list-frames --thread 1|
+230800.743 <<=  |88^done,stack=[|
+230800.743 <<=  |frame={level="0",addr="0x0000000000000fc6",func="main",file="hello.cpp",fullname="/Users/didier/Projets/git-lldbmi2/test_hello_cpp/Debug/../Sources/hello.cpp",line="52"}|
+230800.743 <<=  |,frame={level="1",addr="0x00000000000035c9",func="start",file="libdyld.dylib"}|
+230800.743 <<=  |,frame={level="2",addr="0x00000000000035c9",func="start",file="libdyld.dylib"}|
+230800.743 <<=  |]\n(gdb)\n|
+230801.679 >>=  |89-exec-next --thread 1 1\n|
+230801.679 >>=  |89-exec-next --thread 1 1|
+230801.679 <<=  |89^running\n|
+230801.679 <<=  |*running,thread-id="1"\n(gdb)\n|
+230801.681 ###  eStateRunning
+230801.686 ###  eStateStopped
+230801.686 ---  thread threadindexid=1 stopreason=8
+230801.686 <<=  |*stopped,frame={addr="0x0000000000000fe4",func="main",args=[],file="hello.cpp",fullname="/Users/didier/Projets/git-lldbmi2/test_hello_cpp/Debug/../Sources/hello.cpp",line="53"},thread-id="1",stopped-threads="all"\n(gdb)\n|
+230801.745 >>=  |90-stack-list-locals --thread 1 --frame 0 1\n|
+230801.745 >>=  |90-stack-list-locals --thread 1 --frame 0 1|
+230801.748 <<=  |90^done,locals=[{name="go",value="true"},{name="ab",value="{...}"},{name="k",value="{...}"},{name="z",value="2"}]\n(gdb)\n|
+230801.748 >>=  |91-stack-info-depth --thread 1 11\n|
+230801.748 >>=  |91-stack-info-depth --thread 1 11|
+230801.748 <<=  |91^done,depth="3"\n(gdb)\n|
+230801.771 >>=  |92-var-update 1 go\n93-var-update 1 ab\n94-var-update 1 k\n95-var-update 1 z\n|
+230801.771 >>=  |92-var-update 1 go|
+230801.771 ---  getVariable: success expr=go, name-go, value=true
+230801.771 ---  formatChangedList: varname=go, fullname=go, changed=0
+230801.771 <<=  |92^done,changelist=[]\n(gdb)\n|
+230801.771 >>=  ||
+230801.771 >>=  |93-var-update 1 ab|
+230801.771 ---  getVariable: success expr=ab, name-ab, value=(null)
+230801.771 ---  formatChangedList: varname=ab, fullname=ab, changed=0
+230801.771 ---  formatChangedList: varname=a, fullname=ab.a, changed=1
+230801.772 ---  formatChangedList: varname=b, fullname=ab.b, changed=0
+230801.772 <<=  |93^done,changelist=[{name="ab.a",value="1",in_scope="true",type_changed="false",has_more="0"}]\n(gdb)\n|
+230801.772 >>=  ||
+230801.772 >>=  |94-var-update 1 k|
+230801.772 ---  getVariable: success expr=k, name-k, value=(null)
+230801.772 ---  formatChangedList: varname=k, fullname=k, changed=0
+230801.772 ---  formatChangedList: varname=kk, fullname=k.kk, changed=0
+230801.772 <<=  |94^done,changelist=[]\n(gdb)\n|
+230801.772 >>=  ||
+230801.772 >>=  |95-var-update 1 z|
+230801.772 ---  getVariable: success expr=z, name-z, value=2
+230801.772 ---  formatChangedList: varname=z, fullname=z, changed=1
+230801.772 <<=  |95^done,changelist=[{name="z",value="2",in_scope="true",type_changed="false",has_more="0"}]\n(gdb)\n|
+230801.779 >>=  |96-thread-info 1\n97-list-thread-groups\n|
+230801.779 >>=  |96-thread-info 1|
+230801.779 <<=  |96^error,msg="Can not fetch data now."\n(gdb)\n|
+230801.779 >>=  ||
+230801.779 >>=  |97-list-thread-groups|
+230801.779 <<=  |97^done,groups=[{id="i1",type="process",pid="16789",executable="/Users/didier/Projets/git-lldbmi2/test_hello_cpp/Debug/test_hello_cpp"}]\n(gdb)\n|
+230802.337 >>=  |98-stack-list-frames --thread 1\n|
+230802.337 >>=  |98-stack-list-frames --thread 1|
+230802.337 <<=  |98^done,stack=[|
+230802.337 <<=  |frame={level="0",addr="0x0000000000000fe4",func="main",file="hello.cpp",fullname="/Users/didier/Projets/git-lldbmi2/test_hello_cpp/Debug/../Sources/hello.cpp",line="53"}|
+230802.337 <<=  |,frame={level="1",addr="0x00000000000035c9",func="start",file="libdyld.dylib"}|
+230802.337 <<=  |,frame={level="2",addr="0x00000000000035c9",func="start",file="libdyld.dylib"}|
+230802.337 <<=  |]\n(gdb)\n|
+230803.183 >>=  |99-exec-next --thread 1 1\n|
+230803.183 >>=  |99-exec-next --thread 1 1|
+230803.183 <<=  |99^running\n|
+230803.183 <<=  |*running,thread-id="1"\n(gdb)\n|
+230803.185 ###  eStateRunning
+230803.193 ###  eStateStopped
+230803.193 ---  thread threadindexid=1 stopreason=8
+230803.193 <<=  |*stopped,frame={addr="0x0000000000000ffa",func="main",args=[],file="hello.cpp",fullname="/Users/didier/Projets/git-lldbmi2/test_hello_cpp/Debug/../Sources/hello.cpp",line="54"},thread-id="1",stopped-threads="all"\n(gdb)\n|
+230803.201 >>=  |100-stack-list-locals --thread 1 --frame 0 1\n|
+230803.201 >>=  |100-stack-list-locals --thread 1 --frame 0 1|
+230803.204 <<=  |100^done,locals=[{name="go",value="true"},{name="ab",value="{...}"},{name="k",value="{...}"},{name="z",value="4"}]\n(gdb)\n|
+230803.208 >>=  |101-stack-info-depth --thread 1 11\n|
+230803.208 >>=  |101-stack-info-depth --thread 1 11|
+230803.208 <<=  |101^done,depth="3"\n(gdb)\n|
+230803.261 >>=  |102-var-update 1 go\n103-var-update 1 ab\n104-var-update 1 k\n105-var-update 1 z\n|
+230803.261 >>=  |102-var-update 1 go|
+230803.262 ---  getVariable: success expr=go, name-go, value=true
+230803.262 ---  formatChangedList: varname=go, fullname=go, changed=0
+230803.262 <<=  |102^done,changelist=[]\n(gdb)\n|
+230803.262 >>=  ||
+230803.262 >>=  |103-var-update 1 ab|
+230803.262 ---  getVariable: success expr=ab, name-ab, value=(null)
+230803.262 ---  formatChangedList: varname=ab, fullname=ab, changed=0
+230803.262 ---  formatChangedList: varname=a, fullname=ab.a, changed=0
+230803.262 ---  formatChangedList: varname=b, fullname=ab.b, changed=1
+230803.262 <<=  |103^done,changelist=[{name="ab.b",value="3",in_scope="true",type_changed="false",has_more="0"}]\n(gdb)\n|
+230803.262 >>=  ||
+230803.262 >>=  |104-var-update 1 k|
+230803.262 ---  getVariable: success expr=k, name-k, value=(null)
+230803.262 ---  formatChangedList: varname=k, fullname=k, changed=0
+230803.262 ---  formatChangedList: varname=kk, fullname=k.kk, changed=0
+230803.262 <<=  |104^done,changelist=[]\n(gdb)\n|
+230803.262 >>=  ||
+230803.262 >>=  |105-var-update 1 z|
+230803.262 ---  getVariable: success expr=z, name-z, value=4
+230803.262 ---  formatChangedList: varname=z, fullname=z, changed=1
+230803.262 <<=  |105^done,changelist=[{name="z",value="4",in_scope="true",type_changed="false",has_more="0"}]\n(gdb)\n|
+230803.272 >>=  |106-thread-info 1\n107-list-thread-groups\n|
+230803.272 >>=  |106-thread-info 1|
+230803.272 <<=  |106^error,msg="Can not fetch data now."\n(gdb)\n|
+230803.272 >>=  ||
+230803.272 >>=  |107-list-thread-groups|
+230803.272 <<=  |107^done,groups=[{id="i1",type="process",pid="16789",executable="/Users/didier/Projets/git-lldbmi2/test_hello_cpp/Debug/test_hello_cpp"}]\n(gdb)\n|
+230803.814 >>=  |108-stack-list-frames --thread 1\n|
+230803.814 >>=  |108-stack-list-frames --thread 1|
+230803.814 <<=  |108^done,stack=[|
+230803.815 <<=  |frame={level="0",addr="0x0000000000000ffa",func="main",file="hello.cpp",fullname="/Users/didier/Projets/git-lldbmi2/test_hello_cpp/Debug/../Sources/hello.cpp",line="54"}|
+230803.815 <<=  |,frame={level="1",addr="0x00000000000035c9",func="start",file="libdyld.dylib"}|
+230803.815 <<=  |,frame={level="2",addr="0x00000000000035c9",func="start",file="libdyld.dylib"}|
+230803.815 <<=  |]\n(gdb)\n|
+230826.014 >>=  |109-exec-continue --thread 1\n|
+230826.014 >>=  |109-exec-continue --thread 1|
+230826.014 <<=  |109^running\n|
+230826.014 <<=  |*running,thread-id="1"\n(gdb)\n|
+230826.017 ###  eStateRunning
+230826.022 ###  eBroadcastBitSTDOUT
+230826.022 <<<  |!!!Hello World 4\n|
+230826.022 ###  eBroadcastBitSTDOUT
+230826.022 <<<  ||
+230826.027 ###  eStateExited
+230826.027 ---  thread threadindexid=1 stopreason=1
+230826.027 <<=  |=thread-group-exited,id="i1",exit-code="0"\n*stopped,reason="exited-normally"\n(gdb)\n|
+230826.027 ###  processlistener exited

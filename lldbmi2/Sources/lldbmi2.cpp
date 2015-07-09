@@ -60,6 +60,8 @@ main (int argc, char **argv, char **envp)
 	sprintf (state.lldbmi2Prompt, "lldbmi2 version %s, Copyright (C) 2015 Didier Bertrand\n", LLDBMI2_VERSION);
 
 	state.logbuffer[0] = '\0';
+
+	// get args
 	for (narg=0; narg<argc; narg++) {
 		strlcat (state.logbuffer, argv[narg], sizeof(state.logbuffer));
 		strlcat (state.logbuffer, " ", sizeof(state.logbuffer));
@@ -96,11 +98,13 @@ main (int argc, char **argv, char **envp)
 	for (int ienv=0; envp[ienv]; ienv++)
 		logprintf (LOG_ARGS|LOG_RAW, "envp[%d]=%s\n", ienv, envp[ienv]);
 
-	if (isVersion) {		// if --gdb and real gsb version is 6.3.5, must alse set --gdb6
+	// return gdb version if --version
+	if (isVersion) {
 		writetocdt (state.gdbPrompt);
 		writetocdt (state.lldbmi2Prompt);
 		return EXIT_SUCCESS;
 	}
+	// check if --interpreter mi2
 	else if (!isInterpreter) {
 		help (&state);
 		return EXIT_FAILURE;
@@ -122,23 +126,23 @@ main (int argc, char **argv, char **envp)
 			chars = read (STDIN_FILENO, line, sizeof(line)-1);
 			if (chars>0) {
 				line[chars] = '\0';
-				while (fromcdt (&state,line,sizeof(line)) == MORE_DATA)
+				while (fromCDT (&state,line,sizeof(line)) == MORE_DATA)
 					line[0] = '\0';
 			}
 			else
 				state.eof = true;
 		}
 		// execute test command if test mode
-		if (!state.lockcdt && !state.eof && isTest && !state.running) {
+		if (!state.lockcdt && !state.eof && isTest && !state.pause_testing) {
 			if ((pTestCommand=getTestCommand (&idTestCommand))!=NULL) {
 				snprintf (line, sizeof(line), "%s\n", pTestCommand);
-				fromcdt (&state, line, sizeof(line));
+				fromCDT (&state, line, sizeof(line));
 			}
 		}
 		// execute stacked commands if many command arrived once
 		if (!state.lockcdt && !state.eof && state.cdtbuffer[0]!='\0') {
 			line[0] = '\0';
-			while (fromcdt (&state, line, sizeof(line)) == MORE_DATA)
+			while (fromCDT (&state, line, sizeof(line)) == MORE_DATA)
 				;
 		}
 	}
