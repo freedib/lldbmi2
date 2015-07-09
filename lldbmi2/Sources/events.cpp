@@ -190,7 +190,7 @@ checkThreadsLife (STATE *pstate, SBProcess process)
 		if (thread.IsValid()) {
 			int stopreason = thread.GetStopReason();
 			int threadindexid = thread.GetIndexID();
-			logprintf (LOG_INFO, "thread threadindexid=%d stopreason=%d\n", threadindexid, stopreason);
+			logprintf (LOG_NONE, "thread threadindexid=%d stopreason=%d\n", threadindexid, stopreason);
 			for (indexlist=0; indexlist<MAX_THREADS; indexlist++) {
 				if (threadindexid == pstate->threadids[indexlist])	// existing thread
 					break;

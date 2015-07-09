@@ -9,10 +9,6 @@
 #include <iostream>
 using namespace std;
 
-struct K {
-	int kk;
-};
-
 class AB {
 public:
 	int a;
@@ -23,35 +19,50 @@ public:
 	void setb  (int v);
 	int  sumab ();
 };
-
 AB::AB () {
 	a = 0;
 	b = 0;
 }
-
 void AB::seta (int v) {
 	a = v;
 }
-
 void AB::setb (int v) {
 	b = v;
 }
-
 int AB::sumab () {
 	return a+b;
 }
 
+struct CD {
+	int c;
+	const char *d;
+};
+
 int main() {
+#if 0
 	bool go = true;
 	if (go) {
 		AB ab;
-		struct K k;
-		k.kk = 1;
+		struct CD cd;
+		cd.c = "Hello world";
 		int z=0;
 		ab.seta(1+z++);
 		ab.setb(2+z++);
 		z = ab.sumab();
 		cout << "!!!Hello World " << z << endl; // prints !!!Hello World!!!
 	}
+#else
+	int c;
+	const char *d;
+	struct CD cd;
+	d="hello";
+	cd.d="hello";
+	c=33;
+	cd.c=33;
+	d="a";
+	cd.d="a";
+	d="b";
+	cd.d="b";
+#endif
 	return 0;
 }

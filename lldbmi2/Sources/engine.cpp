@@ -206,7 +206,6 @@ fromCDT (STATE *pstate, char *line, int linesize)			// from cdt
 		}
 	}
 	else if (strcmp(cc.argv[0],"-break-insert")==0) {
-		// TODO: when insert an attached process, func is null and address invalid
 		// break-insert --thread-group i1 -f /Users/didier/Projets/LLDB/hello/Sources/hello.c:17
 		// break-insert --thread-group i1 -t -f main
 		int isoneshot=0;
@@ -320,17 +319,17 @@ fromCDT (STATE *pstate, char *line, int linesize)			// from cdt
 			pstate->ptyfd = EOF;
 		else
 			pstate->ptyfd = open (pstate->cdtptyname, O_RDWR);
-		logprintf (LOG_INFO, "pty = %d\n", pstate->ptyfd);
+		logprintf (LOG_NONE, "pty = %d\n", pstate->ptyfd);
 		cdtprintf ("%d^done\n(gdb)\n", cc.sequence);
 	}
 	else if (strcmp(cc.argv[0],"-exec-run")==0) {
 		// exec-run --thread-group i1
-		logprintf (LOG_INFO, "launchInfo: args=%d env=%d, pwd=%s\n", launchInfo.GetNumArguments(), launchInfo.GetNumEnvironmentEntries(), launchInfo.GetWorkingDirectory());
+		logprintf (LOG_NONE, "launchInfo: args=%d env=%d, pwd=%s\n", launchInfo.GetNumArguments(), launchInfo.GetNumEnvironmentEntries(), launchInfo.GetWorkingDirectory());
 		SBError error;
 		process = target.Launch (launchInfo, error);
 		if (!process.IsValid()) {
 			cdtprintf ("%d^error,msg=\"%s\"\n(gdb)\n", cc.sequence, "Can not start process.");
-			logprintf (LOG_INFO, "process_error=%s\n", error.GetCString());
+			logprintf (LOG_NONE, "process_error=%s\n", error.GetCString());
 		}
 		else {
 			pstate->pause_testing = true;
@@ -366,7 +365,7 @@ fromCDT (STATE *pstate, char *line, int linesize)			// from cdt
 	//	pstate->debugger.SetAsync (true);
 		if (!process.IsValid()) {
 			cdtprintf ("%d^error,msg=\"%s\"\n(gdb)\n", cc.sequence, "Can not start process.");
-			logprintf (LOG_INFO, "process_error=%s\n", error.GetCString());
+			logprintf (LOG_NONE, "process_error=%s\n", error.GetCString());
 		}
 		else {
 			pstate->pause_testing = true;

@@ -203,8 +203,9 @@ formatChangedList (char *changedesc, int descsize, char *fullname, int namesize,
 		strlcat (fullname, ".", namesize);
 	strlcat (fullname, varname, namesize);
 	namesize -= sizeof(varname);
-	logprintf (LOG_INFO, "formatChangedList: varname=%s, fullname=%s, changed=%d\n",
-			var.GetName(), fullname, var.GetValueDidChange());
+	logprintf (LOG_NONE, "formatChangedList: name=%s, full name=%s, value=%s, changed=%d\n",
+			var.GetName(), fullname, var.GetValue(), var.GetValueDidChange());
+	var.GetValue();		// get value to activate changes
 	if (var.GetValueDidChange()) {
 		const char *separator = separatorvisible? ",":"";
 		const char *varinscope = var.IsInScope()? "true": "false";
@@ -239,7 +240,10 @@ void
 resetChangedList (SBValue var)
 {
     // Force a value to update
-    var.GetValueDidChange();
+	var.GetValue();		// get value to activate changes
+	var.GetValueDidChange();
+	logprintf (LOG_NONE, "resetChangedList: name=%s, value=%s, changed=%d\n",
+			var.GetName(), var.GetValue(), var.GetValueDidChange());
     // And update its children
 	SBType vartype = var.GetType();
 	if (!vartype.IsPointerType() && !vartype.IsReferenceType()) {
@@ -272,6 +276,8 @@ createVariable (SBFrame frame, const char *expression)
     }
     if (var.IsValid() && var.GetError().Success())
     	resetChangedList (var);
+	logprintf (LOG_NONE, "createVariable: name=%s, value=%s, changed=%d\n",
+			var.GetName(), var.GetValue(), var.GetValueDidChange());
     return var;
 }
 
@@ -309,10 +315,10 @@ getVariable (SBFrame frame, const char *expression)
 	if (!var.IsValid() || var.GetError().Fail())
 		var = frame.EvaluateExpression(expression);
 	if (var.IsValid() && !var.GetError().Fail())
-		logprintf (LOG_INFO, "getVariable: success expr=%s, name-%s, value=%s\n",
+		logprintf (LOG_NONE, "getVariable: success expr=%s, name-%s, value=%s\n",
 				expression, var.GetName(), var.GetValue());
 	else
-		logprintf (LOG_INFO, "getVariable: error expr=%s name-%s, value=%s\n",
+		logprintf (LOG_NONE, "getVariable: error expr=%s name-%s, value=%s\n",
 				expression, var.GetName(), var.GetValue());
 	return var;
 }
@@ -336,7 +342,7 @@ formatVariables (char *varsdesc, int descsize, SBValueList varslist)
 				separator=",";
 			}
 			else
-				logprintf (LOG_INFO, "formatVariables: var name=%s, invalid\n",	var.GetName());
+				logprintf (LOG_NONE, "formatVariables: var name=%s, invalid\n",	var.GetName());
 		}
 	}
 	if (strlen(varsdesc) >= descsize-1)
@@ -348,13 +354,12 @@ formatVariables (char *varsdesc, int descsize, SBValueList varslist)
 char *
 formatValue (char *vardesc, int descsize, SBValue var)
 {
-//	const char *varname = var.GetName();
+	const char *varname = var.GetName();
 	const char *varsummary = var.GetSummary();
 	const char *varvalue = var.GetValue();
-//	BasicType basictype = var.GetType().GetBasicType();
-
-//	logprintf (LOG_INFO, "formatValue: varname=%s, varsummary=%s, varvalue=%s, vartype=%s\n",
-//			varname, varsummary, varvalue, getNameForBasicType(basictype));
+	BasicType basictype = var.GetType().GetBasicType();
+	logprintf (LOG_NONE, "formatValue: varname=%s, varsummary=%s, varvalue=%s, vartype=%s\n",
+			varname, varsummary, varvalue, getNameForBasicType(basictype));
 
 	*vardesc = '\0';
 	if (varsummary != NULL) {		// string

@@ -147,7 +147,7 @@ main (int argc, char **argv, char **envp)
 		}
 	}
 
-	logprintf (LOG_INFO, "main loop exited\n");
+	logprintf (LOG_NONE, "main loop exited\n");
 	if (state.ptyfd != EOF)
 		close (state.ptyfd);
 	terminateSB ();

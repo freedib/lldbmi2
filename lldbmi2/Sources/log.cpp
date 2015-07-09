@@ -144,6 +144,8 @@ logprintf ( unsigned scope, const char *format, ... )
 	char *ts;
 	const char *header;
 
+	if (scope==LOG_NONE)
+		return;
 	if (log_fd >= 0 && (scope&log_mask)==scope) {
 		ts = gettimestamp();
 		write(log_fd, ts, strlen(ts));

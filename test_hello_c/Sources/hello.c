@@ -21,7 +21,7 @@ typedef struct {
 } Z;
 
 Y y;
-Z z;
+//Z z;
 
 pthread_t tid;
 
@@ -65,14 +65,14 @@ int main (int argc, char **argv, char **envp) {
 //	printf ("\n");
 	printf ("PID=%d\n", getpid());
 	y.m=11; y.n=22; y.o=33L;
-	Z *pz = &z;
+	Z z;
 	startthread ();
 	int c=12;
 	z.y = &y;
 	char *b="22";
-	pz->b = b;
-	pz->a = 11;
-	pz->k[1][1] = 4;
+	z.a = 11;
+	z.b = b;
+	z.k[1][1] = 4;
 	z.l[1]="string 2";
 	c = sub (67, b, &z);
 	printf ("c=%d\n", c);
