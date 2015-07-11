@@ -1,14 +1,14 @@
 // test program for LLDBMI2
-
-//#define SIMPLE
-#define COMPLEX
-
-#ifdef COMPLEX
-
 #include <stdio.h>
 #include <pthread.h>
 #include <unistd.h>
 #include <string.h>
+
+#define TEST_ALL
+//#define TEST_ARRAYS
+//#define TEST_POINTERS
+
+#ifdef TEST_ALL
 
 typedef struct {
 	short m;
@@ -63,7 +63,7 @@ int main (int argc, char **argv, char **envp)
 	Z z;
 	char *b="22";
 	Y* py = &y;
-	int m[1];
+	float m[1];
 	startthread ();
 	y.m=11; y.n=22; y.o=33L;
 	int c=12;
@@ -72,7 +72,7 @@ int main (int argc, char **argv, char **envp)
 	z.b = b;
 	z.k[1][1] = 4;
 	z.l[1]="string 2";
-	m[0] = 123;
+	m[0] = 123.456;
 	++py->o;
 	c = sub (67, b, &z);
 	printf ("c=%d\n", c);
@@ -83,20 +83,43 @@ int main (int argc, char **argv, char **envp)
 
 #endif
 
-#ifdef SIMPLE
+#ifdef TEST_ARRAYS
 
 #include <stdio.h>
 
 int main ()
 {
+#if 0
 	int c[1];
 	c[0] = 0;
 	c[0] = 1;
-//	int a = 13;
-//	int *b = &a;
-//	++*b;
-//	int c[1];
-//	c[0] = *b;
+#else
+	char c[101];
+	strcpy (c,"hello");
+	c[0] = 'H';
+#endif
+	return 0;
+}
+
+#endif
+
+#ifdef TEST_POINTERS
+
+#include <stdio.h>
+
+typedef struct {
+	int a;
+	char *b;
+} X;
+X x;
+
+int main ()
+{
+	X *px = &x;
+	x.a = 13;
+	px->a = 26;
+	x.b = "hello";
+	px->b = "hellohello";
 	return 0;
 }
 

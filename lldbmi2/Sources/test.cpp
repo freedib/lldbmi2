@@ -11,8 +11,9 @@
 //#define TEST_C
 //#define TEST_C_VARS
 //#define TEST_C_SIMPLE
+#define TEST_C_POINTERS
 //#define TEST_CPP
-#define TEST_ATTACH
+//#define TEST_ATTACH
 //#define TEST_OTHER
 
 
@@ -88,6 +89,48 @@ const char *testcommands[] = {
 	NULL
 };
 #endif	// TEST_C_VARS
+
+#ifdef TEST_C_POINTERS
+const char *testcommands[] = {
+	"51-environment-cd /Users/didier/Projets/git-lldbmi2/test_hello_c/Debug",
+	"52-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_c/Debug/test_hello_c",
+	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_c/Sources/hello.c:119",
+	"62-exec-run --thread-group i1",
+	"64-list-thread-groups",
+	"65-list-thread-groups i1",
+	"69-thread-info 1",
+	"67-stack-list-locals --thread 1 --frame 0 1",	// ^done,locals=[{name="ab",value="{a = 0, b = 0}"}]
+	"72-var-create --thread 1 --frame 0 - * x",
+	"78-var-update 1 x",
+	"79-var-update 1 px",
+	"77-exec-next --thread-group i1",
+	"64-list-thread-groups",
+	"65-list-thread-groups i1",
+	"69-thread-info 1",
+	"67-stack-list-locals --thread 1 --frame 0 1",	// ^done,locals=[{name="ab",value="{a = 0, b = 0}"}]
+	"78-var-update 1 x",
+	"79-var-update 1 px",
+	"77-exec-next --thread-group i1",
+	"64-list-thread-groups",
+	"65-list-thread-groups i1",
+	"69-thread-info 1",
+	"67-stack-list-locals --thread 1 --frame 0 1",	// ^done,locals=[{name="ab",value="{a = 0, b = 0}"}]
+	"78-var-update 1 x",
+	"79-var-update 1 px",
+	"77-exec-next --thread-group i1",
+	"64-list-thread-groups",
+	"65-list-thread-groups i1",
+	"69-thread-info 1",
+	"67-stack-list-locals --thread 1 --frame 0 1",	// ^done,locals=[{name="ab",value="{a = 0, b = 0}"}]
+	"78-var-update 1 x",
+	"79-var-update 1 px",
+//	"76-var-evaluate-expression pz->a",
+//	"76-var-evaluate-expression (pz)->a",
+//	"76-var-evaluate-expression pz.a",
+	"80-gdb-exit",
+	NULL
+};
+#endif	// TEST_C_POINTERS
 
 #ifdef TEST_CPP
 const char *testcommands[] = {

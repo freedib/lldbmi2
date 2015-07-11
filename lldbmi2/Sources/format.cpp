@@ -204,7 +204,7 @@ formatChangedList (char *changedesc, int descsize, SBValue var, bool &separatorv
 
 	if (varname==NULL)
 		return changedesc;
-	logprintf (LOG_INFO, "formatChangedList: varname=%s, pathname=%s, value=%s, changed=%d\n",
+	logprintf (LOG_NONE, "formatChangedList: varname=%s, pathname=%s, value=%s, changed=%d\n",
 			var.GetName(), varname, var.GetValue(), var.GetValueDidChange());
 	var.GetValue();					// required to get value to activate changes
 	if (var.GetValueDidChange()) {
@@ -218,7 +218,7 @@ formatChangedList (char *changedesc, int descsize, SBValue var, bool &separatorv
 		return changedesc;
 	}
 	SBType vartype = var.GetType();
-	if (!vartype.IsPointerType() && !vartype.IsReferenceType()) {
+//	if (!vartype.IsPointerType() && !vartype.IsReferenceType()) {
 		const int nchildren = var.GetNumChildren();
 		for (int ichildren = 0; ichildren < nchildren; ++ichildren) {
 			SBValue member = var.GetChildAtIndex(ichildren);
@@ -228,7 +228,7 @@ formatChangedList (char *changedesc, int descsize, SBValue var, bool &separatorv
 			int changelength = strlen(changedesc);
 			formatChangedList (changedesc+changelength, descsize-changelength, member, separatorvisible);
 		}
-	}
+//	}
 	if (strlen(changedesc) >= descsize-1)
 		logprintf (LOG_ERROR, "varsdesc size (%d) too small\n", descsize);
 	return changedesc;
@@ -257,8 +257,9 @@ getVariable (SBFrame frame, const char *expression)
 	}
 	var.GetValue();				// not sure, but mmaybe required to activate changes
 	var.GetValueDidChange();	// not sure, but mmaybe required to activate changes
-	logprintf (LOG_INFO, "getVariable: fullname=%s, name=%s, value=%s, changed=%d\n",
+	logprintf (LOG_NONE, "getVariable: fullname=%s, name=%s, value=%s, changed=%d\n",
 			expression, var.GetName(), var.GetValue(), var.GetValueDidChange());
+//	var.SetPreferDynamicValue(eDynamicDontRunTarget);
 	return var;
 }
 
@@ -298,7 +299,7 @@ formatValue (char *vardesc, int descsize, SBValue var)
 	const char *varsummary = var.GetSummary();
 	const char *varvalue = var.GetValue();
 	BasicType basictype = var.GetType().GetBasicType();
-	logprintf (LOG_INFO, "formatValue: varname=%s, varsummary=%s, varvalue=%s, vartype=%s\n",
+	logprintf (LOG_NONE, "formatValue: varname=%s, varsummary=%s, varvalue=%s, vartype=%s\n",
 			varname, varsummary, varvalue, getNameForBasicType(basictype));
 
 	*vardesc = '\0';
