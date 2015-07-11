@@ -194,25 +194,26 @@ formatThreadInfo (char *threaddesc, int descsize, SBProcess process, int threadi
 }
 
 
-// search changed vars
+// search changed variables
 char *
-formatChangedList (char *changedesc, int descsize, char *fullname, int namesize, SBValue var, bool &separatorvisible)
+formatChangedList (char *changedesc, int descsize, SBValue var, bool &separatorvisible)
 {
-	const char *varname = var.GetName();
-	if (*fullname!='\0' && *varname!='[')
-		strlcat (fullname, ".", namesize);
-	strlcat (fullname, varname, namesize);
-	namesize -= sizeof(varname);
-	logprintf (LOG_NONE, "formatChangedList: name=%s, full name=%s, value=%s, changed=%d\n",
-			var.GetName(), fullname, var.GetValue(), var.GetValueDidChange());
-	var.GetValue();		// get value to activate changes
+	SBStream stream;
+	var.GetExpressionPath(stream);
+	const char *varname = stream.GetData();
+
+	if (varname==NULL)
+		return changedesc;
+	logprintf (LOG_INFO, "formatChangedList: varname=%s, pathname=%s, value=%s, changed=%d\n",
+			var.GetName(), varname, var.GetValue(), var.GetValueDidChange());
+	var.GetValue();					// required to get value to activate changes
 	if (var.GetValueDidChange()) {
 		const char *separator = separatorvisible? ",":"";
 		const char *varinscope = var.IsInScope()? "true": "false";
 		char vardesc[NAME_MAX];
 		snprintf (changedesc, descsize,
 			"%s{name=\"%s\",value=\"%s\",in_scope=\"%s\",type_changed=\"false\",has_more=\"0\"}",
-			separator, fullname, formatValue(vardesc,sizeof(vardesc),var), varinscope);
+			separator, varname, formatValue(vardesc,sizeof(vardesc),var), varinscope);
 		separatorvisible = true;
 		return changedesc;
 	}
@@ -225,10 +226,7 @@ formatChangedList (char *changedesc, int descsize, char *fullname, int namesize,
 				continue;
 				// Handle composite types (i.e. struct or arrays)
 			int changelength = strlen(changedesc);
-			int namelength = strlen(fullname);
-			formatChangedList (changedesc+changelength, descsize-changelength,
-					fullname, namesize, member, separatorvisible);
-			fullname[namelength] = '\0';	// reset the name to the parent
+			formatChangedList (changedesc+changelength, descsize-changelength, member, separatorvisible);
 		}
 	}
 	if (strlen(changedesc) >= descsize-1)
@@ -236,49 +234,32 @@ formatChangedList (char *changedesc, int descsize, char *fullname, int namesize,
 	return changedesc;
 }
 
-void
-resetChangedList (SBValue var)
-{
-    // Force a value to update
-	var.GetValue();		// get value to activate changes
-	var.GetValueDidChange();
-	logprintf (LOG_NONE, "resetChangedList: name=%s, value=%s, changed=%d\n",
-			var.GetName(), var.GetValue(), var.GetValueDidChange());
-    // And update its children
-	SBType vartype = var.GetType();
-	if (!vartype.IsPointerType() && !vartype.IsReferenceType()) {
-		const int nchildren = var.GetNumChildren();
-		for (int ichildren = 0; ichildren < nchildren; ++ichildren) {
-			SBValue member = var.GetChildAtIndex(ichildren);
-            if (member.IsValid())
-            	resetChangedList (member);
-        }
-    }
-}
 
+// from lldb-mi
 SBValue
-createVariable (SBFrame frame, const char *expression)
+getVariable (SBFrame frame, const char *expression)
 {
 	SBValue var;
-    if (expression[0] == '$')
-    	var = frame.FindRegister(expression);
-    else {
-        const bool bArgs = true;
-        const bool bLocals = true;
-        const bool bStatics = true;
-        const bool bInScopeOnly = false;
-        const SBValueList varslist = frame.GetVariables (bArgs, bLocals, bStatics, bInScopeOnly);
-        var = varslist.GetFirstValueByName (expression);
-    }
-
-    if (!var.IsValid()) {
-    	var = frame.EvaluateExpression (expression);
-    }
-    if (var.IsValid() && var.GetError().Success())
-    	resetChangedList (var);
-	logprintf (LOG_NONE, "createVariable: name=%s, value=%s, changed=%d\n",
-			var.GetName(), var.GetValue(), var.GetValueDidChange());
-    return var;
+	if (expression[0] == '$')
+		var = frame.FindRegister(expression);
+	else {
+		const bool bArgs = true;
+		const bool bLocals = true;
+		const bool bStatics = true;
+		const bool bInScopeOnly = false;
+		const SBValueList varslist = frame.GetVariables (bArgs, bLocals, bStatics, bInScopeOnly);
+		var = varslist.GetFirstValueByName (expression);
+	}
+	if (!var.IsValid() || var.GetError().Fail()) {
+		var = frame.GetValueForVariablePath(expression);		// for c[0] or z.a
+		if (!var.IsValid() || var.GetError().Fail())
+			var = frame.EvaluateExpression (expression);
+	}
+	var.GetValue();				// not sure, but mmaybe required to activate changes
+	var.GetValueDidChange();	// not sure, but mmaybe required to activate changes
+	logprintf (LOG_INFO, "getVariable: fullname=%s, name=%s, value=%s, changed=%d\n",
+			expression, var.GetName(), var.GetValue(), var.GetValueDidChange());
+	return var;
 }
 
 
@@ -286,7 +267,7 @@ createVariable (SBFrame frame, const char *expression)
 // find a variable or expression
 //   look first in variable to avoid create a new expression
 SBValue
-getVariable (SBFrame frame, const char *expression)
+getVariableOld (SBFrame frame, const char *expression)
 {
 	SBValue var;
 /*
@@ -314,11 +295,11 @@ getVariable (SBFrame frame, const char *expression)
 	var = frame.GetValueForVariablePath(expression);
 	if (!var.IsValid() || var.GetError().Fail())
 		var = frame.EvaluateExpression(expression);
-	if (var.IsValid() && !var.GetError().Fail())
-		logprintf (LOG_NONE, "getVariable: success expr=%s, name-%s, value=%s\n",
+	if (var.IsValid() && var.GetError().Success())
+		logprintf (LOG_INFO, "getVariable: success expr=%s, name-%s, value=%s\n",
 				expression, var.GetName(), var.GetValue());
 	else
-		logprintf (LOG_NONE, "getVariable: error expr=%s name-%s, value=%s\n",
+		logprintf (LOG_INFO, "getVariable: error expr=%s name-%s, value=%s\n",
 				expression, var.GetName(), var.GetValue());
 	return var;
 }
@@ -331,7 +312,7 @@ formatVariables (char *varsdesc, int descsize, SBValueList varslist)
 	const char *separator="";
 	for (int i=0; i<varslist.GetSize(); i++) {
 		SBValue var = varslist.GetValueAtIndex(i);
-		if (var.IsValid() && !var.GetError().Fail()) {
+		if (var.IsValid() && var.GetError().Success()) {
 			BasicType basictype = var.GetType().GetBasicType();
 			const char *varvalue = var.GetValue();
 			if ((basictype!=eBasicTypeInvalid && varvalue!=NULL) || true) {
@@ -342,7 +323,7 @@ formatVariables (char *varsdesc, int descsize, SBValueList varslist)
 				separator=",";
 			}
 			else
-				logprintf (LOG_NONE, "formatVariables: var name=%s, invalid\n",	var.GetName());
+				logprintf (LOG_INFO, "formatVariables: var name=%s, invalid\n",	var.GetName());
 		}
 	}
 	if (strlen(varsdesc) >= descsize-1)
@@ -358,7 +339,7 @@ formatValue (char *vardesc, int descsize, SBValue var)
 	const char *varsummary = var.GetSummary();
 	const char *varvalue = var.GetValue();
 	BasicType basictype = var.GetType().GetBasicType();
-	logprintf (LOG_NONE, "formatValue: varname=%s, varsummary=%s, varvalue=%s, vartype=%s\n",
+	logprintf (LOG_INFO, "formatValue: varname=%s, varsummary=%s, varvalue=%s, vartype=%s\n",
 			varname, varsummary, varvalue, getNameForBasicType(basictype));
 
 	*vardesc = '\0';

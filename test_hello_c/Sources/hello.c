@@ -1,5 +1,9 @@
-
 // test program for LLDBMI2
+
+//#define SIMPLE
+#define COMPLEX
+
+#ifdef COMPLEX
 
 #include <stdio.h>
 #include <pthread.h>
@@ -11,7 +15,6 @@ typedef struct {
 	long n;
 	long long o;
 } Y;
-
 typedef struct {
 	int a;
 	char *b;
@@ -21,8 +24,6 @@ typedef struct {
 } Z;
 
 Y y;
-//Z z;
-
 pthread_t tid;
 
 void *
@@ -34,7 +35,6 @@ hellothread (void *arg)
 	}
 	return NULL;
 }
-
 int
 startthread ()
 {
@@ -43,7 +43,6 @@ startthread ()
 		tid = 0;
 	return ret;
 }
-
 void
 waitthread ()
 {
@@ -58,25 +57,47 @@ int sub(int a, char * b, Z *z) {
 	return a+d;
 }
 
-int main (int argc, char **argv, char **envp) {
-//	printf ("arg=%d, *envp=%s\n", argc, *envp);
-//	for (int a=0; a<argc; a++)
-//		printf ("argv[%d]=%s\n", a, argv[a]);
-//	printf ("\n");
+int main (int argc, char **argv, char **envp)
+{
 	printf ("PID=%d\n", getpid());
-	y.m=11; y.n=22; y.o=33L;
 	Z z;
+	char *b="22";
+	Y* py = &y;
+	int m[1];
 	startthread ();
+	y.m=11; y.n=22; y.o=33L;
 	int c=12;
 	z.y = &y;
-	char *b="22";
 	z.a = 11;
 	z.b = b;
 	z.k[1][1] = 4;
 	z.l[1]="string 2";
+	m[0] = 123;
+	++py->o;
 	c = sub (67, b, &z);
 	printf ("c=%d\n", c);
 	fflush (stdout);
 	waitthread ();
 	return 0;
 }
+
+#endif
+
+#ifdef SIMPLE
+
+#include <stdio.h>
+
+int main ()
+{
+	int c[1];
+	c[0] = 0;
+	c[0] = 1;
+//	int a = 13;
+//	int *b = &a;
+//	++*b;
+//	int c[1];
+//	c[0] = *b;
+	return 0;
+}
+
+#endif

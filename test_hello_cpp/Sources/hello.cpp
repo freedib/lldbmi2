@@ -39,12 +39,10 @@ struct CD {
 };
 
 int main() {
-#if 0
+#if 1
 	bool go = true;
 	if (go) {
 		AB ab;
-		struct CD cd;
-		cd.c = "Hello world";
 		int z=0;
 		ab.seta(1+z++);
 		ab.setb(2+z++);

@@ -15,9 +15,7 @@ char *  formatBreakpoint (char *breakpointdesc, int descsize, SBBreakpoint break
 int     getNumFrames (SBThread thread);
 char *  formatFrame (char *framedesc, int descsize, SBFrame frame, FrameDetails details);
 char *  formatThreadInfo (char *threaddesc, int descsize, SBProcess process, int threadindexid);
-char *  formatChangedList (char *changedesc, int descsize, char *fullname, int namesize, SBValue var, bool &separatorvisible);
-void    resetChangedList (SBValue var);
-SBValue createVariable (SBFrame frame, const char *expression);
+char *  formatChangedList (char *changedesc, int descsize, SBValue var, bool &separatorvisible);
 SBValue getVariable (SBFrame frame, const char *expression);
 char *  formatVariables (char *varsdesc, int descsize, SBValueList varslist);
 char *  formatValue (char *varsdesc, int descsize, SBValue var);

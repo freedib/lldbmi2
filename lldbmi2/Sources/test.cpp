@@ -10,8 +10,9 @@
 // remove comment above wanted commands set
 //#define TEST_C
 //#define TEST_C_VARS
+#define TEST_C_SIMPLE
 //#define TEST_CPP
-#define TEST_ATTACH
+//#define TEST_ATTACH
 //#define TEST_OTHER
 
 
@@ -58,12 +59,42 @@ const char *testcommands[] = {
 };
 #endif	// TEST_C_VARS
 
+#ifdef TEST_C_SIMPLE
+const char *testcommands[] = {
+	"3-environment-cd /Users/didier/Projets/git-lldbmi2/test_hello_c",
+	"17-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_c/Debug/test_hello_c",
+//	"19-gdb-show --thread-group i1 language",
+	"26-break-insert -f /Users/didier/Projets/git-lldbmi2/test_hello_c/Sources/hello.c:93",
+	"28-exec-run --thread-group i1",
+	"35-stack-list-locals --thread 1 --frame 0 1",
+	"36-var-create --thread 1 --frame 0 - * c",
+	"37-var-create --thread 1 --frame 0 - * &(c)",
+	"38-stack-list-frames --thread 1",
+	"39-var-create --thread 1 --frame 0 - * c[0]",
+	"40-exec-next --thread 1 1",
+	"41-stack-list-locals --thread 1 --frame 0 1",
+	"42-stack-info-depth --thread 1 11",
+	"45-var-update 1 c",
+	"46-var-update 1 $0",
+	"47-var-update 1 c[0]",
+	"40-exec-next --thread 1 1",
+	"41-stack-list-locals --thread 1 --frame 0 1",
+	"42-stack-info-depth --thread 1 11",
+	"45-var-update 1 c",
+	"46-var-update 1 $0",
+	"47-var-update 1 c[0]",
+	"59-exec-continue --thread 1",
+	"80-gdb-exit",
+	NULL
+};
+#endif	// TEST_C_VARS
+
 #ifdef TEST_CPP
 const char *testcommands[] = {
 	"51-environment-cd /Users/didier/Projets/git-lldbmi2/test_hello_cpp/Debug",
 	"52-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_cpp/Debug/test_hello_cpp",
 	"64-list-thread-groups",
-	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_cpp/Sources/hello.cpp:41",
+	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_cpp/Sources/hello.cpp:44",
 	"62-exec-run --thread-group i1",
 	"64-list-thread-groups",
 	"65-list-thread-groups i1",

@@ -47,7 +47,7 @@ fromCDT (STATE *pstate, char *line, int linesize)			// from cdt
 	static SBProcess process;
 
 	dataflag = MORE_DATA;
-	logdata (LOG_CDT_IN, line, strlen(line));
+	logdata (LOG_CDT_IN|LOG_RAW, line, strlen(line));
 	strlcat (pstate->cdtbuffer, line, sizeof(pstate->cdtbuffer));
 	if (pstate->lockcdt)
 		return WAIT_DATA;
@@ -582,11 +582,13 @@ fromCDT (STATE *pstate, char *line, int linesize)			// from cdt
 			SBThread thread = process.GetSelectedThread();
 			SBFrame frame = thread.GetSelectedFrame();
 			// Find then Evaluate to avoid recreate variable
-			SBValue var = createVariable (frame, expression);
-			if (var.IsValid()) {
-				const char *varname = var.GetName();
+			SBValue var = getVariable (frame, expression);
+			if (var.IsValid() && var.GetError().Success()) {
 				int varchildren = var.GetNumChildren();
 				SBType vartype = var.GetType();
+				SBStream stream;
+				var.GetExpressionPath(stream);
+				const char *varname = stream.GetData();
 				char vardesc[NAME_MAX];
 				cdtprintf ("%d^done,name=\"%s\",numchild=\"%d\",value=\"%s\","
 							"type=\"%s\",thread-id=\"%d\",has_more=\"0\"\n(gdb)\n",
@@ -615,11 +617,9 @@ fromCDT (STATE *pstate, char *line, int linesize)			// from cdt
 		SBValue var = getVariable (frame, expression);			// find variable
 		char changedesc[LINE_MAX];
 		changedesc[0] = '\0';
-		if (var.IsValid()) {
-			char fullname[NAME_MAX];
-			fullname[0] = '\0';
+		if (var.IsValid() && var.GetError().Success()) {
 			bool separatorvisible = false;
-			formatChangedList (changedesc, sizeof(changedesc), fullname, sizeof(fullname), var, separatorvisible);
+			formatChangedList (changedesc, sizeof(changedesc), var, separatorvisible);
 		}
 		cdtprintf ("%d^done,changelist=[%s]\n(gdb)\n", cc.sequence, changedesc);
 	}
@@ -639,9 +639,7 @@ fromCDT (STATE *pstate, char *line, int linesize)			// from cdt
 		SBThread thread = process.GetSelectedThread();
 		SBFrame frame = thread.GetSelectedFrame();
 		SBValue var = getVariable (frame, expression);
-		if (var.IsValid()) {
-			const char *varname = var.GetName();
-			#pragma unused (varname)
+		if (var.IsValid() && var.GetError().Success()) {
 			int varchildren = var.GetNumChildren();
 			char childlist[LINE_MAX];
 			*childlist = '\0';
@@ -690,7 +688,7 @@ fromCDT (STATE *pstate, char *line, int linesize)			// from cdt
 			SBThread thread = process.GetSelectedThread();
 			SBFrame frame = thread.GetSelectedFrame();
 			SBValue var = getVariable (frame, expression);
-			if (var.IsValid()) {
+			if (var.IsValid() && var.GetError().Success()) {
 				SBStream stream;
 				var.GetExpressionPath(stream,true);
 				const char *varexppath = stream.GetData();
@@ -717,8 +715,8 @@ fromCDT (STATE *pstate, char *line, int linesize)			// from cdt
 		else {
 			SBThread thread = process.GetSelectedThread();
 			SBFrame frame = thread.GetSelectedFrame();
-			SBValue var = createVariable (frame, expression);
-			if (var.IsValid()) {
+			SBValue var = getVariable (frame, expression);		// createVariable
+			if (var.IsValid() && var.GetError().Success()) {
 				char vardesc[NAME_MAX];
 				cdtprintf ("%d^done,value=\"%s\"\n(gdb)\n", cc.sequence, formatValue (vardesc,sizeof(vardesc),var));
 			}
@@ -754,7 +752,7 @@ fromCDT (STATE *pstate, char *line, int linesize)			// from cdt
 		SBThread thread = process.GetSelectedThread();
 		SBFrame frame = thread.GetSelectedFrame();
 		SBValue var = getVariable (frame, expression);
-		if (var.IsValid()) {
+		if (var.IsValid() && var.GetError().Success()) {
 			var.SetFormat(formatcode);
 			char vardesc[NAME_MAX];
 			cdtprintf ("%d^done,format=\"%s\",value=\"%s\"\n(gdb)\n",
