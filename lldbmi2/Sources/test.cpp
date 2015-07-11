@@ -10,9 +10,9 @@
 // remove comment above wanted commands set
 //#define TEST_C
 //#define TEST_C_VARS
-#define TEST_C_SIMPLE
+//#define TEST_C_SIMPLE
 //#define TEST_CPP
-//#define TEST_ATTACH
+#define TEST_ATTACH
 //#define TEST_OTHER
 
 
@@ -22,7 +22,7 @@ const char *testcommands[] = {
 	"52-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_c/Debug/test_hello_c",
 	"53-gdb-set --thread-group i1 args -h localhost",
 	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_c/Sources/hello.c:77",
-	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_c/Sources/hello.c:33",
+	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_c/Sources/hello.c:34",
 	"61-inferior-tty-set --thread-group i1 %1",	// stdout instead of /dev/ptyxx
 	"62-exec-run --thread-group i1",
 	"64-list-thread-groups",
@@ -94,7 +94,7 @@ const char *testcommands[] = {
 	"51-environment-cd /Users/didier/Projets/git-lldbmi2/test_hello_cpp/Debug",
 	"52-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_cpp/Debug/test_hello_cpp",
 	"64-list-thread-groups",
-	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_cpp/Sources/hello.cpp:44",
+	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_cpp/Sources/hello.cpp:49",
 	"62-exec-run --thread-group i1",
 	"64-list-thread-groups",
 	"65-list-thread-groups i1",
@@ -117,7 +117,7 @@ const char *testcommands[] = {
 const char *testcommands[] = {
 	"51-environment-cd /Users/didier/Projets/git-lldbmi2/test_hello_c/Debug",
 	"62-target-attach --thread-group i1 test_hello_c",
-	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_c/Sources/hello.c:33",
+	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_c/Sources/hello.c:34",
 	"61-inferior-tty-set --thread-group i1 %1",	// stdout instead of /dev/ptyxx
 	"65-list-thread-groups i1",
 	"69-thread-info 1",

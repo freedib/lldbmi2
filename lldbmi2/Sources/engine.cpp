@@ -601,6 +601,8 @@ fromCDT (STATE *pstate, char *line, int linesize)			// from cdt
 		else
 			cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
 	}
+	// TODO: display pointers to a structure
+	// TODO: display character data
 	else if (strcmp(cc.argv[0],"-var-update")==0) {
 		// 47-var-update 1 var2
 		// 47^done,changelist=[]

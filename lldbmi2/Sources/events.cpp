@@ -1,6 +1,7 @@
 
 #include <chrono>
 #include <thread>
+#include "lldb/API/SBUnixSignals.h"
 
 #include "lldbmi2.h"
 #include "format.h"
@@ -66,7 +67,7 @@ processListener (void *arg)
 					break;
 				case eStateStopped:
 					logprintf (LOG_EVENTS, "eStateStopped\n");
-					onBreakpoint (pstate, process);
+					onStopped (pstate, process);
 					break;
 				default:
 					logprintf (LOG_WARN, "unexpected process state %d\n", processstate);
@@ -115,12 +116,12 @@ processListener (void *arg)
 
 
 void
-onBreakpoint (STATE *pstate, SBProcess process)
+onStopped (STATE *pstate, SBProcess process)
 {
 //	-3-38-5.140 <<=  |=breakpoint-modified,bkpt={number="breakpoint 1",type="breakpoint",disp="del",enabled="y",addr="0x0000000100000f06",func="main",file="hello.c",fullname="hello.c",line="33",thread-groups=["i1"],times="1",original-location="hello.c:33"}\n|
 //	-3-38-5.140 <<=  |*stopped,reason="breakpoint-hit",disp="keep",bkptno="breakpoint 1",frame={addr="0x0000000100000f06",func="main",args=[],file="hello.c",fullname="hello.c",line="33"},thread-id="1",stopped-threads="all"\n|
 //	-3-40-7.049 <<=  |*stopped,reason="breakpoint-hit",disp="keep",bkptno="1",frame={addr="0000000000000f06",func="main",args=[],file="hello.c",fullname="/Users/didier/Projets/LLDB/hello/Debug/../Sources/hello.c",line="33"},thread-id="1",stopped-threads="all"(gdb)\n|
-
+//                    *stopped,reason="signal-received",signal-name="SIGSEGV",signal-meaning="Segmentation fault",frame={addr="0x0000000100000f7b",func="main",args=[],file="../Sources/hello.cpp",fullname="/Users/didier/Projets/git-lldbmi2/test_hello_cpp/Sources/hello.cpp",line="44"},thread-id="1",stopped-threads="all"
 	pstate->pause_testing = false;
 	checkThreadsLife (pstate, process);
 	updateSelectedThread (process);				// search which thread is stopped
@@ -128,7 +129,7 @@ onBreakpoint (STATE *pstate, SBProcess process)
 	SBThread thread = process.GetSelectedThread();
 	int stopreason = thread.GetStopReason();
 //	logprintf (LOG_EVENTS, "stopreason=%d\n", stopreason);
-	if (stopreason==eStopReasonBreakpoint || stopreason==eStopReasonPlanComplete || stopreason==eStopReasonSignal) {
+	if (stopreason==eStopReasonBreakpoint || stopreason==eStopReasonPlanComplete) {
 		int bpid=0;
 		const char *dispose = "keep";
 		char reasondesc[LINE_MAX];
@@ -162,12 +163,38 @@ onBreakpoint (STATE *pstate, SBProcess process)
 	}
 	else if (stopreason==eStopReasonSignal) {
 		// raised when attaching to a process
+		// raised when program crashed
+		char reasondesc[LINE_MAX];
+		int stopreason = thread.GetStopReasonDataAtIndex(0);
+	 	SBUnixSignals unixsignals = process.GetUnixSignals();
+		const char *signalname = unixsignals.GetSignalAsCString(stopreason);
+		snprintf (reasondesc, sizeof(reasondesc), "reason=\"signal-received\",signal-name=\"%s\",", signalname);
+		SBFrame frame = thread.GetSelectedFrame();
+		char framedesc[LINE_MAX];
+		formatFrame (framedesc, sizeof(framedesc), frame, WITH_ARGS);
+		int threadindexid = thread.GetIndexID();
+		//signal-name="SIGSEGV",signal-meaning="Segmentation fault"
+		cdtprintf ("*stopped,%s%sthread-id=\"%d\",stopped-threads=\"all\"\n(gdb)\n",
+					reasondesc,framedesc,threadindexid);
+		// *stopped,reason="signal-received",signal-name="SIGSEGV",signal-meaning="Segmentation fault",frame={addr="0x0000000100000f7b",func="main",args=[],file="../Sources/hello.cpp",fullname="/Users/didier/Projets/git-lldbmi2/test_hello_cpp/Sources/hello.cpp",line="44"},thread-id="1",stopped-threads="all"
 	}
 	else if (stopreason==eStopReasonNone) {
 		// raised when a thread different from the selected thread stops
 	}
 	else if (stopreason==eStopReasonInvalid) {
 		// raised when the program exits
+	}
+	else if (stopreason==eStopReasonException) {
+		//  "*stopped,reason=\"exception-received\",exception=\"%s\",thread-id=\"%d\",stopped-threads=\"all\""
+		char exceptiondesc[LINE_MAX];
+		thread.GetStopDescription(exceptiondesc,LINE_MAX);
+		write ((pstate->ptyfd!=EOF)?pstate->ptyfd:STDOUT_FILENO, exceptiondesc, strlen(exceptiondesc));
+		write ((pstate->ptyfd!=EOF)?pstate->ptyfd:STDOUT_FILENO, "\n", 1);
+		char reasondesc[LINE_MAX];
+		snprintf (reasondesc, sizeof(reasondesc), "reason=\"exception-received\",exception=\"%s\",", exceptiondesc);
+		int threadindexid = thread.GetIndexID();
+		cdtprintf ("*stopped,%sthread-id=\"%d\",stopped-threads=\"all\"\n(gdb)\n",
+					reasondesc,threadindexid);
 	}
 	else
 		logprintf (LOG_WARN, "unexpected stop reason %d\n", stopreason);

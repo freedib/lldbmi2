@@ -38,8 +38,14 @@ struct CD {
 	const char *d;
 };
 
+
+#define TEST_CRASH
+
 int main() {
-#if 1
+#ifdef TEST_CRASH
+	int *err=NULL;
+	*err=99;
+#else
 	bool go = true;
 	if (go) {
 		AB ab;
@@ -49,18 +55,6 @@ int main() {
 		z = ab.sumab();
 		cout << "!!!Hello World " << z << endl; // prints !!!Hello World!!!
 	}
-#else
-	int c;
-	const char *d;
-	struct CD cd;
-	d="hello";
-	cd.d="hello";
-	c=33;
-	cd.c=33;
-	d="a";
-	cd.d="a";
-	d="b";
-	cd.d="b";
 #endif
 	return 0;
 }

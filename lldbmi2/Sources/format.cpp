@@ -263,47 +263,6 @@ getVariable (SBFrame frame, const char *expression)
 }
 
 
-
-// find a variable or expression
-//   look first in variable to avoid create a new expression
-SBValue
-getVariableOld (SBFrame frame, const char *expression)
-{
-	SBValue var;
-/*
-	if (true) {
-		var = frame.GetValueForVariablePath(expression);
-		if (var.IsValid() && !var.GetError().Fail())
-			logprintf (LOG_INFO, "GetValueForVariablePath(%s): varname=%s, varsummary=%s, varvalue=%s, vartype=%s\n",
-					expression, var.GetName(), var.GetSummary(), var.GetValue(), getNameForBasicType(var.GetType().GetBasicType()));
-		else
-			logprintf (LOG_INFO, "GetValueForVariablePath(%s): invalid\n",	expression);
-		var = frame.FindVariable(expression);
-		if (var.IsValid() && !var.GetError().Fail())
-			logprintf (LOG_INFO, "FindVariable(%s): varname=%s, varsummary=%s, varvalue=%s, vartype=%s\n",
-					expression, var.GetName(), var.GetSummary(), var.GetValue(), getNameForBasicType(var.GetType().GetBasicType()));
-		else
-			logprintf (LOG_INFO, "FindVariable(%s): invalid\n",	expression);
-		var = frame.EvaluateExpression(expression);
-		if (var.IsValid() && !var.GetError().Fail())
-			logprintf (LOG_INFO, "EvaluateExpression(%s): varname=%s, varsummary=%s, varvalue=%s, vartype=%s\n",
-					expression, var.GetName(), var.GetSummary(), var.GetValue(), getNameForBasicType(var.GetType().GetBasicType()));
-		else
-			logprintf (LOG_INFO, "EvaluateExpression(%s): invalid\n",	expression);
-	}
-*/
-	var = frame.GetValueForVariablePath(expression);
-	if (!var.IsValid() || var.GetError().Fail())
-		var = frame.EvaluateExpression(expression);
-	if (var.IsValid() && var.GetError().Success())
-		logprintf (LOG_INFO, "getVariable: success expr=%s, name-%s, value=%s\n",
-				expression, var.GetName(), var.GetValue());
-	else
-		logprintf (LOG_INFO, "getVariable: error expr=%s name-%s, value=%s\n",
-				expression, var.GetName(), var.GetValue());
-	return var;
-}
-
 // format a list of variables into a GDB string
 char *
 formatVariables (char *varsdesc, int descsize, SBValueList varslist)
