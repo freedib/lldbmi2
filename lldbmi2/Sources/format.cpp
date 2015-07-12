@@ -240,18 +240,18 @@ resetChangedList (SBValue var)
     // Force a value to update
 	var.GetValue();				// get value to activate changes
 	var.GetValueDidChange();
-	logprintf (LOG_INFO, "resetChangedList: name=%s, value=%s, changed=%d\n",
+	logprintf (LOG_NONE, "resetChangedList: name=%s, value=%s, changed=%d\n",
 			var.GetName(), var.GetValue(), var.GetValueDidChange());
     // And update its children
 	SBType vartype = var.GetType();
-	if (!vartype.IsPointerType() && !vartype.IsReferenceType()) {
+//	if (!vartype.IsPointerType() && !vartype.IsReferenceType()) {
 		const int nchildren = var.GetNumChildren();
 		for (int ichildren = 0; ichildren < nchildren; ++ichildren) {
 			SBValue member = var.GetChildAtIndex(ichildren);
             if (member.IsValid())
             	resetChangedList (member);
         }
-    }
+//	}
 }
 
 #define min(a,b) ((a) < (b) ? (a) : (b))
@@ -294,12 +294,14 @@ getPeudoArrayVariable (SBFrame frame, const char *expression, SBValue &var)
 	snprintf (newexpression, sizeof(newexpression), "(%s[%s])&%s[%s]",	// (char(*)[100])&c[0]
 			newvartype, varlength, varname, varoffset);
 	var = getVariable (frame, newexpression);
+ 	logprintf (LOG_INFO, "getPeudoArrayVariable: expression %s -> %s\n", expression, newexpression);
 	if (!var.IsValid() || var.GetError().Fail())
 		return false;
 	return true;
 }
 
 // from lldb-mi
+// TODO: must create var for everything else vars wont get updated on reentry in a function
 SBValue
 getVariable (SBFrame frame, const char *expression)
 {
@@ -324,7 +326,7 @@ getVariable (SBFrame frame, const char *expression)
 			var = frame.EvaluateExpression (expression);
 	}
    	resetChangedList (var);
- 	logprintf (LOG_NONE, "getVariable: fullname=%s, name=%s, value=%s, changed=%d\n",
+ 	logprintf (LOG_INFO, "getVariable: fullname=%s, name=%s, value=%s, changed=%d\n",
 			expression, var.GetName(), var.GetValue(), var.GetValueDidChange());
 //	var.SetPreferDynamicValue(eDynamicDontRunTarget);
 	return var;

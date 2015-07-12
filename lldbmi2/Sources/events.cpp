@@ -117,7 +117,7 @@ processListener (void *arg)
 		else
 			logprintf (LOG_EVENTS, "event type %s\n", eventtype);
 	}
-	logprintf (LOG_EVENTS, "processlistener exited. pstate->eof=%s\n", pstate->eof);
+	logprintf (LOG_EVENTS, "processlistener exited. pstate->eof=%d\n", pstate->eof);
 	usleep (1000000);
 	return NULL;
 }
