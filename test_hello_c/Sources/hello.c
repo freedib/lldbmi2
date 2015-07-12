@@ -4,8 +4,8 @@
 #include <unistd.h>
 #include <string.h>
 
-#define TEST_ALL
-//#define TEST_ARRAYS
+//#define TEST_ALL
+#define TEST_ARRAYS
 //#define TEST_POINTERS
 
 #ifdef TEST_ALL
@@ -86,18 +86,18 @@ int main (int argc, char **argv, char **envp)
 #ifdef TEST_ARRAYS
 
 #include <stdio.h>
-
+typedef struct {
+	double d;
+	const char *c;
+} S;
 int main ()
 {
-#if 0
-	int c[1];
-	c[0] = 0;
-	c[0] = 1;
-#else
 	char c[101];
-	strcpy (c,"hello");
+	int i[200];
+	S s[200];
 	c[0] = 'H';
-#endif
+	i[100] = 1001;
+	s[0].c = "hello";
 	return 0;
 }
 

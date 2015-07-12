@@ -601,8 +601,6 @@ fromCDT (STATE *pstate, char *line, int linesize)			// from cdt
 		else
 			cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
 	}
-	// TODO: display pointers to a structure
-	// TODO: display character data
 	else if (strcmp(cc.argv[0],"-var-update")==0) {
 		// 47-var-update 1 var2
 		// 47^done,changelist=[]
@@ -617,7 +615,7 @@ fromCDT (STATE *pstate, char *line, int linesize)			// from cdt
 		SBThread thread = process.GetSelectedThread();
 		SBFrame frame = thread.GetSelectedFrame();
 		SBValue var = getVariable (frame, expression);			// find variable
-		char changedesc[LINE_MAX];
+		char changedesc[BIG_LINE_MAX];
 		changedesc[0] = '\0';
 		if (var.IsValid() && var.GetError().Success()) {
 			bool separatorvisible = false;

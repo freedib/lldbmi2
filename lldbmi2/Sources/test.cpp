@@ -11,7 +11,8 @@
 //#define TEST_C
 //#define TEST_C_VARS
 //#define TEST_C_SIMPLE
-#define TEST_C_POINTERS
+//#define TEST_C_POINTERS
+#define TEST_C_LARGE_ARRAY
 //#define TEST_CPP
 //#define TEST_ATTACH
 //#define TEST_OTHER
@@ -60,18 +61,20 @@ const char *testcommands[] = {
 };
 #endif	// TEST_C_VARS
 
-#ifdef TEST_C_SIMPLE
+#ifdef TEST_C_LARGE_ARRAY
 const char *testcommands[] = {
 	"3-environment-cd /Users/didier/Projets/git-lldbmi2/test_hello_c",
 	"17-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_c/Debug/test_hello_c",
 //	"19-gdb-show --thread-group i1 language",
-	"26-break-insert -f /Users/didier/Projets/git-lldbmi2/test_hello_c/Sources/hello.c:93",
+	"26-break-insert -f /Users/didier/Projets/git-lldbmi2/test_hello_c/Sources/hello.c:97",
 	"28-exec-run --thread-group i1",
 	"35-stack-list-locals --thread 1 --frame 0 1",
 	"36-var-create --thread 1 --frame 0 - * c",
 	"37-var-create --thread 1 --frame 0 - * &(c)",
 	"38-stack-list-frames --thread 1",
-	"39-var-create --thread 1 --frame 0 - * c[0]",
+	"39-var-create --thread 1 --frame 0 - * *((c)+0)@100",
+	"39-var-create --thread 1 --frame 0 - * *((i)+0)@100",
+	"39-var-create --thread 1 --frame 0 - * *((s)+0)@100",
 	"40-exec-next --thread 1 1",
 	"41-stack-list-locals --thread 1 --frame 0 1",
 	"42-stack-info-depth --thread 1 11",
@@ -88,13 +91,13 @@ const char *testcommands[] = {
 	"80-gdb-exit",
 	NULL
 };
-#endif	// TEST_C_VARS
+#endif	// TEST_C_LARGE_ARRAY
 
 #ifdef TEST_C_POINTERS
 const char *testcommands[] = {
 	"51-environment-cd /Users/didier/Projets/git-lldbmi2/test_hello_c/Debug",
 	"52-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_c/Debug/test_hello_c",
-	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_c/Sources/hello.c:119",
+	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_c/Sources/hello.c:117",
 	"62-exec-run --thread-group i1",
 	"64-list-thread-groups",
 	"65-list-thread-groups i1",

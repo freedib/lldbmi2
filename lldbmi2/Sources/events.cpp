@@ -64,6 +64,11 @@ processListener (void *arg)
 						"*stopped,reason=\"exited-normally\"\n\(gdb)\n",
 						pstate->threadgroup, pstate->threadgroup);
 					pstate->eof = true;
+					if (process.IsValid()) {
+						process.Kill();
+						process.Destroy();
+					}
+					logprintf (LOG_INFO, "processlistener. eof=%d\n", pstate->eof);
 					break;
 				case eStateStopped:
 					logprintf (LOG_EVENTS, "eStateStopped\n");
@@ -85,7 +90,10 @@ processListener (void *arg)
 				// pass stdout and stderr from application to pty
 				long iobytes;
 				char iobuffer[LINE_MAX];
-				logprintf (LOG_EVENTS, "eBroadcastBitSTDOUT\n");
+				if (eventtype==SBProcess::eBroadcastBitSTDOUT)
+					logprintf (LOG_EVENTS, "eBroadcastBitSTDOUT\n");
+				else
+					logprintf (LOG_EVENTS, "eBroadcastBitSTDERR\n");
 				iobytes = process.GetSTDOUT (iobuffer, sizeof(iobuffer));
 				if (iobytes > 0) {
 					// remove \r
@@ -109,7 +117,7 @@ processListener (void *arg)
 		else
 			logprintf (LOG_EVENTS, "event type %s\n", eventtype);
 	}
-	logprintf (LOG_EVENTS, "processlistener exited\n");
+	logprintf (LOG_EVENTS, "processlistener exited. pstate->eof=%s\n", pstate->eof);
 	usleep (1000000);
 	return NULL;
 }

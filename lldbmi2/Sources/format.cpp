@@ -4,7 +4,6 @@
 #include "names.h"
 #include "format.h"
 
-
 // TODO: make pending si bp invalid
 // 017,435 29^done,bkpt={number="5",type="breakpoint",disp="keep",enabled="y",addr="<PENDING>",pending=\
 // "/Users/didier/Projets/git-lldbmi2/test_hello_c/Sources/hello.c:33",times="0",original-location="/Users/\
@@ -39,7 +38,7 @@ formatBreakpoint (char *breakpointdesc, int descsize, SBBreakpoint breakpoint, S
 			bpid,dispose,file_addr,func_name,filename,
 			filepath,line,pstate->threadgroup,originallocation);
 	if (strlen(breakpointdesc) >= descsize-1)
-		logprintf (LOG_ERROR, "breakpointdesc size (%d) too small\n", descsize);
+		logprintf (LOG_ERROR, "formatBreakpoint: breakpointdesc size (%d) too small\n", descsize);
 	return breakpointdesc;
 }
 
@@ -138,7 +137,7 @@ formatFrame (char *framedesc, int descsize, SBFrame frame, FrameDetails details)
 		}
 	}
 	if (strlen(framedesc) >= descsize-1)
-		logprintf (LOG_ERROR, "framedesc size (%d) too small\n", descsize);
+		logprintf (LOG_ERROR, "formatFrame: framedesc size (%d) too small\n", descsize);
 	return framedesc;
 }
 
@@ -189,7 +188,7 @@ formatThreadInfo (char *threaddesc, int descsize, SBProcess process, int threadi
 		}
 	}
 	if (strlen(threaddesc) >= descsize-1)
-		logprintf (LOG_ERROR, "threaddesc size (%d) too small\n", descsize);
+		logprintf (LOG_ERROR, "formatThreadInfo: threaddesc size (%d) too small\n", descsize);
 	return threaddesc;
 }
 
@@ -230,17 +229,86 @@ formatChangedList (char *changedesc, int descsize, SBValue var, bool &separatorv
 		}
 //	}
 	if (strlen(changedesc) >= descsize-1)
-		logprintf (LOG_ERROR, "varsdesc size (%d) too small\n", descsize);
+		logprintf (LOG_ERROR, "formatChangedList: changedesc size (%d) too small\n", descsize);
 	return changedesc;
 }
 
+
+void
+resetChangedList (SBValue var)
+{
+    // Force a value to update
+	var.GetValue();				// get value to activate changes
+	var.GetValueDidChange();
+	logprintf (LOG_INFO, "resetChangedList: name=%s, value=%s, changed=%d\n",
+			var.GetName(), var.GetValue(), var.GetValueDidChange());
+    // And update its children
+	SBType vartype = var.GetType();
+	if (!vartype.IsPointerType() && !vartype.IsReferenceType()) {
+		const int nchildren = var.GetNumChildren();
+		for (int ichildren = 0; ichildren < nchildren; ++ichildren) {
+			SBValue member = var.GetChildAtIndex(ichildren);
+            if (member.IsValid())
+            	resetChangedList (member);
+        }
+    }
+}
+
+#define min(a,b) ((a) < (b) ? (a) : (b))
+
+// TODO: Adjust var summary && expression not updated test sequence
+// TODO: support types like struct S
+bool
+getPeudoArrayVariable (SBFrame frame, const char *expression, SBValue &var)
+{
+// just support *((var)+0)@100 form
+// char c[101];
+// -var-create * *((c)+0)@100
+// -var-create * *((c)+100)@1
+	char *pe, e[NAME_MAX], *varname, *varoffset, *varlength, varpointername[NAME_MAX], vartype[NAME_MAX];
+	strlcpy (e, expression, sizeof(e));
+	pe = e;
+	if (*pe!='*' || *(pe+1)!='(' || *(pe+2)!='(')
+		return false;
+	varname = pe+3;								// get name
+	if ((pe = strchr (varname,')')) == NULL)
+		return false;
+	*pe = '\0';
+	if (*(pe+1) != '+' && !isdigit(*(pe+2)))
+		return false;
+	varoffset = pe+2;							// get offset
+	if ((pe = strchr (varoffset,')')) == NULL)
+		return false;
+	*pe = '\0';
+	if (*(pe+1) != '@' && !isdigit(*(pe+2)))
+		return false;
+	varlength = pe+2;							// get length
+	snprintf (varpointername, sizeof(varpointername), "&%s", varname);	// get var type
+	SBValue basevar = getVariable (frame, varpointername);				// vaname ¬ &var
+	char newvartype[NAME_MAX];
+	strlcpy (newvartype, basevar.GetTypeName(), sizeof(vartype));		// typename ~ char (*)[101]
+	if ((pe = strchr (newvartype,'[')) == NULL)
+		return false;
+	*pe = '\0';
+	char newexpression[NAME_MAX];				// create expression
+	snprintf (newexpression, sizeof(newexpression), "(%s[%s])&%s[%s]",	// (char(*)[100])&c[0]
+			newvartype, varlength, varname, varoffset);
+	var = getVariable (frame, newexpression);
+	if (!var.IsValid() || var.GetError().Fail())
+		return false;
+	return true;
+}
 
 // from lldb-mi
 SBValue
 getVariable (SBFrame frame, const char *expression)
 {
 	SBValue var;
-	if (expression[0] == '$')
+	if (strchr(expression,'@') != NULL)
+		getPeudoArrayVariable (frame, expression, var);
+	if (var.IsValid() && var.GetError().Success()) {
+	}
+	else if (expression[0] == '$')
 		var = frame.FindRegister(expression);
 	else {
 		const bool bArgs = true;
@@ -255,9 +323,8 @@ getVariable (SBFrame frame, const char *expression)
 		if (!var.IsValid() || var.GetError().Fail())
 			var = frame.EvaluateExpression (expression);
 	}
-	var.GetValue();				// not sure, but mmaybe required to activate changes
-	var.GetValueDidChange();	// not sure, but mmaybe required to activate changes
-	logprintf (LOG_NONE, "getVariable: fullname=%s, name=%s, value=%s, changed=%d\n",
+   	resetChangedList (var);
+ 	logprintf (LOG_NONE, "getVariable: fullname=%s, name=%s, value=%s, changed=%d\n",
 			expression, var.GetName(), var.GetValue(), var.GetValueDidChange());
 //	var.SetPreferDynamicValue(eDynamicDontRunTarget);
 	return var;
@@ -287,7 +354,7 @@ formatVariables (char *varsdesc, int descsize, SBValueList varslist)
 		}
 	}
 	if (strlen(varsdesc) >= descsize-1)
-		logprintf (LOG_ERROR, "varsdesc size (%d) too small\n", descsize);
+		logprintf (LOG_ERROR, "formatVariables: varsdesc size (%d) too small\n", descsize);
 	return varsdesc;
 }
 
@@ -316,7 +383,7 @@ formatValue (char *vardesc, int descsize, SBValue var)
 	else
 		snprintf (vardesc, descsize, "{...}");
 	if (strlen(vardesc) >= descsize-1)
-		logprintf (LOG_ERROR, "vardesc size (%d) too small\n", descsize);
+		logprintf (LOG_ERROR, "formatValue: vardesc size (%d) too small\n", descsize);
 	return vardesc;
 }
 

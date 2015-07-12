@@ -145,9 +145,11 @@ main (int argc, char **argv, char **envp)
 			while (fromCDT (&state, line, sizeof(line)) == MORE_DATA)
 				;
 		}
+	//	logprintf (LOG_INFO, "main loop. eof=%d\n", state.eof);
 	}
+	// TODO: never come here in real liffe
 
-	logprintf (LOG_NONE, "main loop exited\n");
+	logprintf (LOG_INFO, "main loop exited\n");
 	if (state.ptyfd != EOF)
 		close (state.ptyfd);
 	terminateSB ();
