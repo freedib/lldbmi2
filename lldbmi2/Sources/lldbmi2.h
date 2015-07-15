@@ -24,8 +24,9 @@ using namespace lldb;
 typedef struct {
 	int  lockcdt;
 	int  ptyfd;
+	int  istest;
 	bool eof;
-	bool pause_testing;
+	bool isrunning;
 	char cdtbuffer[LINE_MAX];
 	char cdtptyname[NAME_MAX];
 	char logfilename[PATH_MAX];
@@ -43,6 +44,6 @@ typedef struct {
 const char *getTestCommand (int *idTestCommand);
 void        writetocdt     (const char *line);
 void        cdtprintf      (const char *format, ... );
-
+void        signal_handler (int vSigno);
 
 #endif	// LLDBMIG_H

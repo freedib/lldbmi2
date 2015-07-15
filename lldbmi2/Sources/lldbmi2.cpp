@@ -38,6 +38,9 @@ void help (STATE *pstate)
 	fprintf (stderr, "   --nx:          Ignored.\n");
 }
 
+
+static STATE state;
+
 int
 main (int argc, char **argv, char **envp)
 {
@@ -48,11 +51,9 @@ main (int argc, char **argv, char **envp)
 	struct timeval timeout;
 	int isVersion=0, isInterpreter=0;
 	const char *pTestCommand=NULL;
-	int  isTest=0;
 	int  idTestCommand=0;
 	int  isLog=0;
 	int  logmask=LOG_ALL;
-	STATE state;
 
 	memset (&state, '\0', sizeof(state));
 	state.ptyfd = EOF;
@@ -75,7 +76,7 @@ main (int argc, char **argv, char **envp)
 			}
 		}
 		else if (strcmp (argv[narg],"--test") == 0 )
-			isTest = 1;
+			state.istest = 1;
 		else if (strcmp (argv[narg],"--log") == 0 )
 			isLog = 1;
 		else if (strcmp (argv[narg],"--logmask") == 0 ) {
@@ -87,7 +88,10 @@ main (int argc, char **argv, char **envp)
 
 	// create a log filename from program name and open log file
 	if (isLog) {
-		setlogfile (state.logfilename, sizeof(state.logfilename), argv[0], "lldbmi2.log");
+		if (state.istest)
+			setlogfile (state.logfilename, sizeof(state.logfilename), argv[0], "lldbmi2t.log");
+		else
+			setlogfile (state.logfilename, sizeof(state.logfilename), argv[0], "lldbmi2.log");
 		openlog (state.logbuffer, sizeof(state.logbuffer), state.logfilename);
 		setlogmask (logmask);
 	}
@@ -111,19 +115,24 @@ main (int argc, char **argv, char **envp)
 	}
 
 	initializeSB (&state);
+	signal (SIGINT, signal_handler);
 
 	cdtprintf ("(gdb)\n");
 
 	// main loop
 	FD_ZERO (&set);
 	while (!state.eof) {
+		if (state.istest)
+			logprintf (LOG_INFO, "main loop\n");
 		// get command from CDT
 		timeout.tv_sec  = 0;
 		timeout.tv_usec = 200000;
 		FD_SET (STDIN_FILENO, &set);
 		select(STDIN_FILENO+1, &set, NULL, NULL, &timeout);
-		if (FD_ISSET(STDIN_FILENO, &set) && !state.eof) {
+		if (FD_ISSET(STDIN_FILENO, &set) && !state.eof && !state.istest) {
+			logprintf (LOG_INFO, "read in\n");
 			chars = read (STDIN_FILENO, line, sizeof(line)-1);
+			logprintf (LOG_INFO, "read out %d\n", chars);
 			if (chars>0) {
 				line[chars] = '\0';
 				while (fromCDT (&state,line,sizeof(line)) == MORE_DATA)
@@ -133,7 +142,7 @@ main (int argc, char **argv, char **envp)
 				state.eof = true;
 		}
 		// execute test command if test mode
-		if (!state.lockcdt && !state.eof && isTest && !state.pause_testing) {
+		if (!state.lockcdt && !state.eof && state.istest && !state.isrunning) {
 			if ((pTestCommand=getTestCommand (&idTestCommand))!=NULL) {
 				snprintf (line, sizeof(line), "%s\n", pTestCommand);
 				fromCDT (&state, line, sizeof(line));
@@ -145,18 +154,14 @@ main (int argc, char **argv, char **envp)
 			while (fromCDT (&state, line, sizeof(line)) == MORE_DATA)
 				;
 		}
-	//	logprintf (LOG_INFO, "main loop. eof=%d\n", state.eof);
 	}
-	// TODO: never come here in real liffe
 
 	logprintf (LOG_INFO, "main loop exited\n");
 	if (state.ptyfd != EOF)
 		close (state.ptyfd);
 	terminateSB ();
 
-	usleep(500000);
-
-//	system("stty sane");
+	logprintf (LOG_INFO, "main exit\n");
 	closelog ();
 
 	return EXIT_SUCCESS;
@@ -199,6 +204,28 @@ cdtprintf ( const char *format, ... )
 		writetocdt (buffer);
 		if (strlen(buffer) >= sizeof(buffer)-1)
 			logprintf (LOG_ERROR, "cdtprintf buffer size (%d) too small\n", sizeof(buffer));
+	}
+}
 
+static int signals_received=0;
+
+void
+signal_handler (int signo)
+{
+	if (signo==SIGINT)
+		logprintf (LOG_ERROR, "signal SIGINT\n");
+	else
+		logprintf (LOG_INFO, "signal %s\n", signo);
+	if (signo==SIGINT) {
+		if (state.process.IsValid() && signals_received==0) {
+			int selfPID = getpid();
+			int processPID = state.process.GetProcessID();
+			logprintf (LOG_INFO, "signal_handler: signal SIGINT. self PID = %d, process pid = %d\n", selfPID, processPID);
+			logprintf (LOG_INFO, "send signal SIGINT to process %d\n", processPID);
+			state.process.Signal (SIGINT);
+			++signals_received;
+		}
+		else
+			state.debugger.DispatchInputInterrupt();
 	}
 }

@@ -7,9 +7,48 @@
 #include "format.h"
 #include "log.h"
 #include "events.h"
+#include "engine.h"
 
 
 static pthread_t sbTID;
+
+
+void
+setSignals (STATE *pstate)
+{
+	SBUnixSignals us = pstate->process.GetUnixSignals();
+	if (!pstate->istest || true) {
+		const char *signame = "SIGINT";
+		int signo = us.GetSignalNumberFromName(signame);
+		logprintf (LOG_NONE, "signals before for %s (%d): suppress=%d, stop=%d, notify=%d\n",
+				signame, signo, us.GetShouldSuppress(signo), us.GetShouldStop(signo), us.GetShouldNotify(signo));
+		us.SetShouldSuppress (signo,false);			// !pass
+		us.SetShouldStop (signo,false);
+		us.SetShouldNotify (signo,true);
+		logprintf (LOG_NONE, "signals after for %s (%d): suppress=%d, stop=%d, notify=%d\n",
+				signame, signo, us.GetShouldSuppress(signo), us.GetShouldStop(signo), us.GetShouldNotify(signo));
+	}
+}
+
+void
+terminateProcess (STATE *pstate, int how)
+{
+	logprintf (LOG_INFO, "terminateProcess (%d)\n", how);
+	if (pstate->process.IsValid()) {
+		SBThread thread = pstate->process.GetSelectedThread();
+		int tid = thread.IsValid()? thread.GetIndexID():0;
+		if ((how&PRINT_THREAD))
+			cdtprintf ("=thread-exited,id=\"%d\",group-id=\"%s\"\n", tid, pstate->threadgroup);
+		pstate->process.Destroy();
+	//	pstate->process.Kill();
+	}
+	else
+		logprintf (LOG_INFO, "pstate->process not valid\n");
+	if ((how&PRINT_GROUP))
+		cdtprintf ("=thread-group-exited,id=\"%s\",exit-code=\"0\"\n", pstate->threadgroup);
+	if ((how&AND_EXIT))
+		pstate->eof = true;
+}
 
 
 int
@@ -59,15 +98,8 @@ processListener (void *arg)
 				case eStateExited:
 					logprintf (LOG_EVENTS, "eStateExited\n");
 					checkThreadsLife (pstate, process);		// not useful. threads are not stopped before exit
-					cdtprintf (
-						"=thread-group-exited,id=\"%s\",exit-code=\"0\"\n"
-						"*stopped,reason=\"exited-normally\"\n\(gdb)\n",
-						pstate->threadgroup, pstate->threadgroup);
-					pstate->eof = true;
-					if (process.IsValid()) {
-						process.Kill();
-						process.Destroy();
-					}
+					terminateProcess (pstate, PRINT_GROUP|AND_EXIT);
+					cdtprintf ("*stopped,reason=\"exited-normally\"\n\(gdb)\n");
 					logprintf (LOG_INFO, "processlistener. eof=%d\n", pstate->eof);
 					break;
 				case eStateStopped:
@@ -118,7 +150,6 @@ processListener (void *arg)
 			logprintf (LOG_EVENTS, "event type %s\n", eventtype);
 	}
 	logprintf (LOG_EVENTS, "processlistener exited. pstate->eof=%d\n", pstate->eof);
-	usleep (1000000);
 	return NULL;
 }
 
@@ -130,7 +161,7 @@ onStopped (STATE *pstate, SBProcess process)
 //	-3-38-5.140 <<=  |*stopped,reason="breakpoint-hit",disp="keep",bkptno="breakpoint 1",frame={addr="0x0000000100000f06",func="main",args=[],file="hello.c",fullname="hello.c",line="33"},thread-id="1",stopped-threads="all"\n|
 //	-3-40-7.049 <<=  |*stopped,reason="breakpoint-hit",disp="keep",bkptno="1",frame={addr="0000000000000f06",func="main",args=[],file="hello.c",fullname="/Users/didier/Projets/LLDB/hello/Debug/../Sources/hello.c",line="33"},thread-id="1",stopped-threads="all"(gdb)\n|
 //                    *stopped,reason="signal-received",signal-name="SIGSEGV",signal-meaning="Segmentation fault",frame={addr="0x0000000100000f7b",func="main",args=[],file="../Sources/hello.cpp",fullname="/Users/didier/Projets/git-lldbmi2/test_hello_cpp/Sources/hello.cpp",line="44"},thread-id="1",stopped-threads="all"
-	pstate->pause_testing = false;
+	pstate->isrunning = false;
 	checkThreadsLife (pstate, process);
 	updateSelectedThread (process);				// search which thread is stopped
 	SBTarget target = process.GetTarget();

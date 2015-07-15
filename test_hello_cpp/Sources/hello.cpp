@@ -39,13 +39,13 @@ struct CD {
 };
 
 
-#define TEST_CRASH
+//#define TEST_MEMBERS
+//#define TEST_CRASH
+#define TEST_ARGS
 
-int main() {
-#ifdef TEST_CRASH
-	int *err=NULL;
-	*err=99;
-#else
+#ifdef TEST_MEMBERS
+int main()
+{
 	bool go = true;
 	if (go) {
 		AB ab;
@@ -55,6 +55,32 @@ int main() {
 		z = ab.sumab();
 		cout << "!!!Hello World " << z << endl; // prints !!!Hello World!!!
 	}
-#endif
 	return 0;
 }
+#endif
+
+#ifdef TEST_CRASH
+int main()
+{
+	int *err=NULL;
+	*err=99;
+	return 0;
+}
+#endif
+
+#ifdef TEST_ARGS
+void testfunction (char *s, const char*v)
+{
+	return;
+}
+int main()
+{
+	char s[10];
+	strcpy (s, "A");
+	testfunction (s, "a");
+	strcpy (s, "B");
+	testfunction (s, "b");
+}
+#endif
+
+

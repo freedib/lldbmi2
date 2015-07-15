@@ -33,7 +33,7 @@ void terminateSB ()
 //   execute the command
 //   respond on stdout
 int
-fromCDT (STATE *pstate, char *line, int linesize)			// from cdt
+fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 {
 	char *endofline;
 	char cdtline[LINE_MAX];			// must be the same size as state.cdtbuffer
@@ -73,11 +73,7 @@ fromCDT (STATE *pstate, char *line, int linesize)			// from cdt
 	if (nextarg==0) {
 	}
 	else if (strcmp (cc.argv[0],"-gdb-exit")==0) {
-		pstate->eof = true;
-		if (process.IsValid()) {
-			process.Kill();
-			process.Destroy();
-		}
+		terminateProcess (pstate, AND_EXIT);
 	}
 	else if (strcmp(cc.argv[0],"-gdb-version")==0) {
 		cdtprintf ("~\"%s\"\n", pstate->gdbPrompt);
@@ -188,15 +184,19 @@ fromCDT (STATE *pstate, char *line, int linesize)			// from cdt
 			}
 			else if (strcmp(cc.argv[nextarg],"kill") == 0) {
 				if (process.IsValid()) {
-					SBThread thread = process.GetSelectedThread();
-					int tid = thread.IsValid()? thread.GetIndexID():0;
-					cdtprintf (
-						"=thread-exited,id=\"%d\",group-id=\"%s\"\n"
-						"=thread-group-exited,id=\"%s\",exit-code=\"0\"\n"
-						"%d^done\n(gdb)\n",
-						tid, pstate->threadgroup, pstate->threadgroup, cc.sequence);
-					process.Kill();
-					process.Destroy();
+					logprintf (LOG_INFO, "console kill: send SIGINT\n");
+					if (process.IsValid()) {
+						int state = process.GetState ();
+						if (state == eStateStopped) {			// if process is stopped. restart it before kill
+							SBThread thread = process.GetSelectedThread();
+							cdtprintf ("%d^running\n", cc.sequence);
+							cdtprintf ("*running,thread-id=\"%d\"\n(gdb)\n", thread.GetIndexID());
+							process.Continue();
+							pstate->isrunning = true;
+						}
+					}
+					pstate->process.Signal(SIGINT);
+					cdtprintf (	"%d^done\n(gdb)\n",	cc.sequence);
 				}
 				else
 					cdtprintf ("%d^error,msg=\"%s\"\n(gdb)\n", cc.sequence, "The program is not being run.");
@@ -332,9 +332,10 @@ fromCDT (STATE *pstate, char *line, int linesize)			// from cdt
 			logprintf (LOG_NONE, "process_error=%s\n", error.GetCString());
 		}
 		else {
-			pstate->pause_testing = true;
+			pstate->isrunning = true;
 			pstate->process = process;
 			startProcessListener(pstate);
+			setSignals (pstate);
 			SBThread thread = process.GetSelectedThread();
 			cdtprintf ("=thread-group-started,id=\"%s\",pid=\"%lld\"\n", pstate->threadgroup, process.GetProcessID());
 			checkThreadsLife (pstate, process);
@@ -368,9 +369,10 @@ fromCDT (STATE *pstate, char *line, int linesize)			// from cdt
 			logprintf (LOG_NONE, "process_error=%s\n", error.GetCString());
 		}
 		else {
-			pstate->pause_testing = true;
+			pstate->isrunning = true;
 			pstate->process = process;
 			startProcessListener (pstate);
+			setSignals (pstate);
 			SBThread thread = process.GetSelectedThread();
 			cdtprintf ("=thread-group-started,id=\"%s\",pid=\"%lld\"\n", pstate->threadgroup, process.GetProcessID());
 			checkThreadsLife (pstate, process);
@@ -379,18 +381,13 @@ fromCDT (STATE *pstate, char *line, int linesize)			// from cdt
 	}
 	else if (strcmp(cc.argv[0],"-target-detach")==0) {
 		// target-detach --thread-group i1
-		pstate->eof = true;
 		if (process.IsValid()) {
-			SBThread thread = process.GetSelectedThread();
-			int tid = thread.IsValid()? thread.GetIndexID():0;
-			cdtprintf (
-				"=thread-exited,id=\"%d\",group-id=\"%s\"\n"
-				"=thread-group-exited,id=\"%s\",exit-code=\"0\"\n"
-				"%d^done\n(gdb)\n",
-				tid, pstate->threadgroup, pstate->threadgroup, cc.sequence);
-			process.Kill();
-			process.Destroy();
+			terminateProcess (pstate, PRINT_THREAD|PRINT_GROUP|AND_EXIT);
+			cdtprintf (	"%d^done\n(gdb)\n",	cc.sequence);
 		}
+		else
+			cdtprintf ("%d^error,msg=\"%s\"\n(gdb)\n", cc.sequence, "The program is not being run.");
+
 	}
 	else if (strcmp(cc.argv[0],"-exec-continue")==0) {
 		// 37-exec-continue --thread 1
@@ -404,7 +401,7 @@ fromCDT (STATE *pstate, char *line, int linesize)			// from cdt
 				cdtprintf ("%d^running\n", cc.sequence);
 				cdtprintf ("*running,thread-id=\"%d\"\n(gdb)\n", thread.GetIndexID());
 				process.Continue();
-				pstate->pause_testing = true;
+				pstate->isrunning = true;
 			}
 		}
 		else

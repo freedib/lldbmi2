@@ -20,7 +20,7 @@ typedef struct {
 } CDT_COMMAND;
 
 
-int         fromCDT      (STATE *pstate, char *line, int linesize);
+int         fromCDT      (STATE *pstate, const char *line, int linesize);
 void        initializeSB (STATE *pstate);
 void        terminateSB  ();
 int         evalCDTLine  (STATE *pstate, const char *cdtline, CDT_COMMAND *cc);

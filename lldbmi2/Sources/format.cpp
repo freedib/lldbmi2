@@ -4,7 +4,7 @@
 #include "names.h"
 #include "format.h"
 
-// TODO: make pending si bp invalid
+// Should make breakpoint pending if invalid
 // 017,435 29^done,bkpt={number="5",type="breakpoint",disp="keep",enabled="y",addr="<PENDING>",pending=\
 // "/Users/didier/Projets/git-lldbmi2/test_hello_c/Sources/hello.c:33",times="0",original-location="/Users/\
 // didier/Projets/git-lldbmi2/test_hello_c/Sources/hello.c:33"}
@@ -192,7 +192,8 @@ formatThreadInfo (char *threaddesc, int descsize, SBProcess process, int threadi
 	return threaddesc;
 }
 
-
+// TODO: references not evaluated correctly in arg list as &separatorvisible
+// TODO: if char pointer, try many children (up to \0 or max 100) to check if changed, or find variable with the save address
 // search changed variables
 char *
 formatChangedList (char *changedesc, int descsize, SBValue var, bool &separatorvisible)
@@ -200,12 +201,12 @@ formatChangedList (char *changedesc, int descsize, SBValue var, bool &separatorv
 	SBStream stream;
 	var.GetExpressionPath(stream);
 	const char *varname = stream.GetData();
-
 	if (varname==NULL)
 		return changedesc;
-	logprintf (LOG_NONE, "formatChangedList: varname=%s, pathname=%s, value=%s, changed=%d\n",
-			var.GetName(), varname, var.GetValue(), var.GetValueDidChange());
+	logprintf (LOG_INFO, "formatChangedList: varname=%s, pathname=%s, value=%s, summary=%s, changed=%d\n",
+			var.GetName(), varname, var.GetValue(), var.GetSummary(), var.GetValueDidChange());
 	var.GetValue();					// required to get value to activate changes
+	var.GetSummary();				// required to get value to activate changes
 	if (var.GetValueDidChange()) {
 		const char *separator = separatorvisible? ",":"";
 		const char *varinscope = var.IsInScope()? "true": "false";
@@ -234,12 +235,13 @@ formatChangedList (char *changedesc, int descsize, SBValue var, bool &separatorv
 }
 
 
-void
-resetChangedList (SBValue var)
+int
+countChangedList (SBValue var)
 {
     // Force a value to update
 	var.GetValue();				// get value to activate changes
-	var.GetValueDidChange();
+	var.GetSummary();			// get value to activate changes
+	int changes = var.GetValueDidChange();
 	logprintf (LOG_NONE, "resetChangedList: name=%s, value=%s, changed=%d\n",
 			var.GetName(), var.GetValue(), var.GetValueDidChange());
     // And update its children
@@ -249,9 +251,10 @@ resetChangedList (SBValue var)
 		for (int ichildren = 0; ichildren < nchildren; ++ichildren) {
 			SBValue member = var.GetChildAtIndex(ichildren);
             if (member.IsValid())
-            	resetChangedList (member);
+            	changes += countChangedList (member);
         }
 //	}
+	return changes;
 }
 
 #define min(a,b) ((a) < (b) ? (a) : (b))
@@ -301,7 +304,6 @@ getPeudoArrayVariable (SBFrame frame, const char *expression, SBValue &var)
 }
 
 // from lldb-mi
-// TODO: must create var for everything else vars wont get updated on reentry in a function
 SBValue
 getVariable (SBFrame frame, const char *expression)
 {
@@ -312,6 +314,7 @@ getVariable (SBFrame frame, const char *expression)
 	}
 	else if (expression[0] == '$')
 		var = frame.FindRegister(expression);
+#if 1
 	else {
 		const bool bArgs = true;
 		const bool bLocals = true;
@@ -325,7 +328,11 @@ getVariable (SBFrame frame, const char *expression)
 		if (!var.IsValid() || var.GetError().Fail())
 			var = frame.EvaluateExpression (expression);
 	}
-   	resetChangedList (var);
+#else
+	if (!var.IsValid() || var.GetError().Fail())
+		var = frame.EvaluateExpression (expression);
+#endif
+	countChangedList (var);		// to update ValueDidChange
  	logprintf (LOG_INFO, "getVariable: fullname=%s, name=%s, value=%s, changed=%d\n",
 			expression, var.GetName(), var.GetValue(), var.GetValueDidChange());
 //	var.SetPreferDynamicValue(eDynamicDontRunTarget);
@@ -342,8 +349,11 @@ formatVariables (char *varsdesc, int descsize, SBValueList varslist)
 	for (int i=0; i<varslist.GetSize(); i++) {
 		SBValue var = varslist.GetValueAtIndex(i);
 		if (var.IsValid() && var.GetError().Success()) {
+			const char *ss = var.GetSummary();
+			logprintf (LOG_INFO, "formatVariables: summary=%s\n", ss);
 			BasicType basictype = var.GetType().GetBasicType();
 			const char *varvalue = var.GetValue();
+		//	resetChangedList (var);
 			if ((basictype!=eBasicTypeInvalid && varvalue!=NULL) || true) {
 				int varslength = strlen(varsdesc);
 				char vardesc[NAME_MAX*2];

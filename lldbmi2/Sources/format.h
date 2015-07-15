@@ -16,6 +16,7 @@ int     getNumFrames (SBThread thread);
 char *  formatFrame (char *framedesc, int descsize, SBFrame frame, FrameDetails details);
 char *  formatThreadInfo (char *threaddesc, int descsize, SBProcess process, int threadindexid);
 char *  formatChangedList (char *changedesc, int descsize, SBValue var, bool &separatorvisible);
+int     countChangedList (SBValue var);
 SBValue getVariable (SBFrame frame, const char *expression);
 char *  formatVariables (char *varsdesc, int descsize, SBValueList varslist);
 char *  formatValue (char *varsdesc, int descsize, SBValue var);
