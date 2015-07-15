@@ -192,41 +192,45 @@ formatThreadInfo (char *threaddesc, int descsize, SBProcess process, int threadi
 	return threaddesc;
 }
 
-// TODO: references not evaluated correctly in arg list as &separatorvisible
-// TODO: if char pointer, try many children (up to \0 or max 100) to check if changed, or find variable with the save address
 // search changed variables
 char *
 formatChangedList (char *changedesc, int descsize, SBValue var, bool &separatorvisible)
 {
 	SBStream stream;
 	var.GetExpressionPath(stream);
-	const char *varname = stream.GetData();
-	if (varname==NULL)
+	const char *varexpressionpath = stream.GetData();
+	if (varexpressionpath==NULL)
 		return changedesc;
-	logprintf (LOG_INFO, "formatChangedList: varname=%s, pathname=%s, value=%s, summary=%s, changed=%d\n",
-			var.GetName(), varname, var.GetValue(), var.GetSummary(), var.GetValueDidChange());
+	logprintf (LOG_NONE, "formatChangedList: varname=%s, pathname=%s, value=%s, summary=%s, changed=%d\n",
+			var.GetName(), varexpressionpath, var.GetValue(), var.GetSummary(), var.GetValueDidChange());
 	var.GetValue();					// required to get value to activate changes
 	var.GetSummary();				// required to get value to activate changes
+	SBType vartype = var.GetType();
+	int varnumchildren = var.GetNumChildren();
+	if (vartype.IsReferenceType() && varnumchildren==1) {
+		--varnumchildren;				// use children if reference
+		var = var.GetChildAtIndex(0);
+		vartype = var.GetType();
+		varnumchildren = var.GetNumChildren();
+	}
 	if (var.GetValueDidChange()) {
 		const char *separator = separatorvisible? ",":"";
 		const char *varinscope = var.IsInScope()? "true": "false";
 		char vardesc[NAME_MAX];
 		snprintf (changedesc, descsize,
 			"%s{name=\"%s\",value=\"%s\",in_scope=\"%s\",type_changed=\"false\",has_more=\"0\"}",
-			separator, varname, formatValue(vardesc,sizeof(vardesc),var), varinscope);
+			separator, varexpressionpath, formatValue(vardesc,sizeof(vardesc),var), varinscope);
 		separatorvisible = true;
 		return changedesc;
 	}
-	SBType vartype = var.GetType();
 //	if (!vartype.IsPointerType() && !vartype.IsReferenceType()) {
-		const int nchildren = var.GetNumChildren();
-		for (int ichildren = 0; ichildren < nchildren; ++ichildren) {
-			SBValue member = var.GetChildAtIndex(ichildren);
-			if (!member.IsValid())
+		for (int ichild = 0; ichild < varnumchildren; ++ichild) {
+			SBValue child = var.GetChildAtIndex(ichild);
+			if (!child.IsValid())
 				continue;
 				// Handle composite types (i.e. struct or arrays)
 			int changelength = strlen(changedesc);
-			formatChangedList (changedesc+changelength, descsize-changelength, member, separatorvisible);
+			formatChangedList (changedesc+changelength, descsize-changelength, child, separatorvisible);
 		}
 //	}
 	if (strlen(changedesc) >= descsize-1)
@@ -247,11 +251,11 @@ countChangedList (SBValue var)
     // And update its children
 	SBType vartype = var.GetType();
 //	if (!vartype.IsPointerType() && !vartype.IsReferenceType()) {
-		const int nchildren = var.GetNumChildren();
-		for (int ichildren = 0; ichildren < nchildren; ++ichildren) {
-			SBValue member = var.GetChildAtIndex(ichildren);
-            if (member.IsValid())
-            	changes += countChangedList (member);
+		const int varnumchildren = var.GetNumChildren();
+		for (int ichild = 0; ichild < varnumchildren; ++ichild) {
+			SBValue child = var.GetChildAtIndex(ichild);
+            if (child.IsValid())
+            	changes += countChangedList (child);
         }
 //	}
 	return changes;
@@ -297,7 +301,7 @@ getPeudoArrayVariable (SBFrame frame, const char *expression, SBValue &var)
 	snprintf (newexpression, sizeof(newexpression), "(%s[%s])&%s[%s]",	// (char(*)[100])&c[0]
 			newvartype, varlength, varname, varoffset);
 	var = getVariable (frame, newexpression);
- 	logprintf (LOG_INFO, "getPeudoArrayVariable: expression %s -> %s\n", expression, newexpression);
+	logprintf (LOG_NONE, "getPeudoArrayVariable: expression %s -> %s\n", expression, newexpression);
 	if (!var.IsValid() || var.GetError().Fail())
 		return false;
 	return true;
@@ -333,9 +337,8 @@ getVariable (SBFrame frame, const char *expression)
 		var = frame.EvaluateExpression (expression);
 #endif
 	countChangedList (var);		// to update ValueDidChange
- 	logprintf (LOG_INFO, "getVariable: fullname=%s, name=%s, value=%s, changed=%d\n",
+	logprintf (LOG_NONE, "getVariable: fullname=%s, name=%s, value=%s, changed=%d\n",
 			expression, var.GetName(), var.GetValue(), var.GetValueDidChange());
-//	var.SetPreferDynamicValue(eDynamicDontRunTarget);
 	return var;
 }
 
@@ -350,7 +353,7 @@ formatVariables (char *varsdesc, int descsize, SBValueList varslist)
 		SBValue var = varslist.GetValueAtIndex(i);
 		if (var.IsValid() && var.GetError().Success()) {
 			const char *ss = var.GetSummary();
-			logprintf (LOG_INFO, "formatVariables: summary=%s\n", ss);
+			logprintf (LOG_NONE, "formatVariables: summary=%s\n", ss);
 			BasicType basictype = var.GetType().GetBasicType();
 			const char *varvalue = var.GetValue();
 		//	resetChangedList (var);
@@ -374,10 +377,19 @@ formatVariables (char *varsdesc, int descsize, SBValueList varslist)
 char *
 formatValue (char *vardesc, int descsize, SBValue var)
 {
+	SBType vartype = var.GetType();
+	int varnumchildren = var.GetNumChildren();
+	if (vartype.IsReferenceType() && varnumchildren==1) {
+		--varnumchildren;				// use children if reference
+		var = var.GetChildAtIndex(0);
+		vartype = var.GetType();
+		varnumchildren = var.GetNumChildren();
+	}
 	const char *varname = var.GetName();
 	const char *varsummary = var.GetSummary();
 	const char *varvalue = var.GetValue();
-	BasicType basictype = var.GetType().GetBasicType();
+	BasicType basictype = vartype.GetBasicType();
+
 	logprintf (LOG_NONE, "formatValue: varname=%s, varsummary=%s, varvalue=%s, vartype=%s\n",
 			varname, varsummary, varvalue, getNameForBasicType(basictype));
 

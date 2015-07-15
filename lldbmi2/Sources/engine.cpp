@@ -72,6 +72,7 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 
 	if (nextarg==0) {
 	}
+	// MISCELLANOUS COMMANDS
 	else if (strcmp (cc.argv[0],"-gdb-exit")==0) {
 		terminateProcess (pstate, AND_EXIT);
 	}
@@ -144,174 +145,6 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 		// source .gdbinit
 		cdtprintf ("%d^done\n(gdb)\n", cc.sequence);
 	}
-	else if (strcmp(cc.argv[0],"-file-exec-and-symbols")==0) {
-		// file-exec-and-symbols --thread-group i1 /Users/didier/Projets/LLDB/hello/Debug/hello
-		strlcpy (programpath, cc.argv[nextarg], sizeof(programpath));
-		target = pstate->debugger.CreateTargetWithFileAndArch (programpath, "x86_64");
-		if (!target.IsValid())
-			cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
-		else
-			cdtprintf ("%d^done\n(gdb)\n", cc.sequence);
-	}
-	else if (strcmp(cc.argv[0],"-interpreter-exec")==0) {
-		//18-interpreter-exec --thread-group i1 console "show endian"
-		//   ~"The target endianness is set automatically (currently little endian)\n"
-		//18-interpreter-exec --thread-group i1 console "p/x (char)-1"
-		//   ~"$1 = 0xff\n"
-		//30-interpreter-exec --thread-group i1 console kill
-		//   =thread-exited,id="1",group-id="i1"
-		//   =thread-group-exited,id="i1"
-		//   30^done
-		//   (gdb)
-		if (strcmp(cc.argv[nextarg],"console") == 0) {
-			if (++nextarg>=cc.argc)
-				cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
-			else if (strcmp(cc.argv[nextarg],"show endian") == 0) {
-				cdtprintf (
-						 "%s\n"
-						 "%d^done\n"
-						 "(gdb)\n",
-						 "~\"The target endianness is set automatically (currently little endian)\\n\"",
-						 cc.sequence);
-			}
-			else if (strcmp(cc.argv[nextarg],"p/x (char)-1") == 0) {
-				cdtprintf (
-						 "%s\n"
-						 "%d^done\n"
-						 "(gdb)\n",
-						 "~\"$1 = 0xff\\n\"",
-						 cc.sequence);
-			}
-			else if (strcmp(cc.argv[nextarg],"kill") == 0) {
-				if (process.IsValid()) {
-					logprintf (LOG_INFO, "console kill: send SIGINT\n");
-					if (process.IsValid()) {
-						int state = process.GetState ();
-						if (state == eStateStopped) {			// if process is stopped. restart it before kill
-							SBThread thread = process.GetSelectedThread();
-							cdtprintf ("%d^running\n", cc.sequence);
-							cdtprintf ("*running,thread-id=\"%d\"\n(gdb)\n", thread.GetIndexID());
-							process.Continue();
-							pstate->isrunning = true;
-						}
-					}
-					pstate->process.Signal(SIGINT);
-					cdtprintf (	"%d^done\n(gdb)\n",	cc.sequence);
-				}
-				else
-					cdtprintf ("%d^error,msg=\"%s\"\n(gdb)\n", cc.sequence, "The program is not being run.");
-			}
-			else
-				cdtprintf ("%d^error,msg=\"%s\"\n(gdb)\n", cc.sequence, "Command unimplemented.");
-		}
-	}
-	else if (strcmp(cc.argv[0],"-break-insert")==0) {
-		// break-insert --thread-group i1 -f /Users/didier/Projets/LLDB/hello/Sources/hello.c:17
-		// break-insert --thread-group i1 -t -f main
-		int isoneshot=0;
-		char path[LINE_MAX];
-		for (; nextarg<cc.argc; nextarg++) {
-			if (strcmp(cc.argv[nextarg],"-t")==0)
-				isoneshot = 1;
-			else if (strcmp(cc.argv[nextarg],"-f")==0)
-				strlcpy (path, cc.argv[++nextarg], sizeof(path));
-			else
-				strlcpy (path, cc.argv[nextarg], sizeof(path));
-		}
-		char *pline;
-		SBBreakpoint breakpoint;
-		if ((pline=strchr(path,':')) != NULL) {
-			*pline++ = '\0';
-			int iline=0;
-			sscanf (pline, "%d", &iline);
-			breakpoint = target.BreakpointCreateByLocation (path, iline);
-		}
-		else		// function
-			breakpoint = target.BreakpointCreateByName (path, target.GetExecutable().GetFilename());
-		if (breakpoint.IsValid()) {
-			if (isoneshot)
-				breakpoint.SetOneShot(true);
-			char breakpointdesc[LINE_MAX];
-			cdtprintf ("%d^done,bkpt=%s\n(gdb)\n", cc.sequence,
-					formatBreakpoint (breakpointdesc, sizeof(breakpointdesc), breakpoint, pstate));
-		}
-		else
-			cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
-	}
-	else if (strcmp(cc.argv[0],"-break-delete")==0) {
-		// 11-break-delete 1
-		// 11^done
-		int bpid=0;
-		sscanf (cc.argv[nextarg], "%d", &bpid);
-		target.BreakpointDelete(bpid);
-		cdtprintf ("%d^done\n(gdb)\n", cc.sequence);
-	}
-	else if (strcmp(cc.argv[0],"-break-enable")==0) {
-		// 11-break-enable 1
-		// 11^done
-		int bpid=0;
-		sscanf (cc.argv[nextarg], "%d", &bpid);
-		SBBreakpoint breakpoint = target.FindBreakpointByID (bpid);
-		breakpoint.SetEnabled(1);
-		cdtprintf ("%d^done\n(gdb)\n", cc.sequence);
-	}
-	else if (strcmp(cc.argv[0],"-break-disable")==0) {
-		// 11-break-disable 1
-		// 11^done
-		int bpid=0;
-		sscanf (cc.argv[nextarg], "%d", &bpid);
-		SBBreakpoint breakpoint = target.FindBreakpointByID (bpid);
-		breakpoint.SetEnabled(0);
-		cdtprintf ("%d^done\n(gdb)\n", cc.sequence);
-	}
-	else if (strcmp(cc.argv[0],"-list-thread-groups")==0) {
-		// list-thread-groups --available
-		//    ^error,msg="Can not fetch data now."
-		// list-thread-groups
-		//    ^done,groups=[{id="i1",type="process",pid="1186",executable="/Users/didier/Projets/LLDB/hello/Debug/hello"}]
-		// list-thread-groups i1
-		//    ^done,threads=[{id="1",target-id="Thread 0x1503 of process 1186",frame={level="0",addr="0x0000000100000f46",
-		//    func="main",args=[],file="../Sources/hello.c",fullname="/Users/didier/Projets/LLDB/hello/Sources/hello.c",
-		//    line="15"},state="stopped"}]
-		//		233857.215 <<=  |65^done,threads=[{id="1",target-id="Thread 0x89b52 of process 94273",frame={level="0",addr="0x0000000000000ebf",func="main",args=[{name="argc",value="3"},{name="argv",value="0x00007fff5fbffeb0"},{name="envp",value="0x00007fff5fbffed0"}],file="hello.c",fullname="/Users/didier/Projets/LLDB/hello/Debug/../Sources/hello.c",line="69"},state="stopped"},{id="2",target-id="Thread 0x89b61 of process 94273",frame={level="0",addr="0x000000000001648a",func="__semwait_signal"},state="stopped"}]\n(gdb)\n|
-		//		         491,415 47^done,threads=[{id="2",target-id="Thread 0x110f of process 96806",frame={level="0",addr="0x00007fff88a3848a",func="??",args=[]},state="stopped"},{id="1",target-id="Thread 0x1003 of process 96806",frame={level="0",addr="0x0000000100000ebf",func="main",args=[{name="argc",value="1"},{name="argv",value="0x7fff5fbff5c0"},{name="envp",value="0x7fff5fbff5d0"}],file="../Sources/hello.c",fullname="/Users/didier/Projets/LLDB/hello/Sources/hello.c",line="69"},state="stopped"}]
-
-		if (cc.available > 0) {
-			cdtprintf ("%d^error,msg=\"%s\"\n(gdb)\n", cc.sequence, "Can not fetch data now.");
-		}
-		else if (cc.argv[nextarg] == NULL) {
-			char groupsdesc[LINE_MAX];
-			int pid=0;
-			int groupdesclength = 0;
-			SBFileSpec execspec;
-			const char *filename=NULL, *filedir=NULL;
-			snprintf (groupsdesc, sizeof(groupsdesc), "id=\"%s\",type=\"process\"", pstate->threadgroup);
-			groupdesclength = strlen(groupsdesc);
-			if (process.IsValid()) {
-				pid=process.GetProcessID();
-				snprintf (groupsdesc+groupdesclength, sizeof(groupsdesc)-groupdesclength,
-						",pid=\"%d\"", pid);
-				groupdesclength = strlen(groupsdesc);
-			}
-			if (target.IsValid()) {
-				execspec = target.GetExecutable();
-				filename = execspec.GetFilename();
-				filedir = execspec.GetDirectory();
-			}
-			if (filename!=NULL && filedir!=NULL)
-				snprintf (groupsdesc+groupdesclength, sizeof(groupsdesc)-groupdesclength,
-						",executable=\"%s/%s\"", filedir, filename);
-			cdtprintf ("%d^done,groups=[{%s}]\n(gdb)\n", cc.sequence, groupsdesc);
-		}
-		else if (strcmp(cc.argv[nextarg],pstate->threadgroup) == 0) {
-			char threaddesc[BIG_LINE_MAX];
-			formatThreadInfo (threaddesc, sizeof(threaddesc), process, -1);
-			if (threaddesc[0] != '\0')
-				cdtprintf ("%d^done,threads=[%s]\n(gdb)\n", cc.sequence, threaddesc);
-			else
-				cdtprintf ("%d^error,msg=\"%s\"\n(gdb)\n", cc.sequence, "Can not fetch data now.");
-		}
-	}
 	else if (strcmp(cc.argv[0],"-inferior-tty-set")==0) {
 		// inferior-tty-set --thread-group i1 /dev/ttyp0
 		strlcpy (pstate->cdtptyname, cc.argv[nextarg], sizeof(pstate->cdtptyname));
@@ -322,26 +155,15 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 		logprintf (LOG_NONE, "pty = %d\n", pstate->ptyfd);
 		cdtprintf ("%d^done\n(gdb)\n", cc.sequence);
 	}
-	else if (strcmp(cc.argv[0],"-exec-run")==0) {
-		// exec-run --thread-group i1
-		logprintf (LOG_NONE, "launchInfo: args=%d env=%d, pwd=%s\n", launchInfo.GetNumArguments(), launchInfo.GetNumEnvironmentEntries(), launchInfo.GetWorkingDirectory());
-		SBError error;
-		process = target.Launch (launchInfo, error);
-		if (!process.IsValid()) {
-			cdtprintf ("%d^error,msg=\"%s\"\n(gdb)\n", cc.sequence, "Can not start process.");
-			logprintf (LOG_NONE, "process_error=%s\n", error.GetCString());
-		}
-		else {
-			pstate->isrunning = true;
-			pstate->process = process;
-			startProcessListener(pstate);
-			setSignals (pstate);
-			SBThread thread = process.GetSelectedThread();
-			cdtprintf ("=thread-group-started,id=\"%s\",pid=\"%lld\"\n", pstate->threadgroup, process.GetProcessID());
-			checkThreadsLife (pstate, process);
-			cdtprintf ("%d^running\n", cc.sequence);
-			cdtprintf ("*running,thread-id=\"all\"\n(gdb)\n");
-		}
+	// TARGET AND RUN COMMANDS
+	else if (strcmp(cc.argv[0],"-file-exec-and-symbols")==0) {
+		// file-exec-and-symbols --thread-group i1 /Users/didier/Projets/LLDB/hello/Debug/hello
+		strlcpy (programpath, cc.argv[nextarg], sizeof(programpath));
+		target = pstate->debugger.CreateTargetWithFileAndArch (programpath, "x86_64");
+		if (!target.IsValid())
+			cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
+		else
+			cdtprintf ("%d^done\n(gdb)\n", cc.sequence);
 	}
 	else if (strcmp(cc.argv[0],"-target-attach")==0) {
 		// target-attach --thread-group i1 40088
@@ -366,7 +188,7 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 	//	pstate->debugger.SetAsync (true);
 		if (!process.IsValid()) {
 			cdtprintf ("%d^error,msg=\"%s\"\n(gdb)\n", cc.sequence, "Can not start process.");
-			logprintf (LOG_NONE, "process_error=%s\n", error.GetCString());
+			logprintf (LOG_INFO, "process_error=%s\n", error.GetCString());
 		}
 		else {
 			pstate->isrunning = true;
@@ -388,6 +210,27 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 		else
 			cdtprintf ("%d^error,msg=\"%s\"\n(gdb)\n", cc.sequence, "The program is not being run.");
 
+	}
+	else if (strcmp(cc.argv[0],"-exec-run")==0) {
+		// exec-run --thread-group i1
+		logprintf (LOG_NONE, "launchInfo: args=%d env=%d, pwd=%s\n", launchInfo.GetNumArguments(), launchInfo.GetNumEnvironmentEntries(), launchInfo.GetWorkingDirectory());
+		SBError error;
+		process = target.Launch (launchInfo, error);
+		if (!process.IsValid()) {
+			cdtprintf ("%d^error,msg=\"%s\"\n(gdb)\n", cc.sequence, "Can not start process.");
+			logprintf (LOG_INFO, "process_error=%s\n", error.GetCString());
+		}
+		else {
+			pstate->isrunning = true;
+			pstate->process = process;
+			startProcessListener(pstate);
+			setSignals (pstate);
+			SBThread thread = process.GetSelectedThread();
+			cdtprintf ("=thread-group-started,id=\"%s\",pid=\"%lld\"\n", pstate->threadgroup, process.GetProcessID());
+			checkThreadsLife (pstate, process);
+			cdtprintf ("%d^running\n", cc.sequence);
+			cdtprintf ("*running,thread-id=\"all\"\n(gdb)\n");
+		}
 	}
 	else if (strcmp(cc.argv[0],"-exec-continue")==0) {
 		// 37-exec-continue --thread 1
@@ -454,6 +297,167 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 		}
 		else
 			cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
+	}
+	else if (strcmp(cc.argv[0],"-interpreter-exec")==0) {
+		//18-interpreter-exec --thread-group i1 console "show endian"
+		//   ~"The target endianness is set automatically (currently little endian)\n"
+		//18-interpreter-exec --thread-group i1 console "p/x (char)-1"
+		//   ~"$1 = 0xff\n"
+		//30-interpreter-exec --thread-group i1 console kill
+		//   =thread-exited,id="1",group-id="i1"
+		//   =thread-group-exited,id="i1"
+		//   30^done
+		//   (gdb)
+		if (strcmp(cc.argv[nextarg],"console") == 0) {
+			if (++nextarg>=cc.argc)
+				cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
+			else if (strcmp(cc.argv[nextarg],"show endian") == 0) {
+				cdtprintf (
+						 "%s\n"
+						 "%d^done\n"
+						 "(gdb)\n",
+						 "~\"The target endianness is set automatically (currently little endian)\\n\"",
+						 cc.sequence);
+			}
+			else if (strcmp(cc.argv[nextarg],"p/x (char)-1") == 0) {
+				cdtprintf (
+						 "%s\n"
+						 "%d^done\n"
+						 "(gdb)\n",
+						 "~\"$1 = 0xff\\n\"",
+						 cc.sequence);
+			}
+			else if (strcmp(cc.argv[nextarg],"kill") == 0) {
+				if (process.IsValid()) {
+					logprintf (LOG_INFO, "console kill: send SIGINT\n");
+					if (process.IsValid()) {
+						int state = process.GetState ();
+						if (state == eStateStopped) {			// if process is stopped. restart it before kill
+							SBThread thread = process.GetSelectedThread();
+							cdtprintf ("%d^running\n", cc.sequence);
+							cdtprintf ("*running,thread-id=\"%d\"\n(gdb)\n", thread.GetIndexID());
+							process.Continue();
+							pstate->isrunning = true;
+						}
+					}
+					pstate->process.Signal(SIGINT);
+					cdtprintf (	"%d^done\n(gdb)\n",	cc.sequence);
+				}
+				else
+					cdtprintf ("%d^error,msg=\"%s\"\n(gdb)\n", cc.sequence, "The program is not being run.");
+			}
+			else
+				cdtprintf ("%d^error,msg=\"%s\"\n(gdb)\n", cc.sequence, "Command unimplemented.");
+		}
+	}
+	// BEAKPOINT COMMANDS
+	else if (strcmp(cc.argv[0],"-break-insert")==0) {
+		// break-insert --thread-group i1 -f /Users/didier/Projets/LLDB/hello/Sources/hello.c:17
+		// break-insert --thread-group i1 -t -f main
+		int isoneshot=0;
+		char path[LINE_MAX];
+		for (; nextarg<cc.argc; nextarg++) {
+			if (strcmp(cc.argv[nextarg],"-t")==0)
+				isoneshot = 1;
+			else if (strcmp(cc.argv[nextarg],"-f")==0)
+				strlcpy (path, cc.argv[++nextarg], sizeof(path));
+			else
+				strlcpy (path, cc.argv[nextarg], sizeof(path));
+		}
+		char *pline;
+		SBBreakpoint breakpoint;
+		if ((pline=strchr(path,':')) != NULL) {
+			*pline++ = '\0';
+			int iline=0;
+			sscanf (pline, "%d", &iline);
+			breakpoint = target.BreakpointCreateByLocation (path, iline);
+		}
+		else		// function
+			breakpoint = target.BreakpointCreateByName (path, target.GetExecutable().GetFilename());
+		if (breakpoint.IsValid()) {
+			if (isoneshot)
+				breakpoint.SetOneShot(true);
+			char breakpointdesc[LINE_MAX];
+			cdtprintf ("%d^done,bkpt=%s\n(gdb)\n", cc.sequence,
+					formatBreakpoint (breakpointdesc, sizeof(breakpointdesc), breakpoint, pstate));
+		}
+		else
+			cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
+	}
+	else if (strcmp(cc.argv[0],"-break-delete")==0) {
+		// 11-break-delete 1
+		// 11^done
+		int bpid=0;
+		sscanf (cc.argv[nextarg], "%d", &bpid);
+		target.BreakpointDelete(bpid);
+		cdtprintf ("%d^done\n(gdb)\n", cc.sequence);
+	}
+	else if (strcmp(cc.argv[0],"-break-enable")==0) {
+		// 11-break-enable 1
+		// 11^done
+		int bpid=0;
+		sscanf (cc.argv[nextarg], "%d", &bpid);
+		SBBreakpoint breakpoint = target.FindBreakpointByID (bpid);
+		breakpoint.SetEnabled(1);
+		cdtprintf ("%d^done\n(gdb)\n", cc.sequence);
+	}
+	else if (strcmp(cc.argv[0],"-break-disable")==0) {
+		// 11-break-disable 1
+		// 11^done
+		int bpid=0;
+		sscanf (cc.argv[nextarg], "%d", &bpid);
+		SBBreakpoint breakpoint = target.FindBreakpointByID (bpid);
+		breakpoint.SetEnabled(0);
+		cdtprintf ("%d^done\n(gdb)\n", cc.sequence);
+	}
+	// STACK COMMANDS
+	else if (strcmp(cc.argv[0],"-list-thread-groups")==0) {
+		// list-thread-groups --available
+		//    ^error,msg="Can not fetch data now."
+		// list-thread-groups
+		//    ^done,groups=[{id="i1",type="process",pid="1186",executable="/Users/didier/Projets/LLDB/hello/Debug/hello"}]
+		// list-thread-groups i1
+		//    ^done,threads=[{id="1",target-id="Thread 0x1503 of process 1186",frame={level="0",addr="0x0000000100000f46",
+		//    func="main",args=[],file="../Sources/hello.c",fullname="/Users/didier/Projets/LLDB/hello/Sources/hello.c",
+		//    line="15"},state="stopped"}]
+		//		233857.215 <<=  |65^done,threads=[{id="1",target-id="Thread 0x89b52 of process 94273",frame={level="0",addr="0x0000000000000ebf",func="main",args=[{name="argc",value="3"},{name="argv",value="0x00007fff5fbffeb0"},{name="envp",value="0x00007fff5fbffed0"}],file="hello.c",fullname="/Users/didier/Projets/LLDB/hello/Debug/../Sources/hello.c",line="69"},state="stopped"},{id="2",target-id="Thread 0x89b61 of process 94273",frame={level="0",addr="0x000000000001648a",func="__semwait_signal"},state="stopped"}]\n(gdb)\n|
+		//		         491,415 47^done,threads=[{id="2",target-id="Thread 0x110f of process 96806",frame={level="0",addr="0x00007fff88a3848a",func="??",args=[]},state="stopped"},{id="1",target-id="Thread 0x1003 of process 96806",frame={level="0",addr="0x0000000100000ebf",func="main",args=[{name="argc",value="1"},{name="argv",value="0x7fff5fbff5c0"},{name="envp",value="0x7fff5fbff5d0"}],file="../Sources/hello.c",fullname="/Users/didier/Projets/LLDB/hello/Sources/hello.c",line="69"},state="stopped"}]
+
+		if (cc.available > 0) {
+			cdtprintf ("%d^error,msg=\"%s\"\n(gdb)\n", cc.sequence, "Can not fetch data now.");
+		}
+		else if (cc.argv[nextarg] == NULL) {
+			char groupsdesc[LINE_MAX];
+			int pid=0;
+			int groupdesclength = 0;
+			SBFileSpec execspec;
+			const char *filename=NULL, *filedir=NULL;
+			snprintf (groupsdesc, sizeof(groupsdesc), "id=\"%s\",type=\"process\"", pstate->threadgroup);
+			groupdesclength = strlen(groupsdesc);
+			if (process.IsValid()) {
+				pid=process.GetProcessID();
+				snprintf (groupsdesc+groupdesclength, sizeof(groupsdesc)-groupdesclength,
+						",pid=\"%d\"", pid);
+				groupdesclength = strlen(groupsdesc);
+			}
+			if (target.IsValid()) {
+				execspec = target.GetExecutable();
+				filename = execspec.GetFilename();
+				filedir = execspec.GetDirectory();
+			}
+			if (filename!=NULL && filedir!=NULL)
+				snprintf (groupsdesc+groupdesclength, sizeof(groupsdesc)-groupdesclength,
+						",executable=\"%s/%s\"", filedir, filename);
+			cdtprintf ("%d^done,groups=[{%s}]\n(gdb)\n", cc.sequence, groupsdesc);
+		}
+		else if (strcmp(cc.argv[nextarg],pstate->threadgroup) == 0) {
+			char threaddesc[BIG_LINE_MAX];
+			formatThreadInfo (threaddesc, sizeof(threaddesc), process, -1);
+			if (threaddesc[0] != '\0')
+				cdtprintf ("%d^done,threads=[%s]\n(gdb)\n", cc.sequence, threaddesc);
+			else
+				cdtprintf ("%d^error,msg=\"%s\"\n(gdb)\n", cc.sequence, "Can not fetch data now.");
+		}
 	}
 	else if (strcmp(cc.argv[0],"-stack-info-depth")==0) {
 		// stack-info-depth --thread 1 11
@@ -562,6 +566,7 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 		if (!isValid)
 			cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
 	}
+	// VARIABLES COMMANDS
 	else if (strcmp(cc.argv[0],"-var-create")==0) {
 		// var-create --thread 1 --frame 0 - * a
 		//     name="var1",numchild="0",value="1",type="int",thread-id="1",has_more="0"
@@ -581,15 +586,18 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 			// Find then Evaluate to avoid recreate variable
 			SBValue var = getVariable (frame, expression);
 			if (var.IsValid() && var.GetError().Success()) {
-				int varchildren = var.GetNumChildren();
+				int varnumchildren = var.GetNumChildren();
 				SBType vartype = var.GetType();
 				SBStream stream;
 				var.GetExpressionPath(stream);
-				const char *varname = stream.GetData();
+				const char *varexpressionpath = stream.GetData();
 				char vardesc[NAME_MAX];
+				formatValue(vardesc,sizeof(vardesc),var);
+				if (vartype.IsReferenceType() && varnumchildren==1)	// correct numchildren and value if reference
+					--varnumchildren;
 				cdtprintf ("%d^done,name=\"%s\",numchild=\"%d\",value=\"%s\","
 							"type=\"%s\",thread-id=\"%d\",has_more=\"0\"\n(gdb)\n",
-							cc.sequence, varname, varchildren, formatValue(vardesc,sizeof(vardesc),var),
+							cc.sequence, varexpressionpath, varnumchildren, vardesc,
 							vartype.GetDisplayTypeName(), thread.GetIndexID());
 			}
 			else
@@ -637,18 +645,18 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 		SBFrame frame = thread.GetSelectedFrame();
 		SBValue var = getVariable (frame, expression);
 		if (var.IsValid() && var.GetError().Success()) {
-			int varchildren = var.GetNumChildren();
+			int varnumchildren = var.GetNumChildren();
 			char childlist[LINE_MAX];
 			*childlist = '\0';
 			const char *sep="";
 			int ichild;
-			for (ichild=0; ichild<varchildren; ichild++) {
+			for (ichild=0; ichild<varnumchildren; ichild++) {
 				SBValue child = var.GetChildAtIndex(ichild);
-				const char *childname = child.GetName();
+				const char *childname = child.GetName();			// displayed name
 				SBStream stream;
-				child.GetExpressionPath(stream);
-				const char *childexppath = stream.GetData();
-				int childchildren = child.GetNumChildren();
+				child.GetExpressionPath(stream);					// real path
+				const char *childexpressionpath = stream.GetData();
+				int childnumchildren = child.GetNumChildren();
 				SBType childtype = child.GetType();
 				int threadindexid=1;
 				if (thread.IsValid())
@@ -658,12 +666,12 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 				snprintf (childlist+childlistlength, sizeof(childlist)-childlistlength,
 						"%schild={name=\"%s\",exp=\"%s\",numchild=\"%d\","
 						"type=\"%s\",thread-id=\"%d\"}",
-						sep,childexppath,childname,childchildren,childtype.GetDisplayTypeName(),threadindexid);
+						sep,childexpressionpath,childname,childnumchildren,childtype.GetDisplayTypeName(),threadindexid);
 				sep = ",";
 			}
 			// 34^done,numchild="1",children=[child={name="var2.*b",exp="*b",numchild="0",type="char",thread-id="1"}],has_more="0"
 			cdtprintf ("%d^done,numchild=\"%d\",children=[%s]\",has_more=\"0\"\n(gdb)\n",
-					cc.sequence, varchildren, childlist);
+					cc.sequence, varnumchildren, childlist);
 		}
 		else
 			cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
@@ -688,8 +696,8 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 			if (var.IsValid() && var.GetError().Success()) {
 				SBStream stream;
 				var.GetExpressionPath(stream,true);
-				const char *varexppath = stream.GetData();
-				cdtprintf ("%d^done,path_expr=\"%s\"\n(gdb)\n", cc.sequence, varexppath);
+				const char *varexpressionpath = stream.GetData();
+				cdtprintf ("%d^done,path_expr=\"%s\"\n(gdb)\n", cc.sequence, varexpressionpath);
 			}
 			else
 				cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
@@ -758,6 +766,7 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 		else
 			cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
 	}
+	// OTHER COMMANDS
 	else if (strcmp(cc.argv[0],"info")==0) {
 		// 96info sharedlibrary
 		if (nextarg>=cc.argc)

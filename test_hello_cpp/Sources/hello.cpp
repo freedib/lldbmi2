@@ -69,17 +69,19 @@ int main()
 #endif
 
 #ifdef TEST_ARGS
-void testfunction (char *s, const char*v)
+void testfunction (char *s, const char*v, bool &b)
 {
 	return;
 }
 int main()
 {
 	char s[10];
+	bool b=true;
 	strcpy (s, "A");
-	testfunction (s, "a");
+	testfunction (s, "a", b);
 	strcpy (s, "B");
-	testfunction (s, "b");
+	b=false;
+	testfunction (s, "b", b);
 }
 #endif
 

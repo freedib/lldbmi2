@@ -130,9 +130,9 @@ main (int argc, char **argv, char **envp)
 		FD_SET (STDIN_FILENO, &set);
 		select(STDIN_FILENO+1, &set, NULL, NULL, &timeout);
 		if (FD_ISSET(STDIN_FILENO, &set) && !state.eof && !state.istest) {
-			logprintf (LOG_INFO, "read in\n");
+			logprintf (LOG_NONE, "read in\n");
 			chars = read (STDIN_FILENO, line, sizeof(line)-1);
-			logprintf (LOG_INFO, "read out %d\n", chars);
+			logprintf (LOG_NONE, "read out %d\n", chars);
 			if (chars>0) {
 				line[chars] = '\0';
 				while (fromCDT (&state,line,sizeof(line)) == MORE_DATA)
@@ -156,7 +156,6 @@ main (int argc, char **argv, char **envp)
 		}
 	}
 
-	logprintf (LOG_INFO, "main loop exited\n");
 	if (state.ptyfd != EOF)
 		close (state.ptyfd);
 	terminateSB ();
