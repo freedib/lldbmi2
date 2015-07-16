@@ -9,13 +9,13 @@
 
 // remove comment above wanted commands set
 //#define TEST_C
+//#define TEST_C_ATTACH
 //#define TEST_C_VARS
 //#define TEST_C_SIMPLE
 //#define TEST_C_POINTERS
-//#define TEST_C_LARGE_ARRAY
+#define TEST_C_LARGE_ARRAY
 //#define TEST_CPP_MEMBERS
-#define TEST_CPP_ARGS
-//#define TEST_ATTACH
+//#define TEST_CPP_ARGS
 //#define TEST_OTHER
 
 
@@ -98,7 +98,7 @@ const char *testcommands[] = {
 const char *testcommands[] = {
 	"51-environment-cd /Users/didier/Projets/git-lldbmi2/test_hello_c/Debug",
 	"52-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_c/Debug/test_hello_c",
-	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_c/Sources/hello.c:117",
+	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_c/Sources/hello.c:118",
 	"62-exec-run --thread-group i1",
 	"64-list-thread-groups",
 	"65-list-thread-groups i1",
@@ -135,6 +135,23 @@ const char *testcommands[] = {
 	NULL
 };
 #endif	// TEST_C_POINTERS
+
+#ifdef TEST_C_ATTACH
+const char *testcommands[] = {
+	"51-environment-cd /Users/didier/Projets/git-lldbmi2/test_hello_c/Debug",
+	"62-target-attach --thread-group i1 test_hello_c",
+	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_c/Sources/hello.c:34",
+	"61-inferior-tty-set --thread-group i1 %1",	// stdout instead of /dev/ptyxx
+	"65-list-thread-groups i1",
+	"69-thread-info 1",
+	"79-thread-info 2",
+	"22-gdb-show --thread-group i1 language",
+	"67-stack-list-locals --thread 2 --frame 0 1",
+	"68-stack-list-arguments --thread 2 --frame 0 1",
+	"80-gdb-exit",
+	NULL
+};
+#endif	// TEST_C_ATTACH
 
 #ifdef TEST_CPP_MEMBERS
 const char *testcommands[] = {
@@ -187,23 +204,6 @@ const char *testcommands[] = {
 	NULL
 };
 #endif	// TEST_CPP_ARGS
-
-#ifdef TEST_ATTACH
-const char *testcommands[] = {
-	"51-environment-cd /Users/didier/Projets/git-lldbmi2/test_hello_c/Debug",
-	"62-target-attach --thread-group i1 test_hello_c",
-	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_c/Sources/hello.c:34",
-	"61-inferior-tty-set --thread-group i1 %1",	// stdout instead of /dev/ptyxx
-	"65-list-thread-groups i1",
-	"69-thread-info 1",
-	"79-thread-info 2",
-	"22-gdb-show --thread-group i1 language",
-	"67-stack-list-locals --thread 2 --frame 0 1",
-	"68-stack-list-arguments --thread 2 --frame 0 1",
-	"80-gdb-exit",
-	NULL
-};
-#endif	// TEST_ATTACH
 
 #ifdef TEST_OTHER
 const char *testcommands[] = {

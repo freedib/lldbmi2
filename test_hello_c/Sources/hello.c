@@ -86,15 +86,15 @@ int main (int argc, char **argv, char **envp)
 #ifdef TEST_ARRAYS
 
 #include <stdio.h>
-typedef struct {
+struct S {
 	double d;
 	const char *c;
-} S;
+};
 int main ()
 {
 	char c[101];
 	int i[200];
-	S s[200];
+	struct S s[200];
 	c[0] = 'H';
 	i[100] = 1001;
 	s[0].c = "hello";

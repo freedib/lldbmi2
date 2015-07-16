@@ -264,17 +264,22 @@ countChangedList (SBValue var)
 #define min(a,b) ((a) < (b) ? (a) : (b))
 
 // TODO: Adjust var summary && expression not updated test sequence
-// TODO: support types like struct S
+// TODO: support types like struct S. seems to be a bug in lldb
 bool
 getPeudoArrayVariable (SBFrame frame, const char *expression, SBValue &var)
 {
-// just support *((var)+0)@100 form
+// just support *((var)+0)@100 and &(*((var)+0)@100) forms
 // char c[101];
 // -var-create * *((c)+0)@100
 // -var-create * *((c)+100)@1
 	char *pe, e[NAME_MAX], *varname, *varoffset, *varlength, varpointername[NAME_MAX], vartype[NAME_MAX];
 	strlcpy (e, expression, sizeof(e));
 	pe = e;
+	bool ampersand = false;
+	if (*pe=='&' && *(pe+1)=='(') {				// check if ampersand
+		ampersand = true;
+		pe += 2;
+	}
 	if (*pe!='*' || *(pe+1)!='(' || *(pe+2)!='(')
 		return false;
 	varname = pe+3;								// get name
@@ -290,6 +295,11 @@ getPeudoArrayVariable (SBFrame frame, const char *expression, SBValue &var)
 	if (*(pe+1) != '@' && !isdigit(*(pe+2)))
 		return false;
 	varlength = pe+2;							// get length
+	if (ampersand) {
+		if ((pe = strchr (varlength,')')) == NULL)
+			return false;
+		*pe = '\0';
+	}
 	snprintf (varpointername, sizeof(varpointername), "&%s", varname);	// get var type
 	SBValue basevar = getVariable (frame, varpointername);				// vaname ¬ &var
 	char newvartype[NAME_MAX];
@@ -298,8 +308,8 @@ getPeudoArrayVariable (SBFrame frame, const char *expression, SBValue &var)
 		return false;
 	*pe = '\0';
 	char newexpression[NAME_MAX];				// create expression
-	snprintf (newexpression, sizeof(newexpression), "(%s[%s])&%s[%s]",	// (char(*)[100])&c[0]
-			newvartype, varlength, varname, varoffset);
+	snprintf (newexpression, sizeof(newexpression), "%s*(%s[%s])&%s[%s]%s",	// (char(*)[100])&c[0] or &((char(*)[100])&c[0])
+			ampersand?"&(":"", newvartype, varlength, varname, varoffset, ampersand?")":"");
 	var = getVariable (frame, newexpression);
 	logprintf (LOG_NONE, "getPeudoArrayVariable: expression %s -> %s\n", expression, newexpression);
 	if (!var.IsValid() || var.GetError().Fail())
@@ -377,6 +387,11 @@ formatVariables (char *varsdesc, int descsize, SBValueList varslist)
 char *
 formatValue (char *vardesc, int descsize, SBValue var)
 {
+	// TODO: implement @ formats
+	//	value = "HFG\123klj\b"
+	//	value={2,5,7,0 <repeat 5 times>, 7}
+	//	value = {{a=1,b=0x33},...{a=1,b=2}}
+
 	SBType vartype = var.GetType();
 	int varnumchildren = var.GetNumChildren();
 	if (vartype.IsReferenceType() && varnumchildren==1) {
@@ -394,6 +409,7 @@ formatValue (char *vardesc, int descsize, SBValue var)
 			varname, varsummary, varvalue, getNameForBasicType(basictype));
 
 	*vardesc = '\0';
+
 	if (varsummary != NULL) {		// string
 		char summary[NAME_MAX];
 		char *psummary = summary;

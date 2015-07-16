@@ -1,13 +1,8 @@
-//============================================================================
-// Name        : hellocpp.cpp
-// Author      : 
-// Version     :
-// Copyright   : Your copyright notice
-// Description : Hello World in C++, Ansi-style
-//============================================================================
 
 #include <iostream>
 using namespace std;
+
+#include <string.h>
 
 class AB {
 public:
@@ -19,19 +14,24 @@ public:
 	void setb  (int v);
 	int  sumab ();
 };
+
 AB::AB () {
 	a = 0;
 	b = 0;
 }
+
 void AB::seta (int v) {
 	a = v;
 }
+
 void AB::setb (int v) {
 	b = v;
 }
+
 int AB::sumab () {
 	return a+b;
 }
+
 
 struct CD {
 	int c;
