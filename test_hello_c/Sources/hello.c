@@ -4,8 +4,8 @@
 #include <unistd.h>
 #include <string.h>
 
-//#define TEST_ALL
-#define TEST_ARRAYS
+#define TEST_ALL
+//#define TEST_ARRAYS
 //#define TEST_POINTERS
 
 #ifdef TEST_ALL

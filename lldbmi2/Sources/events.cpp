@@ -4,10 +4,9 @@
 #include "lldb/API/SBUnixSignals.h"
 
 #include "lldbmi2.h"
-#include "format.h"
 #include "log.h"
 #include "events.h"
-#include "engine.h"
+#include "frames.h"
 
 
 static pthread_t sbTID;
@@ -99,7 +98,7 @@ processListener (void *arg)
 					logprintf (LOG_EVENTS, "eStateExited\n");
 					checkThreadsLife (pstate, process);		// not useful. threads are not stopped before exit
 					terminateProcess (pstate, PRINT_GROUP|AND_EXIT);
-					cdtprintf ("*stopped,reason=\"exited-normally\"\n\(gdb)\n");
+					cdtprintf ("*stopped,reason=\"exited-normally\"\n(gdb)\n");
 					logprintf (LOG_INFO, "processlistener. eof=%d\n", pstate->eof);
 					break;
 				case eStateStopped:
@@ -161,7 +160,6 @@ onStopped (STATE *pstate, SBProcess process)
 //	-3-38-5.140 <<=  |*stopped,reason="breakpoint-hit",disp="keep",bkptno="breakpoint 1",frame={addr="0x0000000100000f06",func="main",args=[],file="hello.c",fullname="hello.c",line="33"},thread-id="1",stopped-threads="all"\n|
 //	-3-40-7.049 <<=  |*stopped,reason="breakpoint-hit",disp="keep",bkptno="1",frame={addr="0000000000000f06",func="main",args=[],file="hello.c",fullname="/Users/didier/Projets/LLDB/hello/Debug/../Sources/hello.c",line="33"},thread-id="1",stopped-threads="all"(gdb)\n|
 //                    *stopped,reason="signal-received",signal-name="SIGSEGV",signal-meaning="Segmentation fault",frame={addr="0x0000000100000f7b",func="main",args=[],file="../Sources/hello.cpp",fullname="/Users/didier/Projets/git-lldbmi2/test_hello_cpp/Sources/hello.cpp",line="44"},thread-id="1",stopped-threads="all"
-	pstate->isrunning = false;
 	checkThreadsLife (pstate, process);
 	updateSelectedThread (process);				// search which thread is stopped
 	SBTarget target = process.GetTarget();
@@ -237,6 +235,7 @@ onStopped (STATE *pstate, SBProcess process)
 	}
 	else
 		logprintf (LOG_WARN, "unexpected stop reason %d\n", stopreason);
+	pstate->isrunning = false;
 }
 
 
@@ -251,7 +250,7 @@ checkThreadsLife (STATE *pstate, SBProcess process)
 	bool stillalive[MAX_THREADS];
 	for (indexlist=0; indexlist<MAX_THREADS; indexlist++)			// init live list
 		stillalive[indexlist] = false;
-	for (int indexthread=0; indexthread<nthreads; indexthread++) {
+	for (size_t indexthread=0; indexthread<nthreads; indexthread++) {
 		SBThread thread = process.GetThreadAtIndex(indexthread);
 		if (thread.IsValid()) {
 			int stopreason = thread.GetStopReason();
@@ -301,7 +300,7 @@ updateSelectedThread (SBProcess process)
         SBThread planThread;
         SBThread otherThread;
         const size_t nthreads = process.GetNumThreads();
-        for (int indexthread=0; indexthread<nthreads; indexthread++) {
+        for (size_t indexthread=0; indexthread<nthreads; indexthread++) {
             //  GetThreadAtIndex() uses a base 0 index
             //  GetThreadByIndexID() uses a base 1 index
             thread = process.GetThreadAtIndex(indexthread);

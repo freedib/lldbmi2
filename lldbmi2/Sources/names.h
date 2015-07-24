@@ -6,6 +6,7 @@
 using namespace lldb;
 
 const char *getNameForLanguageType (LanguageType language);
+const char *getNameForTypeClass (TypeClass typeclass);
 const char *getNameForBasicType (BasicType basictype);
 
-#endif
+#endif // LANGUAGERUNTIME_H

@@ -35,6 +35,6 @@ char *gettimestamp    ();
 const char *getheader (unsigned scope);
 void  logprintf       (unsigned scope, const char *format, ...);
 void  logdata         (unsigned scope, const char *data, int datasize);
-
+void  lognumbers      (unsigned scope, const unsigned long *data, int datasize);
 
 #endif // LOG_H

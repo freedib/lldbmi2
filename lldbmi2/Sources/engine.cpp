@@ -6,11 +6,12 @@
 #include <fcntl.h>
 
 #include "lldbmi2.h"
-#include "events.h"
-#include "format.h"
 #include "log.h"
-#include "names.h"
 #include "engine.h"
+#include "events.h"
+#include "frames.h"
+#include "variables.h"
+#include "names.h"
 
 
 void initializeSB (STATE *pstate)
@@ -91,27 +92,35 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 	//	logprintf (LOG_THREAD, "cwd=%s pwd=%s\n", cc.argv[nextarg], launchInfo.GetWorkingDirectory());
 		cdtprintf ("%d^done\n(gdb)\n", cc.sequence);
 	}
+	else if (strcmp(cc.argv[0],"unset")==0) {
+		// unset env
+		if (strcmp(cc.argv[nextarg],"env") == 0) {
+			pstate->envp[0] = NULL;
+			pstate->envpentries = 0;
+			pstate->envspointer = pstate->envs;
+		}
+		cdtprintf ("%d^done\n(gdb)\n", cc.sequence);
+	}
 	else if (strcmp(cc.argv[0],"-gdb-set")==0) {
-		// gdb-set args ...
-		// gdb-set breakpoint pending on
-		// gdb-set detach-on-fork on
-		// gdb-set python print-stack none
-		// gdb-set print object on
-		// gdb-set print sevenbit-strings on
-		// gdb-set host-charset UTF-8
-		// gdb-set target-charset US-ASCII
-		// gdb-set target-wide-charset UTF-32
-		// gdb-set target-async off
-		// gdb-set auto-solib-add on
-		// gdb-set language c
+		// -gdb-set args ...
+		// -gdb-set env LLDB_DEBUGSERVER_PATH = /pro/ll/release/bin/debugserver
+		// -gdb-set breakpoint pending on
+		// -gdb-set detach-on-fork on
+		// -gdb-set python print-stack none
+		// -gdb-set print object on
+		// -gdb-set print sevenbit-strings on
+		// -gdb-set host-charset UTF-8
+		// -gdb-set target-charset US-ASCII
+		// -gdb-set target-wide-charset UTF-32
+		// -gdb-set target-async off
+		// -gdb-set auto-solib-add on
+		// -gdb-set language c
 		if (strcmp(cc.argv[nextarg],"args") == 0) {
 			launchInfo.SetArguments (&cc.argv[++nextarg], false);
 		}
 		else if (strcmp(cc.argv[nextarg],"env") == 0) {
 			// eclipse put a space around the equal in VAR = value. we have to combine all 3 part to form env entry
-			static char enventry[LINE_MAX];
-			const char *env[] = {enventry, NULL};
-			const char **envp = env;
+			char enventry[LINE_MAX];
 			++nextarg;
 			if (cc.argc+1-nextarg > 0) {
 				if (cc.argc+1-nextarg == 1)
@@ -120,7 +129,7 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 					snprintf (enventry, sizeof(enventry), "%s%s", cc.argv[nextarg], cc.argv[nextarg+1]);
 				else
 					snprintf (enventry, sizeof(enventry), "%s%s%s", cc.argv[nextarg], cc.argv[nextarg+1], cc.argv[nextarg+2]);
-				launchInfo.SetEnvironmentEntries (envp, false);
+				addEnvironment (pstate, enventry);
 			}
 		}
 		cdtprintf ("%d^done\n(gdb)\n", cc.sequence);
@@ -186,7 +195,7 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 		else if (processname[0]!='\0')
 			process = target.AttachToProcessWithName (pstate->listener, processname, false, error);
 	//	pstate->debugger.SetAsync (true);
-		if (!process.IsValid()) {
+		if (!process.IsValid() || error.Fail()) {
 			cdtprintf ("%d^error,msg=\"%s\"\n(gdb)\n", cc.sequence, "Can not start process.");
 			logprintf (LOG_INFO, "process_error=%s\n", error.GetCString());
 		}
@@ -213,10 +222,11 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 	}
 	else if (strcmp(cc.argv[0],"-exec-run")==0) {
 		// exec-run --thread-group i1
+		launchInfo.SetEnvironmentEntries (pstate->envp, false);
 		logprintf (LOG_NONE, "launchInfo: args=%d env=%d, pwd=%s\n", launchInfo.GetNumArguments(), launchInfo.GetNumEnvironmentEntries(), launchInfo.GetWorkingDirectory());
 		SBError error;
 		process = target.Launch (launchInfo, error);
-		if (!process.IsValid()) {
+		if (!process.IsValid() || error.Fail()) {
 			cdtprintf ("%d^error,msg=\"%s\"\n(gdb)\n", cc.sequence, "Can not start process.");
 			logprintf (LOG_INFO, "process_error=%s\n", error.GetCString());
 		}
@@ -557,7 +567,7 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 						isValid = true;
 						SBValueList localvars = frame.GetVariables(0,1,0,0);
 						char varsdesc[BIG_LINE_MAX];			// may be very big
-						formatVariables (varsdesc,sizeof(varsdesc),localvars);
+						formatVariables (varsdesc,sizeof(varsdesc),localvars, function.GetStartAddress().GetOffset());
 						cdtprintf ("%d^done,locals=[%s]\n(gdb)\n", cc.sequence, varsdesc);
 					}
 				}
@@ -588,16 +598,15 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 			if (var.IsValid() && var.GetError().Success()) {
 				int varnumchildren = var.GetNumChildren();
 				SBType vartype = var.GetType();
-				SBStream stream;
-				var.GetExpressionPath(stream);
-				const char *varexpressionpath = stream.GetData();
+				char expressionpathdesc[NAME_MAX];
+				formatExpressionPath (expressionpathdesc, sizeof(expressionpathdesc), var);
 				char vardesc[NAME_MAX];
 				formatValue(vardesc,sizeof(vardesc),var);
 				if (vartype.IsReferenceType() && varnumchildren==1)	// correct numchildren and value if reference
 					--varnumchildren;
 				cdtprintf ("%d^done,name=\"%s\",numchild=\"%d\",value=\"%s\","
 							"type=\"%s\",thread-id=\"%d\",has_more=\"0\"\n(gdb)\n",
-							cc.sequence, varexpressionpath, varnumchildren, vardesc,
+							cc.sequence, expressionpathdesc, varnumchildren, vardesc,
 							vartype.GetDisplayTypeName(), thread.GetIndexID());
 			}
 			else
@@ -624,7 +633,8 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 		changedesc[0] = '\0';
 		if (var.IsValid() && var.GetError().Success()) {
 			bool separatorvisible = false;
-			formatChangedList (changedesc, sizeof(changedesc), var, separatorvisible);
+			SBFunction function = frame.GetFunction();
+			formatChangedList (changedesc, sizeof(changedesc), function.GetStartAddress().GetOffset(), var, separatorvisible);
 		}
 		cdtprintf ("%d^done,changelist=[%s]\n(gdb)\n", cc.sequence, changedesc);
 	}
@@ -653,20 +663,17 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 			for (ichild=0; ichild<varnumchildren; ichild++) {
 				SBValue child = var.GetChildAtIndex(ichild);
 				const char *childname = child.GetName();			// displayed name
-				SBStream stream;
-				child.GetExpressionPath(stream);					// real path
-				const char *childexpressionpath = stream.GetData();
+				char expressionpathdesc[NAME_MAX];					// real path
+				formatExpressionPath (expressionpathdesc, sizeof(expressionpathdesc), child);
 				int childnumchildren = child.GetNumChildren();
 				SBType childtype = child.GetType();
-				int threadindexid=1;
-				if (thread.IsValid())
-					threadindexid = thread.GetIndexID();
+				int threadindexid = thread.GetIndexID();
 				// [child={name="var2.*b",exp="*b",numchild="0",type="char",thread-id="1"}]
 				int childlistlength = strlen(childlist);
 				snprintf (childlist+childlistlength, sizeof(childlist)-childlistlength,
 						"%schild={name=\"%s\",exp=\"%s\",numchild=\"%d\","
 						"type=\"%s\",thread-id=\"%d\"}",
-						sep,childexpressionpath,childname,childnumchildren,childtype.GetDisplayTypeName(),threadindexid);
+						sep,expressionpathdesc,childname,childnumchildren,childtype.GetDisplayTypeName(),threadindexid);
 				sep = ",";
 			}
 			// 34^done,numchild="1",children=[child={name="var2.*b",exp="*b",numchild="0",type="char",thread-id="1"}],has_more="0"
@@ -694,10 +701,9 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 			SBFrame frame = thread.GetSelectedFrame();
 			SBValue var = getVariable (frame, expression);
 			if (var.IsValid() && var.GetError().Success()) {
-				SBStream stream;
-				var.GetExpressionPath(stream,true);
-				const char *varexpressionpath = stream.GetData();
-				cdtprintf ("%d^done,path_expr=\"%s\"\n(gdb)\n", cc.sequence, varexpressionpath);
+				char expressionpathdesc[NAME_MAX];
+				formatExpressionPath (expressionpathdesc, sizeof(expressionpathdesc), var);
+				cdtprintf ("%d^done,path_expr=\"%s\"\n(gdb)\n", cc.sequence, expressionpathdesc);
 			}
 			else
 				cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
@@ -822,6 +828,27 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 	}
 
 	return dataflag;
+}
+
+
+bool
+addEnvironment (STATE *pstate, const char *entrystring)
+{
+	size_t entrysize = strlen (entrystring);
+	if (pstate->envpentries >= ENV_ENTRIES-2) {		// keep size for final NULL
+		logprintf (LOG_ERROR, "addEnvironement: envp size (%d) too small\n", sizeof(pstate->envs));
+		return false;
+	}
+	if (pstate->envspointer-pstate->envs+1+entrysize >= sizeof(pstate->envs)) {
+		logprintf (LOG_ERROR, "addEnvironement: envs size (%d) too small\n", sizeof(pstate->envs));
+		return false;
+	}
+	pstate->envp[pstate->envpentries++] = pstate->envspointer;
+	pstate->envp[pstate->envpentries] = NULL;
+	strcpy (pstate->envspointer, entrystring);
+	pstate->envspointer += entrysize+1;
+	logprintf (LOG_ARGS|LOG_RAW, "envp[%d]=%s\n", pstate->envpentries-1, pstate->envp[pstate->envpentries-1]);
+	return true;
 }
 
 

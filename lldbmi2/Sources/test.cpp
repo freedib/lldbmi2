@@ -13,9 +13,9 @@
 //#define TEST_C_VARS
 //#define TEST_C_SIMPLE
 //#define TEST_C_POINTERS
-#define TEST_C_LARGE_ARRAY
+//#define TEST_C_LARGE_ARRAY
 //#define TEST_CPP_MEMBERS
-//#define TEST_CPP_ARGS
+#define TEST_CPP_ARGS
 //#define TEST_OTHER
 
 
@@ -179,26 +179,49 @@ const char *testcommands[] = {
 
 #ifdef TEST_CPP_ARGS
 const char *testcommands[] = {
-	"51-environment-cd /Users/didier/Projets/git-lldbmi2/test_hello_cpp/Debug",
-	"52-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_cpp/Debug/test_hello_cpp",
+	"51-environment-cd /Users/didier/Projets/git-lldbmi2/test_hello_cpp/LLVM",
+	"52-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_cpp/LLVM/test_hello_cpp",
 	"64-list-thread-groups",
 	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_cpp/Sources/hello.cpp:74",
+	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_cpp/Sources/hello.cpp:85",
+	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_cpp/Sources/hello.cpp:87",
 	"62-exec-run --thread-group i1",
 	"64-list-thread-groups",
 	"65-list-thread-groups i1",
 	"69-thread-info 1",
-	"67-stack-list-locals --thread 1 --frame 0 1",	// ^done,locals=[{name="ab",value="{a = 0, b = 0}"}]
+	"67-stack-list-locals --thread 1 --frame 0 1",
 	"38-var-create --thread 1 --frame 0 - * s",
-	"38-var-create --thread 1 --frame 0 - * v",
-	"38-var-create --thread 1 --frame 0 - * b",
-	"67-var-list-children b",
 	"77-exec-continue --thread 1",
 	"64-list-thread-groups",
 	"65-list-thread-groups i1",
 	"69-thread-info 1",
 	"67-stack-list-locals --thread 1 --frame 0 1",	// ^done,locals=[{name="ab",value="{a = 0, b = 0}"}]
+	"38-var-create --thread 1 --frame 0 - * i",
+	"38-var-create --thread 1 --frame 0 - * s",
+	"38-var-create --thread 1 --frame 0 - * v",
+	"38-var-create --thread 1 --frame 0 - * d",
+	"38-var-create --thread 1 --frame 0 - * b",
+	"38-var-create --thread 1 --frame 0 - * cdp",
+	"38-var-create --thread 1 --frame 0 - * cdr",
+	"67-var-list-children b",
+	"77-exec-continue --thread 1",
+	"64-list-thread-groups",
+	"65-list-thread-groups i1",
+	"69-thread-info 1",
+	"67-stack-list-locals --thread 1 --frame 0 1",
+	"45-var-update 1 s",
+	"77-exec-continue --thread 1",
+	"64-list-thread-groups",
+	"65-list-thread-groups i1",
+	"69-thread-info 1",
+	"67-stack-list-locals --thread 1 --frame 0 1",	// ^done,locals=[{name="ab",value="{a = 0, b = 0}"}]
+	"45-var-update 1 i",
 	"45-var-update 1 s",
 	"45-var-update 1 v",
+	"45-var-update 1 d",
+	"45-var-update 1 b",
+	"45-var-update 1 cdp",
+	"45-var-update 1 cdr",
 	"77-exec-continue --thread 1",
 	"80-gdb-exit",
 	NULL

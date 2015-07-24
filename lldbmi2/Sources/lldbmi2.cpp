@@ -40,6 +40,8 @@ void help (STATE *pstate)
 
 
 static STATE state;
+bool global_istest = false;
+
 
 int
 main (int argc, char **argv, char **envp)
@@ -75,8 +77,10 @@ main (int argc, char **argv, char **envp)
 				strlcat (state.logbuffer, " ", sizeof(state.logbuffer));
 			}
 		}
-		else if (strcmp (argv[narg],"--test") == 0 )
-			state.istest = 1;
+		else if (strcmp (argv[narg],"--test") == 0 ) {
+			state.istest = true;
+			global_istest = true;
+		}
 		else if (strcmp (argv[narg],"--log") == 0 )
 			isLog = 1;
 		else if (strcmp (argv[narg],"--logmask") == 0 ) {
@@ -99,8 +103,11 @@ main (int argc, char **argv, char **envp)
 	// log program args
 	logprintf (LOG_ARGS, "%s\n", state.logbuffer);
 
+	state.envp[0] = NULL;
+	state.envpentries = 0;
+	state.envspointer = state.envs;
 	for (int ienv=0; envp[ienv]; ienv++)
-		logprintf (LOG_ARGS|LOG_RAW, "envp[%d]=%s\n", ienv, envp[ienv]);
+		addEnvironment (&state, envp[ienv]);
 
 	// return gdb version if --version
 	if (isVersion) {
@@ -123,7 +130,7 @@ main (int argc, char **argv, char **envp)
 	FD_ZERO (&set);
 	while (!state.eof) {
 		if (state.istest)
-			logprintf (LOG_INFO, "main loop\n");
+			logprintf (LOG_NONE, "main loop\n");
 		// get command from CDT
 		timeout.tv_sec  = 0;
 		timeout.tv_usec = 200000;
@@ -165,7 +172,6 @@ main (int argc, char **argv, char **envp)
 
 	return EXIT_SUCCESS;
 }
-
 
 const char *
 getTestCommand (int *idTestCommand)
@@ -212,7 +218,7 @@ void
 signal_handler (int signo)
 {
 	if (signo==SIGINT)
-		logprintf (LOG_ERROR, "signal SIGINT\n");
+		logprintf (LOG_INFO, "signal SIGINT\n");
 	else
 		logprintf (LOG_INFO, "signal %s\n", signo);
 	if (signo==SIGINT) {

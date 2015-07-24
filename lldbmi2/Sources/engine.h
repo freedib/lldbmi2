@@ -18,11 +18,12 @@ typedef struct {
 	int  available;
 	int  all;
 } CDT_COMMAND;
-
+// the environment
 
 int         fromCDT      (STATE *pstate, const char *line, int linesize);
 void        initializeSB (STATE *pstate);
 void        terminateSB  ();
+bool        addEnvironment (STATE *pstate, const char *entrystring);
 int         evalCDTLine  (STATE *pstate, const char *cdtline, CDT_COMMAND *cc);
 int         scanArgs     (CDT_COMMAND *cdt_command);
 

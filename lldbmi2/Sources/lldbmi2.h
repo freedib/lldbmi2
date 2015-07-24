@@ -21,12 +21,18 @@ using namespace lldb;
 #define MAX_THREADS 50
 #define BIG_LINE_MAX (LINE_MAX*5)
 
+#define ENV_ENTRIES 100
+
 typedef struct {
 	int  lockcdt;
 	int  ptyfd;
-	int  istest;
+	bool istest;
 	bool eof;
 	bool isrunning;
+	const char *envp[ENV_ENTRIES];
+	int  envpentries;
+	char envs[BIG_LINE_MAX];
+	char *envspointer;
 	char cdtbuffer[LINE_MAX];
 	char cdtptyname[NAME_MAX];
 	char logfilename[PATH_MAX];

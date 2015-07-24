@@ -1,0 +1,13 @@
+eclipse.preferences.version=1
+environment/project/cdt.managedbuild.config.gnu.macosx.exe.debug.1238609686.1083182155/DYLD_FRAMEWORK_PATH/delimiter=\:
+environment/project/cdt.managedbuild.config.gnu.macosx.exe.debug.1238609686.1083182155/DYLD_FRAMEWORK_PATH/operation=remove
+environment/project/cdt.managedbuild.config.gnu.macosx.exe.debug.1238609686.1083182155/DYLD_LIBRARY_PATH/delimiter=\:
+environment/project/cdt.managedbuild.config.gnu.macosx.exe.debug.1238609686.1083182155/DYLD_LIBRARY_PATH/operation=append
+environment/project/cdt.managedbuild.config.gnu.macosx.exe.debug.1238609686.1083182155/DYLD_LIBRARY_PATH/value=/pro/ll/release/lib
+environment/project/cdt.managedbuild.config.gnu.macosx.exe.debug.1238609686.1083182155/LLDB_DEBUGSERVER_PATH/delimiter=\:
+environment/project/cdt.managedbuild.config.gnu.macosx.exe.debug.1238609686.1083182155/LLDB_DEBUGSERVER_PATH/operation=replace
+environment/project/cdt.managedbuild.config.gnu.macosx.exe.debug.1238609686.1083182155/LLDB_DEBUGSERVER_PATH/value=/pro/ll/release/bin/debugserver
+environment/project/cdt.managedbuild.config.gnu.macosx.exe.debug.1238609686.1083182155/append=true
+environment/project/cdt.managedbuild.config.gnu.macosx.exe.debug.1238609686.1083182155/appendContributed=true
+environment/project/cdt.managedbuild.config.gnu.macosx.exe.debug.1238609686/append=true
+environment/project/cdt.managedbuild.config.gnu.macosx.exe.debug.1238609686/appendContributed=true

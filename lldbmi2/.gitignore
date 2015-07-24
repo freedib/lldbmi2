@@ -1,3 +1,5 @@
 /Debug/
 /Release/
 /*.log
+/LLVM/
+/LLVM2/

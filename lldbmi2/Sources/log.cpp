@@ -171,6 +171,8 @@ logprintf ( unsigned scope, const char *format, ... )
 void
 logdata ( unsigned scope, const char *data, int datasize )
 {
+	if (data == NULL)
+		return;
 	bool toosmall = false;
 	if (log_fd >= 0 && (scope&log_mask)==scope) {
 		log_buffer[0] = '|';
@@ -188,8 +190,6 @@ logdata ( unsigned scope, const char *data, int datasize )
 					break;
 				}
 				switch (data[ii]) {
-				case '\e':
-					log_buffer[jj++]='\\'; log_buffer[jj++]='e'; break;
 				case '\n':
 					log_buffer[jj++]='\\'; log_buffer[jj++]='n'; break;
 				case '\r':
@@ -208,6 +208,35 @@ logdata ( unsigned scope, const char *data, int datasize )
 			}
 		}
 		log_buffer[jj++] = '|';
+		log_buffer[jj] = '\0';
+
+		logprintf (scope, NULL);
+		write (log_fd, log_buffer, strlen(log_buffer));
+		write (log_fd, "\n", 1);
+		if (toosmall)
+			logprintf (LOG_ERROR, "log buffer too small (%d)\n", buffer_size);
+	}
+}
+
+// log data for a given scope
+void
+lognumbers ( unsigned scope, const unsigned long *data, int datasize )
+{
+	if (data == NULL)
+		return;
+	bool toosmall = false;
+	if (log_fd >= 0 && (scope&log_mask)==scope) {
+		int ii, jj;
+		sprintf( log_buffer, "%016lx: ", (unsigned long)data);		// pointer size = unsigned long size = 8 bytes = 16 chars
+		log_buffer[18] = '\0';
+		for (ii=0, jj=18; ii<datasize; ii++) {
+			if (jj>buffer_size-18) {
+				toosmall = true;
+				break;
+			}
+			sprintf( &log_buffer[jj], "%016lx ", data[ii]);
+			jj += 17;
+		}
 		log_buffer[jj] = '\0';
 
 		logprintf (scope, NULL);
