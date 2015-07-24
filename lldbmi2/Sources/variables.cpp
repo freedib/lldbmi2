@@ -5,7 +5,9 @@
 #include "names.h"
 
 
-extern bool global_istest;
+bool enable_arrays_change_detection = false;	// set true to enable arrays change detection. still in beta
+
+extern bool global_istest;						// true when debugging lldbmi2 with lldbmi2
 
 // should be in a class to be allocated dynamically
 static TRACKED_VAR trackedvars[TRACKED_VARS_MAX];
@@ -82,7 +84,7 @@ getDataInfo (SBValue var, int *dataitems, int *datasize)
 int
 addTrackedVar (addr_t functionaddress, SBValue var, bool checkifexists)
 {
-	if (!global_istest && false)
+	if (!enable_arrays_change_detection && !global_istest)
 		return 0;
 	const char *varname = var.GetName();
 	SBType vartype = var.GetType();
@@ -114,7 +116,7 @@ addTrackedVar (addr_t functionaddress, SBValue var, bool checkifexists)
 int
 isTrackedVarChanged (addr_t functionaddress, SBValue var)
 {
-	if (!global_istest && false)
+	if (!enable_arrays_change_detection && !global_istest)
 		return 0;
 	int tvi = getTrackedVar (functionaddress, var);
 	if (tvi<0)
