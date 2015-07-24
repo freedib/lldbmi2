@@ -5,165 +5,11 @@
 #include "names.h"
 
 
-bool enable_arrays_change_detection = false;	// set true to enable arrays change detection. still in beta
-
-extern bool global_istest;						// true when debugging lldbmi2 with lldbmi2
-
-// should be in a class to be allocated dynamically
-static TRACKED_VAR trackedvars[TRACKED_VARS_MAX];
-size_t numtrackedvars;
-
-
-// search a var in tracked vars list
-int
-getTrackedVar (addr_t functionaddress, SBValue var)
-{
-	const char *varname = var.GetName();
-	for (size_t tvi=0; tvi<numtrackedvars; tvi++) {
-		logprintf (LOG_NONE, "getTrackedVar: test var %llx:%s against %llx:%s\n",
-				functionaddress, varname,
-				trackedvars[tvi].functionaddress, trackedvars[tvi].varname);
-		if (functionaddress==trackedvars[tvi].functionaddress && strcmp(varname,trackedvars[tvi].varname)==0) {
-			logprintf (LOG_NONE, "getTrackedVar: got var at index %d\n", tvi);
-			return tvi;
-		}
-	}
-	return EOF;
-}
-
-
-// get real data size
-/*
-	typedef struct CD { int c; const char *d;} CDCD;
-	class AB {public: int a; int b; int c;};
-
-                                   var                        Pointee                    Dereferenced
-                       children typeclass    bytesize    type            bytesize        type      bytesize
-	char s[7]              7      Array        7         Invalid                        Array          7
-	struct CD cd[3]        3      Array       48         Invalid                        Array         48
-	double d[5]            5      Array       40         Invalid                        Array         40
-
-	int *i                 1      Pointer      8         Builtin:Int          4         Pointer        8
-	char *s                1      Pointer      8         Builtin:SignedChar   1         Pointer        8
-	const char*v           1      Pointer      8         Builtin:SignedChar   1         Pointer        8
-	double *d              1      Pointer      8         Builtin:Double       8         Pointer        8
-
-	struct CD (*cdp) [3]   3      Pointer      8         Array               48         Pointer        8
-
-	char (&sr)[7]          7      Reference    8         Array                7         Array          7
-	struct CD (&cdr)[3]    3      Reference    8         Array               48         Array         48
-	bool &b                1      Reference    8         Builtin:Bool         1         Builtin:Bool   1
-	AB   &ab               3      Reference    8         Class               12         Class         12
- */
-void
-getDataInfo (SBValue var, int *dataitems, int *datasize)
-{
-	*dataitems = *datasize = 0;
-	SBType vartype = var.GetType();
-	SBType pointeetype = vartype.GetPointeeType();
-	logprintf (LOG_NONE, "getDataInfo: Var=%s, num children=%d, type class=%s, basic type=%s, byte size=%d\n",
-				var.GetName(), var.GetNumChildren(), getNameForTypeClass(vartype.GetTypeClass()), getNameForBasicType(vartype.GetBasicType()), vartype.GetByteSize());
-	logprintf (LOG_NONE, "getDataInfo: Pointee: type class=%s, basic type=%s, byte size=%d\n",
-				getNameForTypeClass(vartype.GetPointeeType().GetTypeClass()), getNameForBasicType(vartype.GetPointeeType().GetBasicType()), vartype.GetPointeeType().GetByteSize());
-	*dataitems = var.GetNumChildren();
-	if (vartype.IsArrayType())
-		*datasize = var.GetByteSize();
-	else if (vartype.IsReferenceType())
-		*datasize = pointeetype.GetByteSize();
-	else if (vartype.IsPointerType()) {
-		*datasize = pointeetype.GetByteSize();
-		BasicType basictype = pointeetype.GetBasicType();
-		if (basictype==eBasicTypeChar || basictype==eBasicTypeSignedChar || basictype==eBasicTypeUnsignedChar) {
-			*dataitems = ARRAY_MAX;		// take a chance on character strings
-			*datasize = ARRAY_MAX;		// take a chance on character strings
-		}
-	}
-}
-
-// add a var in tracked vars list
-int
-addTrackedVar (addr_t functionaddress, SBValue var, bool checkifexists)
-{
-	if (!enable_arrays_change_detection && !global_istest)
-		return 0;
-	const char *varname = var.GetName();
-	SBType vartype = var.GetType();
-	int tvi;
-	if (checkifexists)
-		if ((tvi=getTrackedVar(functionaddress,var)) >= 0)
-			return tvi;									// already exists
-	if (numtrackedvars < TRACKED_VARS_MAX) {
-		int dataitems, datasize;
-		getDataInfo (var, &dataitems, &datasize);
-		if (datasize <= 0)
-			return EOF;
-		dataitems = min (dataitems, ARRAY_MAX-1);
-		datasize = min (datasize, ARRAY_MAX-1);
-		trackedvars[numtrackedvars].functionaddress = functionaddress;
-		strlcpy (trackedvars[numtrackedvars].varname, varname, sizeof(trackedvars[numtrackedvars].varname));
-		if (vartype.IsPointerType())
-			trackedvars[numtrackedvars].data = var.GetPointeeData (0, dataitems);
-		else
-			trackedvars[numtrackedvars].data = var.GetData ();
-		logprintf (LOG_NONE, "addTrackedVar: var %llx:%s tracked\n", functionaddress, varname);
-		return numtrackedvars++;
-	}
-	logprintf (LOG_ERROR, "addTrackedVar: trackedvars size (%d) too small\n", TRACKED_VARS_MAX);
-	return EOF;
-}
-
-// TODO: check why cdp & cdr changed
-int
-isTrackedVarChanged (addr_t functionaddress, SBValue var)
-{
-	if (!enable_arrays_change_detection && !global_istest)
-		return 0;
-	int tvi = getTrackedVar (functionaddress, var);
-	if (tvi<0)
-		return 0;
-	int dataitems, datasize;
-	getDataInfo (var, &dataitems, &datasize);
-	if (datasize <= 0)
-		return 0;
-	dataitems = min (dataitems, ARRAY_MAX-1);
-	datasize = min (datasize, ARRAY_MAX-1);
-	char vbuffer[ARRAY_MAX], *pv=vbuffer;
-	char tbuffer[ARRAY_MAX], *pt=tbuffer;
-	vbuffer[ARRAY_MAX-1] = '\0';
-	tbuffer[ARRAY_MAX-1] = '\0';
-	SBType vartype = var.GetType();
-	SBData data;
-	if (vartype.IsPointerType())
-		data = var.GetPointeeData (0, dataitems);
-	else
-		data = var.GetData ();
-	SBError error;
-	data.ReadRawData (error, 0, vbuffer, datasize);
-	if (error.Fail()) {
-		logprintf (LOG_WARN, "isTrackedVarChanged: ReadRawData on %s: error %s\n", var.GetName(), error.GetCString());
-		return 0;
-	}
-	trackedvars[tvi].data.ReadRawData (error, 0, tbuffer, datasize);
-	if (error.Fail()) {
-		logprintf (LOG_WARN, "isTrackedVarChanged: ReadRawData on tracked %s: error %s\n", var.GetName(), error.GetCString());
-		return 0;
-	}
-	for (int id=0; id<datasize; id++)
-		if (*pv++ != *pt++) {
-			trackedvars[tvi].data = data;
-			++trackedvars[tvi].changes;
-			logprintf (LOG_NONE, "isTrackedVarChanged: var %llx:%s changed. changes=%d\n", functionaddress, var.GetName(), trackedvars[tvi].changes);
-			return trackedvars[tvi].changes;
-		}
-	return 0;
-}
-
-
-// TODO: Adjust var summary && expression not updated test sequence
 // TODO: support types like struct S. seems to be a bug in lldb
 bool
 getPeudoArrayVariable (SBFrame frame, const char *expression, SBValue &var)
 {
+	logprintf (LOG_TRACE, "getPeudoArrayVariable (0x%x, %s, 0x%x)\n", &frame, expression, &var);
 // just support *((var)+0)@100 and &(*((var)+0)@100) forms
 // char c[101];
 // -var-create * *((c)+0)@100
@@ -207,7 +53,7 @@ getPeudoArrayVariable (SBFrame frame, const char *expression, SBValue &var)
 	snprintf (newexpression, sizeof(newexpression), "%s*(%s[%s])&%s[%s]%s",	// (char(*)[100])&c[0] or &((char(*)[100])&c[0])
 			ampersand?"&(":"", newvartype, varlength, varname, varoffset, ampersand?")":"");
 	var = getVariable (frame, newexpression);
-	logprintf (LOG_NONE, "getPeudoArrayVariable: expression %s -> %s\n", expression, newexpression);
+	logprintf (LOG_DEBUG, "getPeudoArrayVariable: expression %s -> %s\n", expression, newexpression);
 	if (!var.IsValid() || var.GetError().Fail())
 		return false;
 	return true;
@@ -217,6 +63,7 @@ getPeudoArrayVariable (SBFrame frame, const char *expression, SBValue &var)
 SBValue
 getVariable (SBFrame frame, const char *expression)
 {
+	logprintf (LOG_TRACE, "getVariable (0x%x, %s)\n", &frame, expression);
 	SBValue var;
 	if (strchr(expression,'@') != NULL)
 		getPeudoArrayVariable (frame, expression, var);
@@ -242,23 +89,24 @@ getVariable (SBFrame frame, const char *expression)
 	if (!var.IsValid() || var.GetError().Fail())
 		var = frame.EvaluateExpression (expression);
 #endif
-	logprintf (LOG_NONE, "getVariable: expression=%s, name=%s, value=%s, changed=%d\n",
+	logprintf (LOG_DEBUG, "getVariable: expression=%s, name=%s, value=%s, changed=%d\n",
 			expression, var.GetName(), var.GetValue(), var.GetValueDidChange());
 	return var;
 }
 
 // scan variables to reset their changed state
 int
-evaluateVarChanged (addr_t functionaddress, SBValue var, int depth)
+updateVarState (SBValue var, int depth)
 {
+	logprintf (LOG_TRACE, "updateVarState (0x%x, %d)\n", &var, depth);
 	SBStream stream;											// temp
 	var.GetExpressionPath(stream);								// temp
 	const char *varexpressionpath = stream.GetData();			// temp
-   // Force a value to update
+	// Force a value to update
 	var.GetValue();				// get value to activate changes
 	int changes = var.GetValueDidChange();
-	const char *summary = var.GetSummary();			// get value to activate changes
-	logprintf (LOG_NONE, "evaluateVarChanged: name=%s, varexpressionpath=%s, value=%s, summary=%s, changed=%d\n",
+	const char *summary = var.GetSummary();			// get value to activate changes  ????
+	logprintf (LOG_DEBUG, "updateVarState: name=%s, varexpressionpath=%s, value=%s, summary=%s, changed=%d\n",
 			var.GetName(), varexpressionpath, var.GetValue(), summary, var.GetValueDidChange());
     // And update its children
 	SBType vartype = var.GetType();
@@ -267,7 +115,7 @@ evaluateVarChanged (addr_t functionaddress, SBValue var, int depth)
 		for (int ichild = 0; ichild < varnumchildren; ++ichild) {
 			SBValue child = var.GetChildAtIndex(ichild);
 			if (child.IsValid() && depth>1)
-				changes += evaluateVarChanged (functionaddress, child, depth-1);
+				changes += updateVarState (child, depth-1);
 		}
 	}
 	return changes;
@@ -275,15 +123,17 @@ evaluateVarChanged (addr_t functionaddress, SBValue var, int depth)
 
 
 // search changed variables
+// TODO: add parent in list to activate change indicator
 char *
-formatChangedList (char *changedesc, size_t descsize, addr_t functionaddress, SBValue var, bool &separatorvisible, int depth)
+formatChangedList (char *changedesc, size_t descsize, SBValue var, bool &separatorvisible, int depth)
 {
+	logprintf (LOG_TRACE, "formatChangedList (%s, %d, 0x%x, %B, %d)\n", changedesc, descsize, &var, separatorvisible, depth);
 	SBStream stream;
 	var.GetExpressionPath(stream);
 	const char *varexpressionpath = stream.GetData();
 	if (varexpressionpath==NULL)
 		return changedesc;
-	logprintf (LOG_NONE, "formatChangedList: name=%s, expressionpath=%s, value=%s, summary=%s, changed=%d\n",
+	logprintf (LOG_DEBUG, "formatChangedList: name=%s, expressionpath=%s, value=%s, summary=%s, changed=%d\n",
 			var.GetName(), varexpressionpath, var.GetValue(), var.GetSummary(), var.GetValueDidChange());
 	var.GetValue();					// required to get value to activate changes
 	var.GetSummary();				// required to get value to activate changes
@@ -295,18 +145,17 @@ formatChangedList (char *changedesc, size_t descsize, addr_t functionaddress, SB
 		vartype = var.GetType();
 		varnumchildren = var.GetNumChildren();
 	}
-	int trackedvarchanges = 0;
-	if (vartype.IsPointerType() || vartype.IsReferenceType() || vartype.IsArrayType())
-		trackedvarchanges = isTrackedVarChanged (functionaddress, var);
-	if (var.GetValueDidChange() || trackedvarchanges>0) {
+	int childrenchanged = 0;
+//	childrenchanged = updateVarState(var);
+	if (var.GetValueDidChange() || childrenchanged>0) {
 		const char *separator = separatorvisible? ",":"";
 		const char *varinscope = var.IsInScope()? "true": "false";
 		char vardesc[NAME_MAX];
 		snprintf (changedesc, descsize,
 			"%s{name=\"%s\",value=\"%s\",in_scope=\"%s\",type_changed=\"false\",has_more=\"0\"}",
-			separator, varexpressionpath, formatValue(vardesc,sizeof(vardesc),var,trackedvarchanges), varinscope);
+			separator, varexpressionpath, formatValue(vardesc,sizeof(vardesc),var), varinscope);
 		separatorvisible = true;
-		return changedesc;
+	//	return changedesc;
 	}
 	if (!vartype.IsPointerType() && !vartype.IsReferenceType() && !vartype.IsArrayType()) {
 		for (int ichild = 0; ichild < varnumchildren; ++ichild) {
@@ -316,7 +165,7 @@ formatChangedList (char *changedesc, size_t descsize, addr_t functionaddress, SB
 			// Handle composite types (i.e. struct or arrays)
 			int changelength = strlen(changedesc);
             if (depth>1)
-            	formatChangedList (changedesc+changelength, descsize-changelength, functionaddress, child, separatorvisible, depth-1);
+            	formatChangedList (changedesc+changelength, descsize-changelength, child, separatorvisible, depth-1);
 		}
 	}
 	if (strlen(changedesc) >= descsize-1)
@@ -328,22 +177,21 @@ formatChangedList (char *changedesc, size_t descsize, addr_t functionaddress, SB
 // format a list of variables into a GDB string
 // called for arguments and locals var after a breakpoint
 char *
-formatVariables (char *varsdesc, size_t descsize, SBValueList varslist, addr_t functionaddress)
+formatVariables (char *varsdesc, size_t descsize, SBValueList varslist)
 {
+	logprintf (LOG_TRACE, "formatVariables (%s, %d, 0x%x)\n", varsdesc, descsize, &varslist);
 	*varsdesc = '\0';
 	const char *separator="";
 	for (size_t i=0; i<varslist.GetSize(); i++) {
 		SBValue var = varslist.GetValueAtIndex(i);
 		if (var.IsValid() && var.GetError().Success()) {
 			SBType vartype = var.GetType();
-			logprintf (LOG_NONE, "formatVariables: var=%s, type class=%s, basic type=%s \n",
+			logprintf (LOG_DEBUG, "formatVariables: var=%s, type class=%s, basic type=%s \n",
 					var.GetName(), getNameForTypeClass(vartype.GetTypeClass()), getNameForBasicType(vartype.GetBasicType()));
 			const char *varvalue = var.GetValue();
 			// basic type valid only when type class is Builtin
 			if ((vartype.GetBasicType()!=eBasicTypeInvalid && varvalue!=NULL) || true) {
-				evaluateVarChanged (functionaddress, var);
-				if (vartype.IsPointerType() || vartype.IsReferenceType() || vartype.IsArrayType())
-					addTrackedVar (functionaddress, var, true);		// keep var data for update changed tests
+				updateVarState (var);
 				int varslength = strlen(varsdesc);
 				char vardesc[NAME_MAX*2];
 				snprintf (varsdesc+varslength, descsize-varslength, "%s{name=\"%s\",value=\"%s\"}",
@@ -359,63 +207,139 @@ formatVariables (char *varsdesc, size_t descsize, SBValueList varslist, addr_t f
 	return varsdesc;
 }
 
+/*
+	typedef struct CD { int c; const char *d;} CDCD;
+	class AB {public: int a; int b; int c;};
+
+                                   var                        Pointee                    Dereferenced
+                       children typeclass    bytesize    type            bytesize        type      bytesize
+	char s[7]              7      Array        7         Invalid                        Array          7
+	struct CD cd[3]        3      Array       48         Invalid                        Array         48
+	double d[5]            5      Array       40         Invalid                        Array         40
+
+	int *i                 1      Pointer      8         Builtin:Int          4         Pointer        8
+	char *s                1      Pointer      8         Builtin:SignedChar   1         Pointer        8
+	const char*v           1      Pointer      8         Builtin:SignedChar   1         Pointer        8
+	double *d              1      Pointer      8         Builtin:Double       8         Pointer        8
+
+	struct CD (*cdp) [3]   3      Pointer      8         Array               48         Pointer        8
+
+	char (&sr)[7]          7      Reference    8         Array                7         Array          7
+	struct CD (&cdr)[3]    3      Reference    8         Array               48         Array         48
+	bool &b                1      Reference    8         Builtin:Bool         1         Builtin:Bool   1
+	AB   &ab               3      Reference    8         Class               12         Class         12
+*/
+char *
+formatSummary (char *summarydesc, size_t descsize, SBValue var)
+{
+	logprintf (LOG_TRACE, "formatSummary (%s, %d, 0x%x)\n", summarydesc, descsize, &var);
+	//	value = "HFG\123klj\b"
+	//	value={2,5,7,0 <repeat 5 times>, 7}
+	//	value = {{a=1,b=0x33},...{a=1,b=2}}
+	*summarydesc = '\0';
+	const char *varsummary;
+	if ((varsummary=var.GetSummary()) != NULL) {				// string
+		snprintf (summarydesc, descsize, "%s", varsummary+1);	// copy and remove start apostrophe
+		*(summarydesc+strlen(summarydesc)-1) = '\0';			// remove trailing apostrophe
+		return summarydesc;
+	}
+	int datasize=0;
+	SBType vartype = var.GetType();
+	TypeClass vartypeclass = vartype.GetTypeClass();
+	SBType pointeetype = vartype.GetPointeeType();
+	logprintf (LOG_DEBUG, "getDataInfo: Var=%-5s: children=%-2d, typeclass=%-10s, basictype=%-10s, bytesize=%-2d, Pointee: typeclass=%-10s, basictype=%-10s, bytesize=%-2d\n",
+				var.GetName(), var.GetNumChildren(), getNameForTypeClass(vartype.GetTypeClass()), getNameForBasicType(vartype.GetBasicType()), vartype.GetByteSize(),
+				getNameForTypeClass(vartype.GetPointeeType().GetTypeClass()), getNameForBasicType(vartype.GetPointeeType().GetBasicType()), vartype.GetPointeeType().GetByteSize());
+	int numchildren = var.GetNumChildren();
+	if (vartype.IsArrayType())
+		datasize = var.GetByteSize();
+	else if (vartype.IsReferenceType())
+		datasize = pointeetype.GetByteSize();
+	else if (vartype.IsPointerType()) {
+		datasize = pointeetype.GetByteSize();
+	}
+
+	if (vartypeclass==eTypeClassClass || vartypeclass==eTypeClassStruct || vartypeclass==eTypeClassUnion) {
+		const char *separator="";
+		char *ps=summarydesc;
+		char vardesc[NAME_MAX];
+		strlcat (ps++, "{", descsize--);
+		for (int ichild=0; ichild<numchildren; ichild++) {
+			SBValue child = var.GetChildAtIndex(ichild);
+			if (!child.IsValid())
+				continue;
+			const char *childvalue = child.GetValue();
+			if (childvalue != NULL)
+				snprintf (vardesc, sizeof(vardesc), "%s%s=%s", separator, child.GetName(), childvalue);
+			else {
+				SBType childtype = var.GetType();
+				lldb::addr_t childaddr;
+				if (childtype.IsPointerType() || childtype.IsReferenceType())
+					childaddr = var.GetValueAsUnsigned();
+				else
+					childaddr = var.GetLoadAddress();
+				snprintf (vardesc, sizeof(vardesc), "%s%s=0x%llx", separator, child.GetName(), childaddr);
+			}
+			if (descsize>0) {
+				strlcat (ps, vardesc, descsize);
+				ps += strlen (vardesc);
+				descsize -= strlen (vardesc);
+			}
+			separator = ",";
+		}
+		if (descsize>0)
+			strlcat (ps++, "}", descsize--);
+		return summarydesc;
+	}
+	return NULL;
+}
 
 // format a variable description into a GDB string
 char *
-formatValue (char *vardesc, size_t descsize, SBValue var, int trackedvarchanges)
+formatValue (char *vardesc, size_t descsize, SBValue var)
 {
+	logprintf (LOG_TRACE, "formatValue (%s, %d, 0x%x)\n", vardesc, descsize, &var);
 	// TODO: implement @ formats for structures
 	//	value = "HFG\123klj\b"
 	//	value={2,5,7,0 <repeat 5 times>, 7}
 	//	value = {{a=1,b=0x33},...{a=1,b=2}}
-
 	SBType vartype = var.GetType();
 	int varnumchildren = var.GetNumChildren();
 	if (vartype.IsReferenceType() && varnumchildren==1) {
-		// use children if reference
+		// special case for class (*) [] format
+		logprintf (LOG_DEBUG, "formatValue: special case class (*) []\n");
 		var = var.GetChildAtIndex(0);
 		vartype = var.GetType();
 		varnumchildren = var.GetNumChildren();
 	}
 	const char *varname = var.GetName();
-	const char *varsummary = var.GetSummary();
+	char summarydesc[LINE_MAX];
+	const char *varsummary = formatSummary (summarydesc, sizeof(summarydesc), var);
 	const char *varvalue = var.GetValue();
-	BasicType basictype = vartype.GetBasicType();
 	lldb::addr_t varaddr;
 	if (vartype.IsPointerType() || vartype.IsReferenceType())
 		varaddr = var.GetValueAsUnsigned();
 	else
 		varaddr = var.GetLoadAddress();
-
-	logprintf (LOG_NONE, "formatValue: var=%llx, name=%s, summary=%llx:%s, value=%s, address=%llx, vartype=%s, trackedvarchanges=%d\n",
-			&var, varname, varsummary, varsummary, varvalue, varaddr, getNameForBasicType(basictype), trackedvarchanges);
+	logprintf (LOG_DEBUG, "formatValue: var=0x%llx, name=%s, summary=%s, value=%s, address=0x%llx\n",
+			&var, varname, varsummary, varvalue, varaddr);
 
 	*vardesc = '\0';
-
-	if (varsummary != NULL) {		// string
-		char summary[NAME_MAX];
-		char *psummary = summary;
-		strlcpy (summary, var.GetSummary(), sizeof(summary));
-		++psummary;					// remove apostrophes
-		*(psummary+strlen(psummary)-1) = '\0';
-		snprintf (vardesc, descsize, "%llx \\\"%s\\\"", varaddr, psummary);
-	}
-	else if (varvalue != NULL) {		// number
+	if (varvalue != NULL) {			// basic types and arrays
 		if (vartype.IsPointerType() || vartype.IsReferenceType() || vartype.IsArrayType()) {
-			if (trackedvarchanges%2 == 0)
-				snprintf (vardesc, descsize, "%s {...}", varvalue);
+			if (varsummary != NULL)
+				snprintf (vardesc, descsize, "@1 %s \\\"%s\\\"", varvalue, varsummary);
 			else
-				snprintf (vardesc, descsize, "%s {. .}", varvalue);
+				snprintf (vardesc, descsize, "@2 %s {...}", varvalue);
 		}
-		else		// number
+		else		// basic type
 			strlcpy (vardesc, varvalue, descsize);
 	}
-	else {
-		if (trackedvarchanges%2 == 0)
-			snprintf (vardesc, descsize, "%llx {...}", varaddr);
-		else
-			snprintf (vardesc, descsize, "%llx {. .}", varaddr);
-	}
+	// classes and structures
+	else if (varsummary != NULL)
+		snprintf (vardesc, descsize, "@3 0x%llx \\\"%s\\\"", varaddr, varsummary);
+	else
+		snprintf (vardesc, descsize, "@4 0x%llx {...}", varaddr);
 	if (strlen(vardesc) >= descsize-1)
 		logprintf (LOG_ERROR, "formatValue: vardesc size (%d) too small\n", descsize);
 	return vardesc;
@@ -429,6 +353,7 @@ formatValue (char *vardesc, size_t descsize, SBValue var, int trackedvarchanges)
 char *
 formatExpressionPath (char *expressionpathdesc, size_t descsize, SBValue var)
 {
+	logprintf (LOG_TRACE, "formatExpressionPath (%s, %d, 0x%x)\n", expressionpathdesc, descsize, &var);
 	// child expressions: var2.*b
 	SBStream stream;
 	var.GetExpressionPath (stream, true);

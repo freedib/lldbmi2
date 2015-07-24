@@ -1,3 +1,7 @@
+#define BASE_TEST
+//#define TEST_ALLOCATOR
+
+#ifdef BASE_TEST
 
 #include <iostream>
 using namespace std;
@@ -93,5 +97,93 @@ int main()
 	testfunction (i, s, s, &s[0], "b", d, b, NULL, cd, ab);
 }
 #endif
+#endif // BASE_TEST
 
+#ifdef TEST_ALLOCATOR
 
+#include <memory>
+#include <iostream>
+#include <string>
+
+#include <string>
+#include <iostream>
+#include <cctype>
+
+struct ci_char_traits : public std::char_traits<char> {
+    static bool eq(char c1, char c2) {
+         return std::toupper(c1) == std::toupper(c2);
+     }
+    static bool lt(char c1, char c2) {
+         return std::toupper(c1) <  std::toupper(c2);
+    }
+    static int compare(const char* s1, const char* s2, size_t n) {
+        while ( n-- != 0 ) {
+            if ( std::toupper(*s1) < std::toupper(*s2) ) return -1;
+            if ( std::toupper(*s1) > std::toupper(*s2) ) return 1;
+            ++s1; ++s2;
+        }
+        return 0;
+    }
+    static const char* find(const char* s, int n, char a) {
+        auto const ua (std::toupper(a));
+        while ( n-- != 0 )
+        {
+            if (std::toupper(*s) == ua)
+                return s;
+            s++;
+        }
+        return nullptr;
+    }
+};
+
+typedef std::basic_string<char, ci_char_traits> ci_string;
+
+std::ostream& operator<<(std::ostream& os, const ci_string& str) {
+    return os.write(str.data(), str.size());
+}
+
+void sub (std::allocator<int> &a1)
+{
+
+}
+
+int main()
+{
+	ci_string s1 = "Hello";
+	ci_string s2 = "heLLo";
+	if (s1 == s2)
+		std::cout << s1 << " and " << s2 << " are equal\n";
+
+    std::allocator<int> a1; // default allocator for ints
+    int* a = a1.allocate(10); // space for 10 ints
+
+    sub (a1);
+
+    a[9] = 7;
+
+    std::cout << a[9] << '\n';
+
+    a1.deallocate(a, 10);
+
+    // default allocator for strings
+    std::allocator<std::string> a2;
+
+    // same, but obtained by rebinding from the type of a1
+//    decltype(a1)::rebind<std::string>::other a2_1;
+
+    // same, but obtained by rebinding from the type of a1 via allocator_traits
+    std::allocator_traits<decltype(a1)>::rebind_alloc<std::string> a2_2;
+
+    std::string* s = a2.allocate(2); // space for 2 strings
+
+    a2.construct(s, "foo");
+    a2.construct(s + 1, "bar");
+
+    std::cout << s[0] << ' ' << s[1] << '\n';
+
+    a2.destroy(s);
+    a2.destroy(s + 1);
+    a2.deallocate(s, 2);
+}
+
+#endif

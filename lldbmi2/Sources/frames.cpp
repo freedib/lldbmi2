@@ -15,6 +15,7 @@
 char *
 formatBreakpoint (char *breakpointdesc, size_t descsize, SBBreakpoint breakpoint, STATE *pstate)
 {
+	logprintf (LOG_TRACE, "formatBreakpoint (%s, %d, 0x%x, 0x%x)\n", breakpointdesc, descsize, &breakpoint, pstate);
 	// 18^done,bkpt={number="1",type="breakpoint",disp="keep",enabled="y",addr="0x00000001000/00f58",
 	//  func="main",file="../Sources/hello.c",fullname="/pro/runtime-EclipseApplication/hello/Sources/hello.c",
 	//  line="17",thread-groups=["i1"],times="0",original-location="/pro/runtime-EclipseApplication/hello/Sources/hello.c:17"}
@@ -49,6 +50,7 @@ formatBreakpoint (char *breakpointdesc, size_t descsize, SBBreakpoint breakpoint
 int
 getNumFrames (SBThread thread)
 {
+	logprintf (LOG_TRACE, "getNumFrames (0x%x)\n", &thread);
 	int numframes=thread.GetNumFrames();
 #ifndef SHOW_STARTUP
 	for (int iframe=numframes-1; iframe>=0; iframe--) {
@@ -77,14 +79,15 @@ getNumFrames (SBThread thread)
 
 // format a frame description into a GDB string
 char *
-formatFrame (char *framedesc, size_t descsize, SBFrame frame, FrameDetails details)
+formatFrame (char *framedesc, size_t descsize, SBFrame frame, FrameDetails framedetails)
 {
+	logprintf (LOG_TRACE, "formatFrame (%s, %d, 0x%x, 0x%x)\n", framedesc, descsize, &frame, framedetails);
 	int frameid = frame.GetFrameID();
 	SBAddress addr = frame.GetPCAddress();
 	uint32_t file_addr = addr.GetFileAddress();
 	SBFunction function = addr.GetFunction();
 	char levelstring[NAME_MAX];
-	if (details&WITH_LEVEL)
+	if (framedetails&WITH_LEVEL)
 		snprintf (levelstring, sizeof(levelstring), "level=\"%d\",", frameid);
 	else
 		levelstring[0] = '\0';
@@ -108,16 +111,16 @@ formatFrame (char *framedesc, size_t descsize, SBFrame frame, FrameDetails detai
 		filename = filespec.GetFilename();
 		filedir = filespec.GetDirectory();
 		line = line_entry.GetLine();
-		if (details&WITH_ARGS) {
+		if (framedetails&WITH_ARGS) {
 			SBValueList args = frame.GetVariables(1,0,0,0);
 			char argsdesc[LINE_MAX];
 			SBFunction function = frame.GetFunction();
-			formatVariables (argsdesc, sizeof(argsdesc), args, function.GetStartAddress().GetFileAddress());
-			snprintf (argsstring, sizeof(argsstring), "%sargs=[%s]", (details==JUST_LEVEL_AND_ARGS)?"":",", argsdesc);
+			formatVariables (argsdesc, sizeof(argsdesc), args);
+			snprintf (argsstring, sizeof(argsstring), "%sargs=[%s]", (framedetails==JUST_LEVEL_AND_ARGS)?"":",", argsdesc);
 		}
 		else
 			argsstring[0] = '\0';
-		if (details==JUST_LEVEL_AND_ARGS)
+		if (framedetails==JUST_LEVEL_AND_ARGS)
 			snprintf (framedesc, descsize, "frame={%s%s}",
 								levelstring,argsstring);
 		else
@@ -126,11 +129,11 @@ formatFrame (char *framedesc, size_t descsize, SBFrame frame, FrameDetails detai
 								levelstring,file_addr,func_name,argsstring,filename,filedir,filename,line);
 	}
 	else {
-		if (details&WITH_ARGS)
-			snprintf (argsstring, sizeof(argsstring), "%sargs=[]", (details==JUST_LEVEL_AND_ARGS)?"":",");
+		if (framedetails&WITH_ARGS)
+			snprintf (argsstring, sizeof(argsstring), "%sargs=[]", (framedetails==JUST_LEVEL_AND_ARGS)?"":",");
 		else
 			argsstring[0] = '\0';
-		if (details==JUST_LEVEL_AND_ARGS)
+		if (framedetails==JUST_LEVEL_AND_ARGS)
 			snprintf (framedesc, descsize, "frame={%s%s}",
 					levelstring,argsstring);
 		else {
@@ -148,6 +151,7 @@ formatFrame (char *framedesc, size_t descsize, SBFrame frame, FrameDetails detai
 char *
 formatThreadInfo (char *threaddesc, size_t descsize, SBProcess process, int threadindexid)
 {
+	logprintf (LOG_TRACE, "formformatThreadInfoatFrame (%s, %d, 0x%x, %d)\n", threaddesc, descsize, &process, threadindexid);
 	*threaddesc = '\0';
 	if (!process.IsValid())
 		return threaddesc;

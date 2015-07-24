@@ -122,7 +122,7 @@ main (int argc, char **argv, char **envp)
 	}
 
 	initializeSB (&state);
-	signal (SIGINT, signal_handler);
+	signal (SIGINT, signalHandler);
 
 	cdtprintf ("(gdb)\n");
 
@@ -176,6 +176,7 @@ main (int argc, char **argv, char **envp)
 const char *
 getTestCommand (int *idTestCommand)
 {
+	logprintf (LOG_TRACE, "getTestCommand (0x%x)\n", idTestCommand);
 	const char *commandLine;
 	if (testcommands[*idTestCommand]!=NULL) {
 		commandLine = testcommands[*idTestCommand];
@@ -192,6 +193,7 @@ getTestCommand (int *idTestCommand)
 void
 writetocdt (const char *line)
 {
+	logprintf (LOG_NONE, "writetocdt (...)\n", line);
 	logdata (LOG_CDT_OUT, line, strlen(line));
 	write (STDOUT_FILENO, line, strlen(line));
 }
@@ -199,6 +201,7 @@ writetocdt (const char *line)
 void
 cdtprintf ( const char *format, ... )
 {
+	logprintf (LOG_NONE, "cdtprintf (...)\n");
 	char buffer[BIG_LINE_MAX];
 	va_list args;
 
@@ -215,8 +218,9 @@ cdtprintf ( const char *format, ... )
 static int signals_received=0;
 
 void
-signal_handler (int signo)
+signalHandler (int signo)
 {
+	logprintf (LOG_TRACE, "signalHandler (%d)\n", signo);
 	if (signo==SIGINT)
 		logprintf (LOG_INFO, "signal SIGINT\n");
 	else

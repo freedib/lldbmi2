@@ -16,6 +16,7 @@
 
 void initializeSB (STATE *pstate)
 {
+	logprintf (LOG_TRACE, "initializeSB (0x%x)\n", pstate);
 	SBDebugger::Initialize();
 	pstate->debugger = SBDebugger::Create();
 	pstate->debugger.SetAsync (true);
@@ -24,6 +25,7 @@ void initializeSB (STATE *pstate)
 
 void terminateSB ()
 {
+	logprintf (LOG_TRACE, "terminateSB\n");
 	waitProcessListener ();
 	SBDebugger::Terminate();
 }
@@ -36,6 +38,7 @@ void terminateSB ()
 int
 fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 {
+	logprintf (LOG_NONE, "fromCDT (0x%x, ..., %d)\n", pstate, linesize);
 	char *endofline;
 	char cdtline[LINE_MAX];			// must be the same size as state.cdtbuffer
 	int dataflag;
@@ -567,7 +570,7 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 						isValid = true;
 						SBValueList localvars = frame.GetVariables(0,1,0,0);
 						char varsdesc[BIG_LINE_MAX];			// may be very big
-						formatVariables (varsdesc,sizeof(varsdesc),localvars, function.GetStartAddress().GetOffset());
+						formatVariables (varsdesc,sizeof(varsdesc),localvars);
 						cdtprintf ("%d^done,locals=[%s]\n(gdb)\n", cc.sequence, varsdesc);
 					}
 				}
@@ -634,7 +637,7 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 		if (var.IsValid() && var.GetError().Success()) {
 			bool separatorvisible = false;
 			SBFunction function = frame.GetFunction();
-			formatChangedList (changedesc, sizeof(changedesc), function.GetStartAddress().GetOffset(), var, separatorvisible);
+			formatChangedList (changedesc, sizeof(changedesc), var, separatorvisible);
 		}
 		cdtprintf ("%d^done,changelist=[%s]\n(gdb)\n", cc.sequence, changedesc);
 	}
@@ -834,6 +837,7 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 bool
 addEnvironment (STATE *pstate, const char *entrystring)
 {
+	logprintf (LOG_NONE, "addEnvironment (0x%x, %s)\n", pstate, entrystring);
 	size_t entrysize = strlen (entrystring);
 	if (pstate->envpentries >= ENV_ENTRIES-2) {		// keep size for final NULL
 		logprintf (LOG_ERROR, "addEnvironement: envp size (%d) too small\n", sizeof(pstate->envs));
@@ -859,6 +863,7 @@ addEnvironment (STATE *pstate, const char *entrystring)
 int
 evalCDTLine (STATE *pstate, const char *cdtline, CDT_COMMAND *cc)
 {
+	logprintf (LOG_NONE, "evalCDTLine (0x%x, %s, 0x%x)\n", pstate, cdtline, cc);
 	cc->sequence = 0;
 	cc->argc = 0;
 	cc->arguments[0] = '\0';
@@ -918,6 +923,7 @@ evalCDTLine (STATE *pstate, const char *cdtline, CDT_COMMAND *cc)
 int
 scanArgs (CDT_COMMAND *cc)
 {
+	logprintf (LOG_TRACE, "scanArgs (0x%x)\n", cc);
 	cc->argc=0;
 	char *pa=cc->arguments, *ps;
 	while (*pa) {

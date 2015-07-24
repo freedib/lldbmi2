@@ -15,6 +15,7 @@ static pthread_t sbTID;
 void
 setSignals (STATE *pstate)
 {
+	logprintf (LOG_TRACE, "setSignals (0x%x)\n", pstate);
 	SBUnixSignals us = pstate->process.GetUnixSignals();
 	if (!pstate->istest || true) {
 		const char *signame = "SIGINT";
@@ -32,7 +33,7 @@ setSignals (STATE *pstate)
 void
 terminateProcess (STATE *pstate, int how)
 {
-	logprintf (LOG_INFO, "terminateProcess (%d)\n", how);
+	logprintf (LOG_TRACE, "terminateProcess (0x%x, 0x%x)\n", pstate, how);
 	if (pstate->process.IsValid()) {
 		SBThread thread = pstate->process.GetSelectedThread();
 		int tid = thread.IsValid()? thread.GetIndexID():0;
@@ -53,6 +54,7 @@ terminateProcess (STATE *pstate, int how)
 int
 startProcessListener (STATE *pstate)
 {
+	logprintf (LOG_TRACE, "startProcessListener (0x%x)\n", pstate);
 	int ret = pthread_create (&sbTID, NULL, &processListener, pstate);
 	if (ret)
 		sbTID = 0;
@@ -62,6 +64,7 @@ startProcessListener (STATE *pstate)
 void
 waitProcessListener ()
 {
+	logprintf (LOG_TRACE, "waitProcessListener ()\n");
 	if (sbTID)
 		pthread_join (sbTID, NULL);
 }
@@ -70,6 +73,7 @@ waitProcessListener ()
 void *
 processListener (void *arg)
 {
+	logprintf (LOG_TRACE, "processListener (0x%x)\n", arg);
 	STATE *pstate = (STATE *) arg;
 	SBProcess process = pstate->process;
 
@@ -156,6 +160,7 @@ processListener (void *arg)
 void
 onStopped (STATE *pstate, SBProcess process)
 {
+	logprintf (LOG_TRACE, "onStopped (0x%x, 0x%x)\n", pstate, &process);
 //	-3-38-5.140 <<=  |=breakpoint-modified,bkpt={number="breakpoint 1",type="breakpoint",disp="del",enabled="y",addr="0x0000000100000f06",func="main",file="hello.c",fullname="hello.c",line="33",thread-groups=["i1"],times="1",original-location="hello.c:33"}\n|
 //	-3-38-5.140 <<=  |*stopped,reason="breakpoint-hit",disp="keep",bkptno="breakpoint 1",frame={addr="0x0000000100000f06",func="main",args=[],file="hello.c",fullname="hello.c",line="33"},thread-id="1",stopped-threads="all"\n|
 //	-3-40-7.049 <<=  |*stopped,reason="breakpoint-hit",disp="keep",bkptno="1",frame={addr="0000000000000f06",func="main",args=[],file="hello.c",fullname="/Users/didier/Projets/LLDB/hello/Debug/../Sources/hello.c",line="33"},thread-id="1",stopped-threads="all"(gdb)\n|
@@ -242,10 +247,11 @@ onStopped (STATE *pstate, SBProcess process)
 void
 checkThreadsLife (STATE *pstate, SBProcess process)
 {
-    if (!process.IsValid())
-        return;
-    SBThread thread;
-    const size_t nthreads = process.GetNumThreads();
+	logprintf (LOG_TRACE, "checkThreadsLife (0x%x, 0x%x)\n", pstate, &process);
+	if (!process.IsValid())
+		return;
+	SBThread thread;
+	const size_t nthreads = process.GetNumThreads();
 	int indexlist;
 	bool stillalive[MAX_THREADS];
 	for (indexlist=0; indexlist<MAX_THREADS; indexlist++)			// init live list
@@ -289,6 +295,7 @@ checkThreadsLife (STATE *pstate, SBProcess process)
 void
 updateSelectedThread (SBProcess process)
 {
+	logprintf (LOG_TRACE, "updateSelectedThread (0x%x)\n", &process);
     if (!process.IsValid())
         return;
     SBThread currentThread = process.GetSelectedThread();

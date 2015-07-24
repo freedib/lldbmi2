@@ -107,7 +107,7 @@ gettimestamp ()
 const char *
 getheader ( unsigned scope )
 {
-	switch (scope&LOG_ALL) {
+	switch (scope&LOG_DEV) {
 	case LOG_NOHEADER:
 		return "";
 	case LOG_ERROR:
@@ -128,12 +128,14 @@ getheader ( unsigned scope )
 		return "###";
 	case LOG_ARGS:
 		return "@@@";
-	case LOG_DEBUG:
-		return "$$$";
 	case LOG_STDERR:
 		return "+++";
+	case LOG_DEBUG:
+		return "$$$";
+	case LOG_TRACE:
+		return ":::";
 	default:
-		return "???";
+		return "   ";
 	}
 	return "  ";
 }

@@ -50,6 +50,6 @@ typedef struct {
 const char *getTestCommand (int *idTestCommand);
 void        writetocdt     (const char *line);
 void        cdtprintf      (const char *format, ... );
-void        signal_handler (int vSigno);
+void        signalHandler (int vSigno);
 
 #endif	// LLDBMIG_H
