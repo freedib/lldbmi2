@@ -604,7 +604,7 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 				char expressionpathdesc[NAME_MAX];
 				formatExpressionPath (expressionpathdesc, sizeof(expressionpathdesc), var);
 				char vardesc[NAME_MAX];
-				formatValue(vardesc,sizeof(vardesc),var);
+				formatValue (vardesc, sizeof(vardesc), var, NO_SUMMARY);
 				if (vartype.IsReferenceType() && varnumchildren==1)	// correct numchildren and value if reference
 					--varnumchildren;
 				cdtprintf ("%d^done,name=\"%s\",numchild=\"%d\",value=\"%s\","
@@ -732,7 +732,8 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 			SBValue var = getVariable (frame, expression);		// createVariable
 			if (var.IsValid() && var.GetError().Success()) {
 				char vardesc[NAME_MAX];
-				cdtprintf ("%d^done,value=\"%s\"\n(gdb)\n", cc.sequence, formatValue (vardesc,sizeof(vardesc),var));
+				formatValue (vardesc, sizeof(vardesc), var, FULL_SUMMARY);
+				cdtprintf ("%d^done,value=\"%s\"\n(gdb)\n", cc.sequence, vardesc);
 			}
 			else
 				cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
@@ -769,8 +770,8 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 		if (var.IsValid() && var.GetError().Success()) {
 			var.SetFormat(formatcode);
 			char vardesc[NAME_MAX];
-			cdtprintf ("%d^done,format=\"%s\",value=\"%s\"\n(gdb)\n",
-					cc.sequence, format, formatValue(vardesc,sizeof(vardesc),var));
+			formatValue (vardesc, sizeof(vardesc), var, NO_SUMMARY);
+			cdtprintf ("%d^done,format=\"%s\",value=\"%s\"\n(gdb)\n", cc.sequence, format, vardesc);
 		}
 		else
 			cdtprintf ("%d^error\n(gdb)\n", cc.sequence);

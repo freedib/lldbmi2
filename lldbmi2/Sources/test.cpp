@@ -15,7 +15,8 @@
 //#define TEST_C_POINTERS
 //#define TEST_C_LARGE_ARRAY
 //#define TEST_CPP_MEMBERS
-#define TEST_CPP_ARGS
+#define TEST_CPP_STRING
+//#define TEST_CPP_ARGS
 //#define TEST_OTHER
 
 
@@ -176,6 +177,30 @@ const char *testcommands[] = {
 	NULL
 };
 #endif	// TEST_CPP_MEMBERS
+
+#ifdef TEST_CPP_STRING
+const char *testcommands[] = {
+	"51-environment-cd /Users/didier/Projets/git-lldbmi2/test_hello_cpp/Debug",
+	"52-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_cpp/Debug/test_hello_cpp",
+	"64-list-thread-groups",
+	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_cpp/Sources/hello.cpp:100",
+	"62-exec-run --thread-group i1",
+	"64-list-thread-groups",
+	"65-list-thread-groups i1",
+	"69-thread-info 1",
+	"67-stack-list-locals --thread 1 --frame 0 1",	// ^done,locals=[{name="ab",value="{a = 0, b = 0}"}]
+	"72-var-create --thread 1 --frame 0 - * s",	// ^done,name="ab",numchild="1",value="{...}",type="AB",thread-id="1",has_more="0"
+	"73-var-list-children s",						// ^done,numchild="1",children=[child={name="ab.public",exp="public",numchild="1",thread-id="1"}],has_more="0"
+	"73-var-list-children s.public",				// ^done,numchild="2",children=[child={name="ab.public",exp="public",numchild="1",thread-id="1"}],has_more="0"
+	"77-exec-next --thread-group i1",
+	"78-var-update 1 a",
+	"77-exec-next --thread-group i1",
+	"77-exec-next --thread-group i1",
+	"77-exec-next --thread-group i1",
+	"80-gdb-exit",
+	NULL
+};
+#endif	// TEST_CPP_STRING
 
 #ifdef TEST_CPP_ARGS
 const char *testcommands[] = {

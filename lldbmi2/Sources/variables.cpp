@@ -151,11 +151,12 @@ formatChangedList (char *changedesc, size_t descsize, SBValue var, bool &separat
 		const char *separator = separatorvisible? ",":"";
 		const char *varinscope = var.IsInScope()? "true": "false";
 		char vardesc[NAME_MAX];
+		formatValue(vardesc,sizeof(vardesc),var,NO_SUMMARY);
 		snprintf (changedesc, descsize,
 			"%s{name=\"%s\",value=\"%s\",in_scope=\"%s\",type_changed=\"false\",has_more=\"0\"}",
-			separator, varexpressionpath, formatValue(vardesc,sizeof(vardesc),var), varinscope);
+			separator, varexpressionpath, vardesc, varinscope);
 		separatorvisible = true;
-	//	return changedesc;
+		return changedesc;
 	}
 	if (!vartype.IsPointerType() && !vartype.IsReferenceType() && !vartype.IsArrayType()) {
 		for (int ichild = 0; ichild < varnumchildren; ++ichild) {
@@ -194,8 +195,9 @@ formatVariables (char *varsdesc, size_t descsize, SBValueList varslist)
 				updateVarState (var);
 				int varslength = strlen(varsdesc);
 				char vardesc[NAME_MAX*2];
+				formatValue (vardesc, sizeof(vardesc), var, FULL_SUMMARY);
 				snprintf (varsdesc+varslength, descsize-varslength, "%s{name=\"%s\",value=\"%s\"}",
-						separator, var.GetName(), formatValue (vardesc, sizeof(vardesc), var));
+						separator, var.GetName(), vardesc);
 				separator=",";
 			}
 			else
@@ -238,18 +240,18 @@ formatSummary (char *summarydesc, size_t descsize, SBValue var)
 	//	value = {{a=1,b=0x33},...{a=1,b=2}}
 	*summarydesc = '\0';
 	const char *varsummary;
+	SBType vartype = var.GetType();
+	logprintf (LOG_DEBUG, "formatSummary: Var=%-5s: children=%-2d, typeclass=%-10s, basictype=%-10s, bytesize=%-2d, Pointee: typeclass=%-10s, basictype=%-10s, bytesize=%-2d\n",
+				var.GetName(), var.GetNumChildren(), getNameForTypeClass(vartype.GetTypeClass()), getNameForBasicType(vartype.GetBasicType()), vartype.GetByteSize(),
+				getNameForTypeClass(vartype.GetPointeeType().GetTypeClass()), getNameForBasicType(vartype.GetPointeeType().GetBasicType()), vartype.GetPointeeType().GetByteSize());
 	if ((varsummary=var.GetSummary()) != NULL) {				// string
 		snprintf (summarydesc, descsize, "%s", varsummary+1);	// copy and remove start apostrophe
 		*(summarydesc+strlen(summarydesc)-1) = '\0';			// remove trailing apostrophe
 		return summarydesc;
 	}
 	int datasize=0;
-	SBType vartype = var.GetType();
 	TypeClass vartypeclass = vartype.GetTypeClass();
 	SBType pointeetype = vartype.GetPointeeType();
-	logprintf (LOG_DEBUG, "getDataInfo: Var=%-5s: children=%-2d, typeclass=%-10s, basictype=%-10s, bytesize=%-2d, Pointee: typeclass=%-10s, basictype=%-10s, bytesize=%-2d\n",
-				var.GetName(), var.GetNumChildren(), getNameForTypeClass(vartype.GetTypeClass()), getNameForBasicType(vartype.GetBasicType()), vartype.GetByteSize(),
-				getNameForTypeClass(vartype.GetPointeeType().GetTypeClass()), getNameForBasicType(vartype.GetPointeeType().GetBasicType()), vartype.GetPointeeType().GetByteSize());
 	int numchildren = var.GetNumChildren();
 	if (vartype.IsArrayType())
 		datasize = var.GetByteSize();
@@ -259,7 +261,7 @@ formatSummary (char *summarydesc, size_t descsize, SBValue var)
 		datasize = pointeetype.GetByteSize();
 	}
 
-	if (vartypeclass==eTypeClassClass || vartypeclass==eTypeClassStruct || vartypeclass==eTypeClassUnion) {
+	if (vartypeclass==eTypeClassClass || vartypeclass==eTypeClassStruct || vartypeclass==eTypeClassUnion || vartype.IsArrayType()) {
 		const char *separator="";
 		char *ps=summarydesc;
 		char vardesc[NAME_MAX];
@@ -270,7 +272,10 @@ formatSummary (char *summarydesc, size_t descsize, SBValue var)
 				continue;
 			const char *childvalue = child.GetValue();
 			if (childvalue != NULL)
-				snprintf (vardesc, sizeof(vardesc), "%s%s=%s", separator, child.GetName(), childvalue);
+				if (vartype.IsArrayType())
+					snprintf (vardesc, sizeof(vardesc), "%s%s", separator, childvalue);
+				else
+					snprintf (vardesc, sizeof(vardesc), "%s%s=%s", separator, child.GetName(), childvalue);
 			else {
 				SBType childtype = var.GetType();
 				lldb::addr_t childaddr;
@@ -278,7 +283,10 @@ formatSummary (char *summarydesc, size_t descsize, SBValue var)
 					childaddr = var.GetValueAsUnsigned();
 				else
 					childaddr = var.GetLoadAddress();
-				snprintf (vardesc, sizeof(vardesc), "%s%s=0x%llx", separator, child.GetName(), childaddr);
+				if (vartype.IsArrayType())
+					snprintf (vardesc, sizeof(vardesc), "%s0x%llx", separator, childaddr);
+				else
+					snprintf (vardesc, sizeof(vardesc), "%s%s=0x%llx", separator, child.GetName(), childaddr);
 			}
 			if (descsize>0) {
 				strlcat (ps, vardesc, descsize);
@@ -296,7 +304,7 @@ formatSummary (char *summarydesc, size_t descsize, SBValue var)
 
 // format a variable description into a GDB string
 char *
-formatValue (char *vardesc, size_t descsize, SBValue var)
+formatValue (char *vardesc, size_t descsize, SBValue var, VariableDetails details)
 {
 	logprintf (LOG_TRACE, "formatValue (%s, %d, 0x%x)\n", vardesc, descsize, &var);
 	// TODO: implement @ formats for structures
@@ -304,6 +312,9 @@ formatValue (char *vardesc, size_t descsize, SBValue var)
 	//	value={2,5,7,0 <repeat 5 times>, 7}
 	//	value = {{a=1,b=0x33},...{a=1,b=2}}
 	SBType vartype = var.GetType();
+	logprintf (LOG_DEBUG, "formatValue: Var=%-5s: children=%-2d, typeclass=%-10s, basictype=%-10s, bytesize=%-2d, Pointee: typeclass=%-10s, basictype=%-10s, bytesize=%-2d\n",
+				var.GetName(), var.GetNumChildren(), getNameForTypeClass(vartype.GetTypeClass()), getNameForBasicType(vartype.GetBasicType()), vartype.GetByteSize(),
+				getNameForTypeClass(vartype.GetPointeeType().GetTypeClass()), getNameForBasicType(vartype.GetPointeeType().GetBasicType()), vartype.GetPointeeType().GetByteSize());
 	int varnumchildren = var.GetNumChildren();
 	if (vartype.IsReferenceType() && varnumchildren==1) {
 		// special case for class (*) [] format
@@ -327,7 +338,7 @@ formatValue (char *vardesc, size_t descsize, SBValue var)
 	*vardesc = '\0';
 	if (varvalue != NULL) {			// basic types and arrays
 		if (vartype.IsPointerType() || vartype.IsReferenceType() || vartype.IsArrayType()) {
-			if (varsummary != NULL)
+			if (varsummary!=NULL && details==FULL_SUMMARY)
 				snprintf (vardesc, descsize, "@1 %s \\\"%s\\\"", varvalue, varsummary);
 			else
 				snprintf (vardesc, descsize, "@2 %s {...}", varvalue);
@@ -336,7 +347,7 @@ formatValue (char *vardesc, size_t descsize, SBValue var)
 			strlcpy (vardesc, varvalue, descsize);
 	}
 	// classes and structures
-	else if (varsummary != NULL)
+	else if (varsummary!=NULL && details==FULL_SUMMARY)
 		snprintf (vardesc, descsize, "@3 0x%llx \\\"%s\\\"", varaddr, varsummary);
 	else
 		snprintf (vardesc, descsize, "@4 0x%llx {...}", varaddr);

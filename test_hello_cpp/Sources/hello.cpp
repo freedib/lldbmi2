@@ -39,28 +39,24 @@ typedef struct CD {
 	const char *d;
 } CDCD;
 
-
 //#define TEST_MEMBERS
+#define TEST_STRING
 //#define TEST_CRASH
-#define TEST_ARGS
-
+//#define TEST_ARGS
 
 #ifdef TEST_MEMBERS
 int main()
 {
-	bool go = true;
-	if (go) {
-		AB ab;
-		int z=0;
-		ab.seta(1+z++);
-		ab.setb(2+z++);
-		z = ab.sumab();
-		cout << "!!!Hello World " << z << endl; // prints !!!Hello World!!!
-	}
+	int m[] = {33,66};
+	struct CD cd = {44, "444"};
+	AB ab;
+	ab.seta(11);
+	ab.setb(22);
+	int	z = ab.sumab();
+	cout << "!!!Hello World " << z << endl; // prints !!!Hello World!!!
 	return 0;
 }
 #endif
-
 
 #ifdef TEST_CRASH
 int main()
@@ -95,6 +91,13 @@ int main()
 	testfunction (i, s, s, &s[0], "b", d, b, NULL, cd, ab);
 	d[0] = 9.9;
 	testfunction (i, s, s, &s[0], "b", d, b, NULL, cd, ab);
+}
+#endif
+
+#ifdef TEST_STRING
+int main()
+{
+	std::string s;
 }
 #endif
 #endif // BASE_TEST
