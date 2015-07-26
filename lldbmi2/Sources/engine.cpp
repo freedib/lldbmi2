@@ -31,7 +31,7 @@ void terminateSB ()
 }
 
 
-// TODO: check process, thread and frame validity every where
+// TODO: check frame validity every where
 
 // command interpreter
 //   decode the line in input
@@ -684,7 +684,7 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 				*childlist = '\0';
 				const char *sep="";
 				int ichild;
-				for (ichild=0; ichild<varnumchildren; ichild++) {
+				for (ichild=0; ichild<min(varnumchildren,CHILDREN_MAX); ichild++) {
 					SBValue child = var.GetChildAtIndex(ichild);
 					if (!child.IsValid() || var.GetError().Fail())
 						continue;

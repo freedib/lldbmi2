@@ -118,7 +118,7 @@ updateVarState (SBValue var, int depth)
 			var.GetName(), varexpressionpath, varnumchildren, var.GetValue(), summary, var.GetValueDidChange());
     // And update its children
 	if (!vartype.IsPointerType() && !vartype.IsReferenceType() && !vartype.IsArrayType()) {
-		for (int ichild = 0; ichild < varnumchildren; ++ichild) {
+		for (int ichild = 0; ichild < min(varnumchildren,CHILDREN_MAX); ++ichild) {
 			SBValue child = var.GetChildAtIndex(ichild);
 			if (child.IsValid() && var.GetError().Success() && depth>1) {
 				child.SetPreferSyntheticValue (false);
@@ -171,7 +171,7 @@ formatChangedList (char *changedesc, size_t descsize, SBValue var, bool &separat
 		return changedesc;
 	}
 	if (!vartype.IsPointerType() && !vartype.IsReferenceType() && !vartype.IsArrayType()) {
-		for (int ichild = 0; ichild < varnumchildren; ++ichild) {
+		for (int ichild = 0; ichild < min(varnumchildren,CHILDREN_MAX); ++ichild) {
 			SBValue child = var.GetChildAtIndex(ichild);
 			if (!child.IsValid() || var.GetError().Fail())
 				continue;
@@ -280,7 +280,7 @@ formatSummary (char *summarydesc, size_t descsize, SBValue var)
 		char *ps=summarydesc;
 		char vardesc[NAME_MAX];
 		strlcat (ps++, "{", descsize--);
-		for (int ichild=0; ichild<numchildren; ichild++) {
+		for (int ichild=0; ichild<min(numchildren,CHILDREN_MAX); ichild++) {
 			SBValue child = var.GetChildAtIndex(ichild);
 			if (!child.IsValid() || var.GetError().Fail())
 				continue;

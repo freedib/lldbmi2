@@ -110,7 +110,7 @@ class ComplexClass
         valueslist vl;
         uint16_t number;
 };
-ComplexClass::ComplexClass () {
+ComplexClass::ComplexClass () : vl(v1), number(0) {
 }
 
 #ifdef TEST_STRING
