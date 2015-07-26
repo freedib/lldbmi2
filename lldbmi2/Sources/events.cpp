@@ -169,6 +169,10 @@ onStopped (STATE *pstate, SBProcess process)
 	updateSelectedThread (process);				// search which thread is stopped
 	SBTarget target = process.GetTarget();
 	SBThread thread = process.GetSelectedThread();
+    if (!thread.IsValid()) {
+    	logprintf (LOG_ERROR, "thread invalid on event eStateStopped\n");
+    	return;
+    }
 	int stopreason = thread.GetStopReason();
 //	logprintf (LOG_EVENTS, "stopreason=%d\n", stopreason);
 	if (stopreason==eStopReasonBreakpoint || stopreason==eStopReasonPlanComplete) {
@@ -299,7 +303,6 @@ updateSelectedThread (SBProcess process)
     if (!process.IsValid())
         return;
     SBThread currentThread = process.GetSelectedThread();
-    SBThread thread;
     const StopReason eCurrentThreadStoppedReason = currentThread.GetStopReason();
     if (!currentThread.IsValid() || (eCurrentThreadStoppedReason == eStopReasonInvalid) ||
     		(eCurrentThreadStoppedReason == eStopReasonNone)) {
@@ -310,7 +313,11 @@ updateSelectedThread (SBProcess process)
         for (size_t indexthread=0; indexthread<nthreads; indexthread++) {
             //  GetThreadAtIndex() uses a base 0 index
             //  GetThreadByIndexID() uses a base 1 index
-            thread = process.GetThreadAtIndex(indexthread);
+            SBThread thread = process.GetThreadAtIndex(indexthread);
+            if (!thread.IsValid()) {
+               	logprintf (LOG_ERROR, "thread invalid in updateSelectedThread\n");
+                return;
+            }
             const StopReason eThreadStopReason = thread.GetStopReason();
             switch (eThreadStopReason) {
                 case eStopReasonTrace:
@@ -336,6 +343,7 @@ updateSelectedThread (SBProcess process)
         else if (otherThread.IsValid())
             process.SetSelectedThread(otherThread);
         else {
+        	SBThread thread;
             if (currentThread.IsValid())
                 thread = currentThread;
             else

@@ -11,6 +11,7 @@
 // "/Users/didier/Projets/git-lldbmi2/test_hello_c/Sources/hello.c:33",times="0",original-location="/Users/\
 // didier/Projets/git-lldbmi2/test_hello_c/Sources/hello.c:33"}
 
+// TODO: print strings with ecape chars in logprintf
 // format a breakpoint description into a GDB string
 char *
 formatBreakpoint (char *breakpointdesc, size_t descsize, SBBreakpoint breakpoint, STATE *pstate)
@@ -177,6 +178,8 @@ formatThreadInfo (char *threaddesc, size_t descsize, SBProcess process, int thre
 				thread = process.GetThreadByIndexID(ithread);
 			else
 				thread = process.GetThreadAtIndex(ithread);
+			if (!thread.IsValid())
+				continue;
 			int tid=thread.GetThreadID();
 			threadindexid=thread.GetIndexID();
 			int frames = getNumFrames (thread);

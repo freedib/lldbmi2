@@ -31,6 +31,8 @@ void terminateSB ()
 }
 
 
+// TODO: check process, thread and frame validity every where
+
 // command interpreter
 //   decode the line in input
 //   execute the command
@@ -207,7 +209,6 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 			pstate->process = process;
 			startProcessListener (pstate);
 			setSignals (pstate);
-			SBThread thread = process.GetSelectedThread();
 			cdtprintf ("=thread-group-started,id=\"%s\",pid=\"%lld\"\n", pstate->threadgroup, process.GetProcessID());
 			checkThreadsLife (pstate, process);
 			cdtprintf ("%d^done\n(gdb)\n", cc.sequence);
@@ -238,7 +239,6 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 			pstate->process = process;
 			startProcessListener(pstate);
 			setSignals (pstate);
-			SBThread thread = process.GetSelectedThread();
 			cdtprintf ("=thread-group-started,id=\"%s\",pid=\"%lld\"\n", pstate->threadgroup, process.GetProcessID());
 			checkThreadsLife (pstate, process);
 			cdtprintf ("%d^running\n", cc.sequence);
@@ -255,7 +255,7 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 			if (state == eStateStopped) {
 				SBThread thread = process.GetSelectedThread();
 				cdtprintf ("%d^running\n", cc.sequence);
-				cdtprintf ("*running,thread-id=\"%d\"\n(gdb)\n", thread.GetIndexID());
+				cdtprintf ("*running,thread-id=\"%d\"\n(gdb)\n", thread.IsValid()? thread.GetIndexID(): 0);
 				process.Continue();
 				pstate->isrunning = true;
 			}
@@ -278,7 +278,7 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 				SBThread thread = process.GetSelectedThread();
 				if (thread.IsValid()) {
 					cdtprintf ("%d^running\n", cc.sequence);
-					cdtprintf ("*running,thread-id=\"%d\"\n(gdb)\n", thread.GetIndexID());
+					cdtprintf ("*running,thread-id=\"%d\"\n(gdb)\n", thread.IsValid()? thread.GetIndexID(): 0);
 					if (strcmp(cc.argv[0],"-exec-step")==0)
 						thread.StepInto();
 					else
@@ -348,7 +348,7 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 						if (state == eStateStopped) {			// if process is stopped. restart it before kill
 							SBThread thread = process.GetSelectedThread();
 							cdtprintf ("%d^running\n", cc.sequence);
-							cdtprintf ("*running,thread-id=\"%d\"\n(gdb)\n", thread.GetIndexID());
+							cdtprintf ("*running,thread-id=\"%d\"\n(gdb)\n", thread.IsValid()? thread.GetIndexID(): 0);
 							process.Continue();
 							pstate->isrunning = true;
 						}
@@ -481,8 +481,12 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 				sscanf (cc.argv[nextarg++], "%d", &maxdepth);
 		if (process.IsValid()) {
 			SBThread thread = process.GetSelectedThread();
-			int numframes = getNumFrames (thread);
-			cdtprintf ("%d^done,depth=\"%d\"\n(gdb)\n", cc.sequence, numframes);
+			if (thread.IsValid()) {
+				int numframes = getNumFrames (thread);
+				cdtprintf ("%d^done,depth=\"%d\"\n(gdb)\n", cc.sequence, numframes);
+			}
+			else
+				cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
 		}
 		else
 			cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
@@ -497,20 +501,24 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 			if (isdigit(*cc.argv[nextarg]))
 				sscanf (cc.argv[nextarg++], "%d", &endframe);
 		SBThread thread = process.GetSelectedThread();
-		if (endframe<0)
-			endframe = getNumFrames (thread);
-		else
-			++endframe;
-		const char *separator="";
-		cdtprintf ("%d^done,stack=[", cc.sequence);
-		char framedesc[LINE_MAX];
-		for (int iframe=startframe; iframe<endframe; iframe++) {
-			SBFrame frame = thread.GetFrameAtIndex(iframe);
-			formatFrame (framedesc, sizeof(framedesc), frame, WITH_LEVEL);
-			cdtprintf ("%s%s", separator, framedesc);
-			separator=",";
+		if (thread.IsValid()) {
+			if (endframe<0)
+				endframe = getNumFrames (thread);
+			else
+				++endframe;
+			const char *separator="";
+			cdtprintf ("%d^done,stack=[", cc.sequence);
+			char framedesc[LINE_MAX];
+			for (int iframe=startframe; iframe<endframe; iframe++) {
+				SBFrame frame = thread.GetFrameAtIndex(iframe);
+				formatFrame (framedesc, sizeof(framedesc), frame, WITH_LEVEL);
+				cdtprintf ("%s%s", separator, framedesc);
+				separator=",";
+			}
+			cdtprintf ("]\n(gdb)\n");
 		}
-		cdtprintf ("]\n(gdb)\n");
+		else
+			cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
 	}
 	else if (strcmp(cc.argv[0],"-stack-list-arguments")==0) {
 		// stack-list-arguments --thread 1 1 (print-values) {1 2 (min max)}
@@ -525,20 +533,24 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 			if (isdigit(*cc.argv[nextarg]))
 				sscanf (cc.argv[nextarg++], "%d", &endframe);
 		SBThread thread = process.GetSelectedThread();
-		if (endframe<0)
-			endframe = getNumFrames (thread);
-		else
-			++endframe;
-		const char *separator="";
-		cdtprintf ("%d^done,stack-args=[", cc.sequence);
-		char argsdesc[LINE_MAX];
-		for (int iframe=startframe; iframe<endframe; iframe++) {
-			SBFrame frame = thread.GetFrameAtIndex(iframe);
-			formatFrame (argsdesc, sizeof(argsdesc), frame, JUST_LEVEL_AND_ARGS);
-			cdtprintf ("%s%s", separator, argsdesc);
-			separator=",";
+		if (thread.IsValid()) {
+			if (endframe<0)
+				endframe = getNumFrames (thread);
+			else
+				++endframe;
+			const char *separator="";
+			cdtprintf ("%d^done,stack-args=[", cc.sequence);
+			char argsdesc[LINE_MAX];
+			for (int iframe=startframe; iframe<endframe; iframe++) {
+				SBFrame frame = thread.GetFrameAtIndex(iframe);
+				formatFrame (argsdesc, sizeof(argsdesc), frame, JUST_LEVEL_AND_ARGS);
+				cdtprintf ("%s%s", separator, argsdesc);
+				separator=",";
+			}
+			cdtprintf ("]\n(gdb)\n");
 		}
-		cdtprintf ("]\n(gdb)\n");
+		else
+			cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
 	}
 	else if (strcmp(cc.argv[0],"-thread-info")==0) {
 		char threaddesc[LINE_MAX];
@@ -595,22 +607,26 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 				sep = " ";
 			}
 			SBThread thread = process.GetSelectedThread();
-			SBFrame frame = thread.GetSelectedFrame();
-			// Find then Evaluate to avoid recreate variable
-			SBValue var = getVariable (frame, expression);
-			if (var.IsValid() && var.GetError().Success()) {
-				int varnumchildren = var.GetNumChildren();
-				SBType vartype = var.GetType();
-				char expressionpathdesc[NAME_MAX];
-				formatExpressionPath (expressionpathdesc, sizeof(expressionpathdesc), var);
-				char vardesc[NAME_MAX];
-				formatValue (vardesc, sizeof(vardesc), var, NO_SUMMARY);
-				if (vartype.IsReferenceType() && varnumchildren==1)	// correct numchildren and value if reference
-					--varnumchildren;
-				cdtprintf ("%d^done,name=\"%s\",numchild=\"%d\",value=\"%s\","
-							"type=\"%s\",thread-id=\"%d\",has_more=\"0\"\n(gdb)\n",
-							cc.sequence, expressionpathdesc, varnumchildren, vardesc,
-							vartype.GetDisplayTypeName(), thread.GetIndexID());
+			if (thread.IsValid()) {
+				SBFrame frame = thread.GetSelectedFrame();
+				// Find then Evaluate to avoid recreate variable
+				SBValue var = getVariable (frame, expression);
+				if (var.IsValid() && var.GetError().Success()) {
+					int varnumchildren = var.GetNumChildren();
+					SBType vartype = var.GetType();
+					char expressionpathdesc[NAME_MAX];
+					formatExpressionPath (expressionpathdesc, sizeof(expressionpathdesc), var);
+					char vardesc[NAME_MAX];
+					formatValue (vardesc, sizeof(vardesc), var, NO_SUMMARY);
+					if (vartype.IsReferenceType() && varnumchildren==1)	// correct numchildren and value if reference
+						--varnumchildren;
+					cdtprintf ("%d^done,name=\"%s\",numchild=\"%d\",value=\"%s\","
+								"type=\"%s\",thread-id=\"%d\",has_more=\"0\"\n(gdb)\n",
+								cc.sequence, expressionpathdesc, varnumchildren, vardesc,
+								vartype.GetDisplayTypeName(), thread.GetIndexID());
+				}
+				else
+					cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
 			}
 			else
 				cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
@@ -630,16 +646,20 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 		if (nextarg<cc.argc)									// variable name
 			strlcpy (expression, cc.argv[nextarg++], sizeof(expression));
 		SBThread thread = process.GetSelectedThread();
-		SBFrame frame = thread.GetSelectedFrame();
-		SBValue var = getVariable (frame, expression);			// find variable
-		char changedesc[BIG_LINE_MAX];
-		changedesc[0] = '\0';
-		if (var.IsValid() && var.GetError().Success()) {
-			bool separatorvisible = false;
-			SBFunction function = frame.GetFunction();
-			formatChangedList (changedesc, sizeof(changedesc), var, separatorvisible);
+		if (thread.IsValid()) {
+			SBFrame frame = thread.GetSelectedFrame();
+			SBValue var = getVariable (frame, expression);			// find variable
+			char changedesc[BIG_LINE_MAX];
+			changedesc[0] = '\0';
+			if (var.IsValid() && var.GetError().Success()) {
+				bool separatorvisible = false;
+				SBFunction function = frame.GetFunction();
+				formatChangedList (changedesc, sizeof(changedesc), var, separatorvisible);
+			}
+			cdtprintf ("%d^done,changelist=[%s]\n(gdb)\n", cc.sequence, changedesc);
 		}
-		cdtprintf ("%d^done,changelist=[%s]\n(gdb)\n", cc.sequence, changedesc);
+		else
+			cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
 	}
 	else if (strcmp(cc.argv[0],"-var-list-children")==0) {
 		// 34-var-list-children var2
@@ -655,33 +675,40 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 		if (nextarg<cc.argc)
 			strlcpy (expression, cc.argv[nextarg++], sizeof(expression));
 		SBThread thread = process.GetSelectedThread();
-		SBFrame frame = thread.GetSelectedFrame();
-		SBValue var = getVariable (frame, expression);
-		if (var.IsValid() && var.GetError().Success()) {
-			int varnumchildren = var.GetNumChildren();
-			char childlist[LINE_MAX];
-			*childlist = '\0';
-			const char *sep="";
-			int ichild;
-			for (ichild=0; ichild<varnumchildren; ichild++) {
-				SBValue child = var.GetChildAtIndex(ichild);
-				const char *childname = child.GetName();			// displayed name
-				char expressionpathdesc[NAME_MAX];					// real path
-				formatExpressionPath (expressionpathdesc, sizeof(expressionpathdesc), child);
-				int childnumchildren = child.GetNumChildren();
-				SBType childtype = child.GetType();
-				int threadindexid = thread.GetIndexID();
-				// [child={name="var2.*b",exp="*b",numchild="0",type="char",thread-id="1"}]
-				int childlistlength = strlen(childlist);
-				snprintf (childlist+childlistlength, sizeof(childlist)-childlistlength,
-						"%schild={name=\"%s\",exp=\"%s\",numchild=\"%d\","
-						"type=\"%s\",thread-id=\"%d\"}",
-						sep,expressionpathdesc,childname,childnumchildren,childtype.GetDisplayTypeName(),threadindexid);
-				sep = ",";
+		if (thread.IsValid()) {
+			SBFrame frame = thread.GetSelectedFrame();
+			SBValue var = getVariable (frame, expression);
+			if (var.IsValid() && var.GetError().Success()) {
+				int varnumchildren = var.GetNumChildren();
+				char childlist[LINE_MAX];
+				*childlist = '\0';
+				const char *sep="";
+				int ichild;
+				for (ichild=0; ichild<varnumchildren; ichild++) {
+					SBValue child = var.GetChildAtIndex(ichild);
+					if (!child.IsValid() || var.GetError().Fail())
+						continue;
+					child.SetPreferSyntheticValue (false);
+					const char *childname = child.GetName();			// displayed name
+					char expressionpathdesc[NAME_MAX];					// real path
+					formatExpressionPath (expressionpathdesc, sizeof(expressionpathdesc), child);
+					int childnumchildren = child.GetNumChildren();
+					SBType childtype = child.GetType();
+					int threadindexid = thread.GetIndexID();
+					// [child={name="var2.*b",exp="*b",numchild="0",type="char",thread-id="1"}]
+					int childlistlength = strlen(childlist);
+					snprintf (childlist+childlistlength, sizeof(childlist)-childlistlength,
+							"%schild={name=\"%s\",exp=\"%s\",numchild=\"%d\","
+							"type=\"%s\",thread-id=\"%d\"}",
+							sep,expressionpathdesc,childname,childnumchildren,childtype.GetDisplayTypeName(),threadindexid);
+					sep = ",";
+				}
+				// 34^done,numchild="1",children=[child={name="var2.*b",exp="*b",numchild="0",type="char",thread-id="1"}],has_more="0"
+				cdtprintf ("%d^done,numchild=\"%d\",children=[%s]\",has_more=\"0\"\n(gdb)\n",
+						cc.sequence, varnumchildren, childlist);
 			}
-			// 34^done,numchild="1",children=[child={name="var2.*b",exp="*b",numchild="0",type="char",thread-id="1"}],has_more="0"
-			cdtprintf ("%d^done,numchild=\"%d\",children=[%s]\",has_more=\"0\"\n(gdb)\n",
-					cc.sequence, varnumchildren, childlist);
+			else
+				cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
 		}
 		else
 			cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
@@ -701,12 +728,16 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 			cdtprintf ("%d^done,path_expr=\"%s\"\n(gdb)\n", cc.sequence, expression);
 		else {
 			SBThread thread = process.GetSelectedThread();
-			SBFrame frame = thread.GetSelectedFrame();
-			SBValue var = getVariable (frame, expression);
-			if (var.IsValid() && var.GetError().Success()) {
-				char expressionpathdesc[NAME_MAX];
-				formatExpressionPath (expressionpathdesc, sizeof(expressionpathdesc), var);
-				cdtprintf ("%d^done,path_expr=\"%s\"\n(gdb)\n", cc.sequence, expressionpathdesc);
+			if (thread.IsValid()) {
+				SBFrame frame = thread.GetSelectedFrame();
+				SBValue var = getVariable (frame, expression);
+				if (var.IsValid() && var.GetError().Success()) {
+					char expressionpathdesc[NAME_MAX];
+					formatExpressionPath (expressionpathdesc, sizeof(expressionpathdesc), var);
+					cdtprintf ("%d^done,path_expr=\"%s\"\n(gdb)\n", cc.sequence, expressionpathdesc);
+				}
+				else
+					cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
 			}
 			else
 				cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
@@ -728,12 +759,16 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 			cdtprintf ("%d^done,value=\"8\"\n(gdb)\n", cc.sequence);
 		else {
 			SBThread thread = process.GetSelectedThread();
-			SBFrame frame = thread.GetSelectedFrame();
-			SBValue var = getVariable (frame, expression);		// createVariable
-			if (var.IsValid() && var.GetError().Success()) {
-				char vardesc[NAME_MAX];
-				formatValue (vardesc, sizeof(vardesc), var, FULL_SUMMARY);
-				cdtprintf ("%d^done,value=\"%s\"\n(gdb)\n", cc.sequence, vardesc);
+			if (thread.IsValid()) {
+				SBFrame frame = thread.GetSelectedFrame();
+				SBValue var = getVariable (frame, expression);		// createVariable
+				if (var.IsValid() && var.GetError().Success()) {
+					char vardesc[NAME_MAX];
+					formatValue (vardesc, sizeof(vardesc), var, FULL_SUMMARY);
+					cdtprintf ("%d^done,value=\"%s\"\n(gdb)\n", cc.sequence, vardesc);
+				}
+				else
+					cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
 			}
 			else
 				cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
@@ -765,13 +800,17 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 		else
 			formatcode = eFormatDefault;
 		SBThread thread = process.GetSelectedThread();
-		SBFrame frame = thread.GetSelectedFrame();
-		SBValue var = getVariable (frame, expression);
-		if (var.IsValid() && var.GetError().Success()) {
-			var.SetFormat(formatcode);
-			char vardesc[NAME_MAX];
-			formatValue (vardesc, sizeof(vardesc), var, NO_SUMMARY);
-			cdtprintf ("%d^done,format=\"%s\",value=\"%s\"\n(gdb)\n", cc.sequence, format, vardesc);
+		if (thread.IsValid()) {
+			SBFrame frame = thread.GetSelectedFrame();
+			SBValue var = getVariable (frame, expression);
+			if (var.IsValid() && var.GetError().Success()) {
+				var.SetFormat(formatcode);
+				char vardesc[NAME_MAX];
+				formatValue (vardesc, sizeof(vardesc), var, NO_SUMMARY);
+				cdtprintf ("%d^done,format=\"%s\",value=\"%s\"\n(gdb)\n", cc.sequence, format, vardesc);
+			}
+			else
+				cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
 		}
 		else
 			cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
@@ -900,7 +939,10 @@ evalCDTLine (STATE *pstate, const char *cdtline, CDT_COMMAND *cc)
 			sscanf (cc->argv[++field], "%d", &cc->frame);
 			if (cc->frame!=actual_frame && cc->frame>=0) {
 				SBThread thread = pstate->process.GetSelectedThread();
-				thread.SetSelectedFrame (cc->frame);
+				if (thread.IsValid())
+					thread.SetSelectedFrame (cc->frame);
+				else
+					cdtprintf ("%d^error,msg=\"%s\"\n(gdb)\n", cc->sequence, "Can not select frame. thread is invalid.");
 			}
 		}
 		else if (strcmp(cc->argv[field],"--available") == 0)

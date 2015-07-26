@@ -4,8 +4,7 @@
 #include "variables.h"
 #include "names.h"
 
-
-// TODO: support types like struct S. seems to be a bug in lldb
+// TODO: implement @ formats for structures like struct S. seems to be a bug in lldb
 bool
 getPeudoArrayVariable (SBFrame frame, const char *expression, SBValue &var)
 {
@@ -91,6 +90,7 @@ getVariable (SBFrame frame, const char *expression)
 #endif
 	logprintf (LOG_DEBUG, "getVariable: expression=%s, name=%s, value=%s, changed=%d\n",
 			expression, var.GetName(), var.GetValue(), var.GetValueDidChange());
+	var.SetPreferSyntheticValue (false);
 	return var;
 }
 
@@ -99,6 +99,13 @@ int
 updateVarState (SBValue var, int depth)
 {
 	logprintf (LOG_TRACE, "updateVarState (0x%x, %d)\n", &var, depth);
+	var.SetPreferSyntheticValue(false);
+	SBType vartype = var.GetType();
+	logprintf (LOG_DEBUG, "updateVarState: Var=%-5s: children=%-2d, typeclass=%-10s, basictype=%-10s, bytesize=%-2d, Pointee: typeclass=%-10s, basictype=%-10s, bytesize=%-2d\n",
+			var.GetName(), var.GetNumChildren(), getNameForTypeClass(vartype.GetTypeClass()), getNameForBasicType(vartype.GetBasicType()), vartype.GetByteSize(),
+			getNameForTypeClass(vartype.GetPointeeType().GetTypeClass()), getNameForBasicType(vartype.GetPointeeType().GetBasicType()), vartype.GetPointeeType().GetByteSize());
+	logprintf (LOG_DEBUG, "updateVarState: Is(%-5s) = %d %d %d %d %s\n",
+			var.GetName(), var.IsValid(), var.IsInScope(), var.IsDynamic(), var.IsSynthetic(), var.GetError().GetCString());
 	SBStream stream;											// temp
 	var.GetExpressionPath(stream);								// temp
 	const char *varexpressionpath = stream.GetData();			// temp
@@ -106,16 +113,17 @@ updateVarState (SBValue var, int depth)
 	var.GetValue();				// get value to activate changes
 	int changes = var.GetValueDidChange();
 	const char *summary = var.GetSummary();			// get value to activate changes  ????
-	logprintf (LOG_DEBUG, "updateVarState: name=%s, varexpressionpath=%s, value=%s, summary=%s, changed=%d\n",
-			var.GetName(), varexpressionpath, var.GetValue(), summary, var.GetValueDidChange());
+	int varnumchildren = var.GetNumChildren();
+	logprintf (LOG_DEBUG, "updateVarState: name=%s, varexpressionpath=%s, varnumchildren=%d, value=%s, summary=%s, changed=%d\n",
+			var.GetName(), varexpressionpath, varnumchildren, var.GetValue(), summary, var.GetValueDidChange());
     // And update its children
-	SBType vartype = var.GetType();
 	if (!vartype.IsPointerType() && !vartype.IsReferenceType() && !vartype.IsArrayType()) {
-		int varnumchildren = var.GetNumChildren();
 		for (int ichild = 0; ichild < varnumchildren; ++ichild) {
 			SBValue child = var.GetChildAtIndex(ichild);
-			if (child.IsValid() && depth>1)
+			if (child.IsValid() && var.GetError().Success() && depth>1) {
+				child.SetPreferSyntheticValue (false);
 				changes += updateVarState (child, depth-1);
+			}
 		}
 	}
 	return changes;
@@ -123,7 +131,6 @@ updateVarState (SBValue var, int depth)
 
 
 // search changed variables
-// TODO: add parent in list to activate change indicator
 char *
 formatChangedList (char *changedesc, size_t descsize, SBValue var, bool &separatorvisible, int depth)
 {
@@ -140,10 +147,15 @@ formatChangedList (char *changedesc, size_t descsize, SBValue var, bool &separat
 	SBType vartype = var.GetType();
 	int varnumchildren = var.GetNumChildren();
 	if (vartype.IsReferenceType() && varnumchildren==1) {
-		// use children if reference
-		var = var.GetChildAtIndex(0);
-		vartype = var.GetType();
-		varnumchildren = var.GetNumChildren();
+		// use child if reference. class (*) [] format
+		logprintf (LOG_DEBUG, "formatValue: special case class (*) []\n");
+		SBValue child = var.GetChildAtIndex(0);
+		if (child.IsValid() && var.GetError().Success()) {
+			child.SetPreferSyntheticValue (false);
+			var = child;
+			vartype = var.GetType();
+			varnumchildren = var.GetNumChildren();
+		}
 	}
 	int childrenchanged = 0;
 //	childrenchanged = updateVarState(var);
@@ -161,8 +173,9 @@ formatChangedList (char *changedesc, size_t descsize, SBValue var, bool &separat
 	if (!vartype.IsPointerType() && !vartype.IsReferenceType() && !vartype.IsArrayType()) {
 		for (int ichild = 0; ichild < varnumchildren; ++ichild) {
 			SBValue child = var.GetChildAtIndex(ichild);
-			if (!child.IsValid())
+			if (!child.IsValid() || var.GetError().Fail())
 				continue;
+			child.SetPreferSyntheticValue (false);
 			// Handle composite types (i.e. struct or arrays)
 			int changelength = strlen(changedesc);
             if (depth>1)
@@ -185,6 +198,7 @@ formatVariables (char *varsdesc, size_t descsize, SBValueList varslist)
 	const char *separator="";
 	for (size_t i=0; i<varslist.GetSize(); i++) {
 		SBValue var = varslist.GetValueAtIndex(i);
+		var.SetPreferSyntheticValue (false);
 		if (var.IsValid() && var.GetError().Success()) {
 			SBType vartype = var.GetType();
 			logprintf (LOG_DEBUG, "formatVariables: var=%s, type class=%s, basic type=%s \n",
@@ -268,8 +282,9 @@ formatSummary (char *summarydesc, size_t descsize, SBValue var)
 		strlcat (ps++, "{", descsize--);
 		for (int ichild=0; ichild<numchildren; ichild++) {
 			SBValue child = var.GetChildAtIndex(ichild);
-			if (!child.IsValid())
+			if (!child.IsValid() || var.GetError().Fail())
 				continue;
+			child.SetPreferSyntheticValue (false);
 			const char *childvalue = child.GetValue();
 			if (childvalue != NULL)
 				if (vartype.IsArrayType())
@@ -307,21 +322,24 @@ char *
 formatValue (char *vardesc, size_t descsize, SBValue var, VariableDetails details)
 {
 	logprintf (LOG_TRACE, "formatValue (%s, %d, 0x%x)\n", vardesc, descsize, &var);
-	// TODO: implement @ formats for structures
 	//	value = "HFG\123klj\b"
 	//	value={2,5,7,0 <repeat 5 times>, 7}
 	//	value = {{a=1,b=0x33},...{a=1,b=2}}
 	SBType vartype = var.GetType();
 	logprintf (LOG_DEBUG, "formatValue: Var=%-5s: children=%-2d, typeclass=%-10s, basictype=%-10s, bytesize=%-2d, Pointee: typeclass=%-10s, basictype=%-10s, bytesize=%-2d\n",
-				var.GetName(), var.GetNumChildren(), getNameForTypeClass(vartype.GetTypeClass()), getNameForBasicType(vartype.GetBasicType()), vartype.GetByteSize(),
-				getNameForTypeClass(vartype.GetPointeeType().GetTypeClass()), getNameForBasicType(vartype.GetPointeeType().GetBasicType()), vartype.GetPointeeType().GetByteSize());
+		var.GetName(), var.GetNumChildren(), getNameForTypeClass(vartype.GetTypeClass()), getNameForBasicType(vartype.GetBasicType()), vartype.GetByteSize(),
+		getNameForTypeClass(vartype.GetPointeeType().GetTypeClass()), getNameForBasicType(vartype.GetPointeeType().GetBasicType()), vartype.GetPointeeType().GetByteSize());
 	int varnumchildren = var.GetNumChildren();
 	if (vartype.IsReferenceType() && varnumchildren==1) {
-		// special case for class (*) [] format
+		// use child if reference. class (*) [] format
 		logprintf (LOG_DEBUG, "formatValue: special case class (*) []\n");
-		var = var.GetChildAtIndex(0);
-		vartype = var.GetType();
-		varnumchildren = var.GetNumChildren();
+		SBValue child = var.GetChildAtIndex(0);
+		if (child.IsValid() && var.GetError().Success()) {
+			child.SetPreferSyntheticValue (false);
+			var = child;
+			vartype = var.GetType();
+			varnumchildren = var.GetNumChildren();
+		}
 	}
 	const char *varname = var.GetName();
 	char summarydesc[LINE_MAX];

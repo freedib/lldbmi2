@@ -1,1 +1,1 @@
-#define LLDBMI2_VERSION "1.0.40"
+#define LLDBMI2_VERSION "1.0.41"

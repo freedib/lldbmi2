@@ -94,10 +94,31 @@ int main()
 }
 #endif
 
+#include <vector>
+
+class ComplexClass
+{
+    public:
+		ComplexClass();
+        virtual ~ComplexClass() {}
+
+        typedef enum {
+            v1, v2, v3, v4
+        } valueslist;
+
+        std::vector<uint8_t> data;
+        valueslist vl;
+        uint16_t number;
+};
+ComplexClass::ComplexClass () {
+}
+
 #ifdef TEST_STRING
 int main()
 {
+//	int j=1;
 	std::string s;
+	ComplexClass cc;
 }
 #endif
 #endif // BASE_TEST
