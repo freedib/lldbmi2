@@ -196,6 +196,10 @@ onStopped (STATE *pstate, SBProcess process)
 		else
 			reasondesc[0] = '\0';
 		SBFrame frame = thread.GetSelectedFrame();
+		if (!frame.IsValid()) {
+	    	logprintf (LOG_ERROR, "frame invalid on event eStateStopped (eStopReasonBreakpoint)\n");
+	    	return;
+		}
 		char framedesc[LINE_MAX];
 		formatFrame (framedesc, sizeof(framedesc), frame, WITH_ARGS);
 		int threadindexid=thread.GetIndexID();
@@ -216,6 +220,10 @@ onStopped (STATE *pstate, SBProcess process)
 		const char *signalname = unixsignals.GetSignalAsCString(stopreason);
 		snprintf (reasondesc, sizeof(reasondesc), "reason=\"signal-received\",signal-name=\"%s\",", signalname);
 		SBFrame frame = thread.GetSelectedFrame();
+		if (!frame.IsValid()) {
+	    	logprintf (LOG_ERROR, "frame invalid on event eStateStopped (eStopReasonSignal)\n");
+	    	return;
+		}
 		char framedesc[LINE_MAX];
 		formatFrame (framedesc, sizeof(framedesc), frame, WITH_ARGS);
 		int threadindexid = thread.GetIndexID();

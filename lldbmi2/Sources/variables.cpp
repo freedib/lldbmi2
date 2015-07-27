@@ -375,7 +375,6 @@ formatValue (char *vardesc, size_t descsize, SBValue var, VariableDetails detail
 }
 
 
-
 // get and correct and expression path
 // correct cd->[] and cd.[] expressions to cd[]
 // TODO: correct for argument like  struct CD (*cd) [2]. in hello.cpp reference works but not pointer

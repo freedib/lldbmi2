@@ -56,6 +56,8 @@ getNumFrames (SBThread thread)
 #ifndef SHOW_STARTUP
 	for (int iframe=numframes-1; iframe>=0; iframe--) {
 		SBFrame frame = thread.GetFrameAtIndex(iframe);
+		if (!frame.IsValid())
+			continue;
 		SBModule module = frame.GetModule();
 		if (module.IsValid()) {
 			SBFileSpec modulefilespec = module.GetPlatformFileSpec();
