@@ -31,8 +31,6 @@ void terminateSB ()
 }
 
 
-// TODO: check frame validity every where
-
 // command interpreter
 //   decode the line in input
 //   execute the command
@@ -704,13 +702,31 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 					int ichild;
 					for (ichild=0; ichild<min(varnumchildren,CHILDREN_MAX); ichild++) {
 						SBValue child = var.GetChildAtIndex(ichild);
-						if (!child.IsValid() || var.GetError().Fail())
+						if (!child.IsValid() || child.GetError().Fail())
 							continue;
 						child.SetPreferSyntheticValue (false);
 						const char *childname = child.GetName();			// displayed name
+						if (childname==NULL)
+							childname = "";
 						char expressionpathdesc[NAME_MAX];					// real path
 						formatExpressionPath (expressionpathdesc, sizeof(expressionpathdesc), child);
 						int childnumchildren = child.GetNumChildren();
+						logprintf (LOG_DEBUG, "fromCDT (expression=%s, expressionpathdesc=%s, children=%d, chikdname=%s)\n",
+								expression, expressionpathdesc, childnumchildren, childname);
+						if (strcmp((const char *)expression,(const char *)expressionpathdesc)==0 &&
+								childnumchildren>0 && (strchr(childname,'<')!=NULL || *childname=='\0')) {
+							// special case with casts like String or Vector. We want the child of the child
+							// TODO: not correct to skip cast expressions if #children>0. Must find a way to evaluate cast expressions
+							SBValue childchild = child.GetChildAtIndex(0);
+							if (childchild.IsValid() && childchild.GetError().Success()) {
+								child = childchild;
+								childchild.SetPreferSyntheticValue (false);
+								child.SetPreferSyntheticValue (false);
+								childname = child.GetName();			// displayed name
+								formatExpressionPath (expressionpathdesc, sizeof(expressionpathdesc), child);
+								childnumchildren = child.GetNumChildren();
+							}
+						}
 						SBType childtype = child.GetType();
 						int threadindexid = thread.GetIndexID();
 						// [child={name="var2.*b",exp="*b",numchild="0",type="char",thread-id="1"}]

@@ -115,7 +115,7 @@ int main()
 //	int j=1;
 	std::string s;
 	s = "Hello";
-//	ComplexClass cc;
+	ComplexClass cc;
 }
 #endif
 
