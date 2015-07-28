@@ -713,10 +713,11 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 						int childnumchildren = child.GetNumChildren();
 						logprintf (LOG_DEBUG, "fromCDT (expression=%s, expressionpathdesc=%s, children=%d, chikdname=%s)\n",
 								expression, expressionpathdesc, childnumchildren, childname);
-						if (strcmp((const char *)expression,(const char *)expressionpathdesc)==0 &&
+						if (false && strcmp((const char *)expression,(const char *)expressionpathdesc)==0 &&
 								childnumchildren>0 && (strchr(childname,'<')!=NULL || *childname=='\0')) {
 							// special case with casts like String or Vector. We want the child of the child
 							// TODO: not correct to skip cast expressions if #children>0. Must find a way to evaluate cast expressions
+							// TODO: TO REMOVE
 							SBValue childchild = child.GetChildAtIndex(0);
 							if (childchild.IsValid() && childchild.GetError().Success()) {
 								child = childchild;
