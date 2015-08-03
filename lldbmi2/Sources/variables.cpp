@@ -6,6 +6,19 @@
 
 // extern bool global_istest;
 
+
+// bug struct CD (*cdp)[2]
+// gdb:     -var-create --thread 1 --frame 0 - * cdp		->    name="var4",numchild="1",type="CD (*)[2]"
+//          -var-list-children var4                     	->    numchild="1" ... child={name="var4.*cdp",exp="*cdp",numchild="2",type="CD [2]"
+//          -var-info-path-expression var4.*cdp				->    path_expr="*(cdp)"
+//          -var-create --thread 1 --frame 0 - * &(*(cdp))	->    name="var7",numchild="1",value="0x7fff5fbff500",type="CD (*)[2]"
+//          -var-create --thread 1 --frame 0 - * *(cdp)[0]	->    name="var8",numchild="1",value="{...}",type="CD"
+//          -var-create --thread 1 --frame 0 - * *(cdp)[1]	->    name="var9",numchild="1",value="{...}",type="CD"
+// lldbmi2: -var-create --thread 1 --frame 0 - * cdp		->    name="cdp"  ,numchild="2",type="CD (*)[2]"
+//			-var-list-children cdp			 ->	numchild="2",children=[child={name="cdp[0]",exp="[0]",numchild="2",type="CD"},child={name="cdp[1]",exp="[1]",numchild="2",type="CD"}]"
+//			-var-info-path-expression cdp[0] ->	path_expr="cdp[0]"
+//			-var-info-path-expression cdp[1] ->	path_expr="cdp[1]"
+
 // TODO: implement @ formats for structures like struct S. seems to be a bug in lldb
 bool
 getPeudoArrayVariable (SBFrame frame, const char *expression, SBValue &var)
@@ -160,7 +173,7 @@ getVariable (SBFrame frame, const char *expression)
 		var = frame.FindRegister(expression);
 	if (!var.IsValid() || var.GetError().Fail()) {
 		SBValue parent;
-		getDirectPathVariable (frame, expression, &var, parent, DEPTH_MAX);
+		getDirectPathVariable (frame, expression, &var, parent, WALK_DEPTH_MAX);
 	}
 	if (!var.IsValid() || var.GetError().Fail())
 		getStandardPathVariable (frame, expression, var);
@@ -193,7 +206,7 @@ updateVarState (SBValue var, int depth)
 	logprintf (LOG_DEBUG, "updateVarState: name=%s, varexpressionpath=%s, varnumchildren=%d, value=%s, summary=%s, changed=%d\n",
 			getName(var), expressionpathdesc, varnumchildren, var.GetValue(), summary, var.GetValueDidChange());
     // And update its children
-	if (!vartype.IsPointerType() && !vartype.IsReferenceType() && !vartype.IsArrayType()) {
+	if (/*!vartype.IsPointerType() && !vartype.IsReferenceType() &&*/ !vartype.IsArrayType()) {
 		for (int ichild = 0; ichild < min(varnumchildren,CHILDREN_MAX); ++ichild) {
 			SBValue child = var.GetChildAtIndex(ichild);
 			if (child.IsValid() && var.GetError().Success() && depth>1) {
@@ -205,12 +218,54 @@ updateVarState (SBValue var, int depth)
 	return changes;
 }
 
+// get and correct and expression path
+// correct cd->[] and cd.[] expressions to cd[]
+// TODO: correct for argument like  struct CD (*cd) [2]. in hello.cpp reference works but not pointer
+char *
+formatExpressionPath (char *expressionpathdesc, size_t descsize, SBValue var)
+{
+	logprintf (LOG_TRACE, "formatExpressionPath (..., %zd, 0x%x)\n", descsize, &var);
+	// child expressions: var2.*b
+	SBStream stream;
+	var.GetExpressionPath (stream, true);
+	strlcpy (expressionpathdesc, stream.GetData(), descsize);
+	const char *varname = var.GetName();
+	if (varname==NULL)
+		strlcat (expressionpathdesc, "(anonymous)", descsize);
+	logprintf (LOG_DEBUG, "formatExpressionPath: expressionpathdesc=%s\n",
+			varname, expressionpathdesc);
+	if (strlen(expressionpathdesc) >= descsize-1)
+		logprintf (LOG_ERROR, "formatExpressionPath: expressionpathdesc size (%d) too small\n", descsize);
+	// correct expression
+	char *pp;
+	int suppress;
+	do {
+		suppress = 0;
+		if ((pp=strstr(expressionpathdesc,"->[")) != NULL)
+			suppress = 2;
+		else if ((pp=strstr(expressionpathdesc,".[")) != NULL)
+			suppress = 1;
+		else if ((pp=strstr(expressionpathdesc,"..")) != NULL)
+			suppress = 1;		// may happen if unions with no name
+		if (suppress > 0) {
+			pp += suppress;		// remove the offending characters
+			do
+				*(pp-suppress) = *pp;
+			while (*pp++);
+		}
+	} while (suppress>0);
+	int expressionpathdesclength = strlen(expressionpathdesc);
+	if (expressionpathdesclength>0 && expressionpathdesc[expressionpathdesclength-1]=='.')
+		expressionpathdesc[expressionpathdesclength-1] = '\0';
+	return expressionpathdesc;
+}
+
 // list children variables
 char *
 formatChildrenList (char *childrendesc, size_t descsize, SBValue var, char *expression, int threadindexid, int &varnumchildren)
 {
+	logprintf (LOG_TRACE, "formatChildrenList (..., %zd, 0x%x, %s, %d, %d)\n", descsize, &var, expression, threadindexid, varnumchildren);
 	varnumchildren = var.GetNumChildren();
-
 	const char *sep="";
 	int ichild;
 	for (ichild=0; ichild<min(varnumchildren,CHILDREN_MAX); ichild++) {
@@ -248,7 +303,7 @@ formatChildrenList (char *childrendesc, size_t descsize, SBValue var, char *expr
 char *
 formatChangedList (char *changedesc, size_t descsize, SBValue var, bool &separatorvisible, int depth)
 {
-	logprintf (LOG_TRACE, "formatChangedList (%s, %d, 0x%x, %B, %d)\n", changedesc, descsize, &var, separatorvisible, depth);
+	logprintf (LOG_TRACE, "formatChangedList (..., %zd, 0x%x, %B, %d)\n", descsize, &var, separatorvisible, depth);
 	char expressionpathdesc[NAME_MAX];
 	formatExpressionPath (expressionpathdesc, sizeof(expressionpathdesc), var);
 	if (*expressionpathdesc=='\0')
@@ -283,7 +338,7 @@ formatChangedList (char *changedesc, size_t descsize, SBValue var, bool &separat
 		separatorvisible = true;
 		return changedesc;
 	}
-	if (!vartype.IsPointerType() && !vartype.IsReferenceType() && !vartype.IsArrayType()) {
+	if (/*!vartype.IsPointerType() && !vartype.IsReferenceType() && */ !vartype.IsArrayType()) {
 		for (int ichild = 0; ichild < min(varnumchildren,CHILDREN_MAX); ++ichild) {
 			SBValue child = var.GetChildAtIndex(ichild);
 			if (!child.IsValid() || var.GetError().Fail())
@@ -306,7 +361,7 @@ formatChangedList (char *changedesc, size_t descsize, SBValue var, bool &separat
 char *
 formatVariables (char *varsdesc, size_t descsize, SBValueList varslist)
 {
-	logprintf (LOG_TRACE, "formatVariables (%s, %d, 0x%x)\n", varsdesc, descsize, &varslist);
+	logprintf (LOG_TRACE, "formatVariables (..., %zd, 0x%x)\n", descsize, &varslist);
 	*varsdesc = '\0';
 	const char *separator="";
 	for (size_t i=0; i<varslist.GetSize(); i++) {
@@ -361,7 +416,7 @@ formatVariables (char *varsdesc, size_t descsize, SBValueList varslist)
 char *
 formatSummary (char *summarydesc, size_t descsize, SBValue var)
 {
-	logprintf (LOG_TRACE, "formatSummary (%s, %d, 0x%x)\n", summarydesc, descsize, &var);
+	logprintf (LOG_TRACE, "formatSummary (..., %zd, 0x%x)\n", descsize, &var);
 	//	value = "HFG\123klj\b"
 	//	value={2,5,7,0 <repeat 5 times>, 7}
 	//	value = {{a=1,b=0x33},...{a=1,b=2}}
@@ -434,7 +489,7 @@ formatSummary (char *summarydesc, size_t descsize, SBValue var)
 char *
 formatValue (char *vardesc, size_t descsize, SBValue var, VariableDetails details)
 {
-	logprintf (LOG_TRACE, "formatValue (%s, %d, 0x%x)\n", vardesc, descsize, &var);
+	logprintf (LOG_TRACE, "formatValue (..., %zd, 0x%x, %x)\n", descsize, &var, details);
 	//	value = "HFG\123klj\b"
 	//	value={2,5,7,0 <repeat 5 times>, 7}
 	//	value = {{a=1,b=0x33},...{a=1,b=2}}
@@ -487,57 +542,3 @@ formatValue (char *vardesc, size_t descsize, SBValue var, VariableDetails detail
 	return vardesc;
 }
 
-
-// get and correct and expression path
-// correct cd->[] and cd.[] expressions to cd[]
-// TODO: correct for argument like  struct CD (*cd) [2]. in hello.cpp reference works but not pointer
-char *
-formatExpressionPath (char *expressionpathdesc, size_t descsize, SBValue var)
-{
-	logprintf (LOG_TRACE, "formatExpressionPath (%s, %d, 0x%x)\n", expressionpathdesc, descsize, &var);
-	// child expressions: var2.*b
-	SBStream stream;
-	var.GetExpressionPath (stream, true);
-	strlcpy (expressionpathdesc, stream.GetData(), descsize);
-	const char *varname = var.GetName();
-	if (varname==NULL)
-		strlcat (expressionpathdesc, "(anonymous)", descsize);
-	logprintf (LOG_DEBUG, "formatExpressionPath: expressionpathdesc=%s\n",
-			varname, expressionpathdesc);
-	if (strlen(expressionpathdesc) >= descsize-1)
-		logprintf (LOG_ERROR, "formatExpressionPath: expressionpathdesc size (%d) too small\n", descsize);
-	// correct expression
-	char *pp;
-	int suppress;
-	do {
-		suppress = 0;
-		if ((pp=strstr(expressionpathdesc,"->[")) != NULL)
-			suppress = 2;
-		else if ((pp=strstr(expressionpathdesc,".[")) != NULL)
-			suppress = 1;
-		else if ((pp=strstr(expressionpathdesc,"..")) != NULL)
-			suppress = 1;		// may happen if unions with no name
-		if (suppress > 0) {
-			pp += suppress;		// remove the offending characters
-			do
-				*(pp-suppress) = *pp;
-			while (*pp++);
-		}
-	} while (suppress>0);
-	int expressionpathdesclength = strlen(expressionpathdesc);
-	if (expressionpathdesclength>0 && expressionpathdesc[expressionpathdesclength-1]=='.')
-		expressionpathdesc[expressionpathdesclength-1] = '\0';
-	return expressionpathdesc;
-}
-
-// bug struct CD (*cdp)[2]
-// gdb:     -var-create --thread 1 --frame 0 - * cdp		->    name="var4",numchild="1",type="CD (*)[2]"
-//          -var-list-children var4                     	->    numchild="1" ... child={name="var4.*cdp",exp="*cdp",numchild="2",type="CD [2]"
-//          -var-info-path-expression var4.*cdp				->    path_expr="*(cdp)"
-//          -var-create --thread 1 --frame 0 - * &(*(cdp))	->    name="var7",numchild="1",value="0x7fff5fbff500",type="CD (*)[2]"
-//          -var-create --thread 1 --frame 0 - * *(cdp)[0]	->    name="var8",numchild="1",value="{...}",type="CD"
-//          -var-create --thread 1 --frame 0 - * *(cdp)[1]	->    name="var9",numchild="1",value="{...}",type="CD"
-// lldbmi2: -var-create --thread 1 --frame 0 - * cdp		->    name="cdp"  ,numchild="2",type="CD (*)[2]"
-//			-var-list-children cdp			 ->	numchild="2",children=[child={name="cdp[0]",exp="[0]",numchild="2",type="CD"},child={name="cdp[1]",exp="[1]",numchild="2",type="CD"}]"
-//			-var-info-path-expression cdp[0] ->	path_expr="cdp[0]"
-//			-var-info-path-expression cdp[1] ->	path_expr="cdp[1]"

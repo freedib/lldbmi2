@@ -11,11 +11,12 @@
 //#define TEST_C
 //#define TEST_C_ATTACH
 //#define TEST_C_VARS
+#define TEST_C_UPDATE
 //#define TEST_C_SIMPLE
 //#define TEST_C_POINTERS
 //#define TEST_C_LARGE_ARRAY
 //#define TEST_CPP_MEMBERS
-#define TEST_CPP_STRING
+//#define TEST_CPP_STRING
 //#define TEST_CPP_ARGS
 //#define TEST_OTHER
 
@@ -62,6 +63,26 @@ const char *testcommands[] = {
 	NULL
 };
 #endif	// TEST_C_VARS
+
+#ifdef TEST_C_UPDATE
+const char *testcommands[] = {
+	"51-environment-cd /Users/didier/Projets/git-lldbmi2/test_hello_c/Debug",
+	"52-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_c/Debug/test_hello_c",
+	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_c/Sources/hello.c:76",
+	"61-inferior-tty-set --thread-group i1 %1",	// stdout instead of /dev/ptyxx
+	"62-exec-run --thread-group i1",
+	"41-stack-list-locals --thread 1 --frame 0 1",
+	"42-stack-info-depth --thread 1 11",
+	"37-var-create --thread 1 --frame 0 - * py",
+	"129-var-list-children py",
+	"132-var-info-path-expression py->o",
+	"40-exec-next --thread 1 1",
+	"45-var-update 1 py",
+	"64-var-create --thread 1 --frame 0 - * strlen(b)",
+	"80-gdb-exit",
+	NULL
+};
+#endif	// TEST_C_UPDATE
 
 #ifdef TEST_C_LARGE_ARRAY
 const char *testcommands[] = {

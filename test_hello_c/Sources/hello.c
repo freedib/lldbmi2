@@ -75,12 +75,12 @@ int main (int argc, char **argv, char **envp)
 	m[0] = 123.456;
 	++py->o;
 	c = sub (67, b, &z);
+	c = sub (68, b, &z);
 	printf ("c=%d\n", c);
 	fflush (stdout);
 	waitthread ();
 	return 0;
 }
-
 #endif
 
 #ifdef TEST_ARRAYS

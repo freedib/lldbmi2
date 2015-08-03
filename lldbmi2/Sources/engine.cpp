@@ -599,7 +599,7 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 	}
 	// VARIABLES COMMANDS
 	else if (strcmp(cc.argv[0],"-var-create")==0) {
-		// TODO: strlen(dst) doesn't work in expression pane
+		// TODO: strlen(variable) not updated in expression pane
 		// var-create --thread 1 --frame 0 - * a
 		//     name="var1",numchild="0",value="1",type="int",thread-id="1",has_more="0"
 		//     name="var2",numchild="1",value="0x100000f76 \"2\"",type="char *",thread-id="1",has_more=a"0"
@@ -646,8 +646,6 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 			cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
 	}
 	else if (strcmp(cc.argv[0],"-var-update")==0) {
-		// TODO: int hello.c, var-update py return no change, but children changed. same for global y
-		// TODO: integer in argument list do not change at next call
 		// 47-var-update 1 var2
 		// 47^done,changelist=[]
 		// 41^done,changelist=[{name="var3",value="44",in_scope="true",type_changed="false",has_more="0"}]
