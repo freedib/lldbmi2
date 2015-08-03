@@ -19,7 +19,9 @@ using namespace lldb;
 #define TRUE  1
 
 #define MAX_THREADS 50
-#define BIG_LINE_MAX (LINE_MAX*5)
+#define VALUE_MAX (NAME_MAX<<1)
+#define BIG_VALUE_MAX (NAME_MAX<<2)
+#define BIG_LINE_MAX (LINE_MAX<<3)
 
 #define ENV_ENTRIES 100
 

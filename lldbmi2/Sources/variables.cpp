@@ -4,6 +4,8 @@
 #include "variables.h"
 #include "names.h"
 
+// extern bool global_istest;
+
 // TODO: implement @ formats for structures like struct S. seems to be a bug in lldb
 bool
 getPeudoArrayVariable (SBFrame frame, const char *expression, SBValue &var)
@@ -58,11 +60,15 @@ getPeudoArrayVariable (SBFrame frame, const char *expression, SBValue &var)
 	return true;
 }
 
-// standard variable search
+// get variable by trying standard approaches
+// - from local variables
+// - from variable path
+// - from expression evaluation
 bool
-getStandardSeachVariable (SBFrame frame, const char *expression, SBValue &var)
+getStandardPathVariable (SBFrame frame, const char *expression, SBValue &var)
 {
-	if (!var.IsValid() || var.GetError().Fail()) {
+	logprintf (LOG_TRACE, "getStandardPathVariable (0x%x, %s, 0x%x)\n", &frame, expression, &var);
+	if (true /*!var.IsValid() || var.GetError().Fail()*/) {
 		const bool bArgs = true;
 		const bool bLocals = true;
 		const bool bStatics = true;
@@ -77,26 +83,72 @@ getStandardSeachVariable (SBFrame frame, const char *expression, SBValue &var)
 	}
 	if (!var.IsValid() || var.GetError().Fail())
 		return false;
+	var.SetPreferSyntheticValue (false);
 	return true;
 }
 
-#if 0
-// try go get a variable child by walking its children
-bool
-getDirectPathVariable (SBFrame frame, const char *expression, SBValue &var, bool isroot)
+
+// return the name of a variable
+// adjust the name if NULL
+const char *getName ( SBValue &var)
 {
-	// while there are parts, search children for the remaining
-	char root[NAME_MAX], *ps;
-	ps = strchr(expression,'.');
-	if (ps==NULL && isroot)
-		return false;		// will be searched thru the regular way
-//	SBValue thisvar;
-//	if (ps==NULL)
+	const char *varname = var.GetName();
+	if (varname == NULL)
+		varname = "(anonymous)";
+	return varname;
+}
+
+
+// try go get a variable child from a path by walking its children
+// while there are parts, search children for the remaining
+bool
+getDirectPathVariable (SBFrame frame, const char *expression, SBValue *foundvar, SBValue &parent, int depth)
+{
+	logprintf (LOG_TRACE, "getDirectPathVariable (0x%x, %s, 0x%x, 0x%x, %d)\n", &frame, expression, &foundvar, &parent, depth);
+	char expression_parts[NAME_MAX], *pchildren=NULL;
+	strlcpy (expression_parts, expression, sizeof(expression_parts));
+	if (!parent.IsValid() || parent.GetError().Fail()) {
+		// if root, search root variable. start from the bottom up to a valid variable
+		do {
+			if ((pchildren = strrchr (expression_parts, '.')) == NULL)
+				return false;					// no more parent/children form
+			*pchildren++ = '\0';
+		} while (!getStandardPathVariable (frame, expression_parts, parent));
+		// copy again the string which may have now full of \0 ...
+		strlcpy (expression_parts, expression, sizeof(expression_parts));
+		// now follow the children up to the bottom
+		return getDirectPathVariable (frame, pchildren, foundvar, parent, depth-1);
+	}
+	// split expression between parent and children
+	if ((pchildren = strchr (expression_parts, '.')) != NULL)
+		*pchildren++ = '\0';
+	// search children var
+	int parentnumchildren = parent.GetNumChildren();
+	const char *parentname = getName (parent);
+	logprintf (LOG_DEBUG, "getDirectPathVariable: expression part: parentname=%s child-searched=%s, other-children=%s\n",
+			parentname, expression_parts, pchildren==NULL?"":pchildren);
+	for (int ichild = 0; ichild < min(parentnumchildren,CHILDREN_MAX); ++ichild) {
+		SBValue child = parent.GetChildAtIndex(ichild);
+		if (child.IsValid() && child.GetError().Success() && depth>1) {
+			child.SetPreferSyntheticValue (false);
+			const char *childname = getName(child);
+			logprintf (LOG_DEBUG, "getDirectPathVariable: scan children: parent=%s, expression_parts=%s, child=%s\n",
+					parentname, expression_parts, childname);
+			if (strcmp (expression_parts, childname) != 0)
+				continue;
+			if (pchildren == NULL) {
+				*foundvar = child;
+				return true;
+			}
+			// continue walking
+			return getDirectPathVariable (frame, pchildren, foundvar, child, depth-1);
+		}
+	}
 	return false;
 }
-#endif
 
-// from lldb-mi
+
+// get a variable by trying many approaches
 SBValue
 getVariable (SBFrame frame, const char *expression)
 {
@@ -106,15 +158,15 @@ getVariable (SBFrame frame, const char *expression)
 		getPeudoArrayVariable (frame, expression, var);
 	if ((!var.IsValid() || var.GetError().Fail()) && *expression=='$')
 		var = frame.FindRegister(expression);
-#if 0
+	if (!var.IsValid() || var.GetError().Fail()) {
+		SBValue parent;
+		getDirectPathVariable (frame, expression, &var, parent, DEPTH_MAX);
+	}
 	if (!var.IsValid() || var.GetError().Fail())
-		getDirectPathVariable (frame, expression, var, true);
-#endif
-	if (!var.IsValid() || var.GetError().Fail())
-		getStandardSeachVariable (frame, expression, var);
+		getStandardPathVariable (frame, expression, var);
 
 	logprintf (LOG_DEBUG, "getVariable: expression=%s, name=%s, value=%s, changed=%d\n",
-			expression, var.GetName(), var.GetValue(), var.GetValueDidChange());
+			expression, getName(var), var.GetValue(), var.GetValueDidChange());
 	var.SetPreferSyntheticValue (false);
 	return var;
 }
@@ -127,19 +179,19 @@ updateVarState (SBValue var, int depth)
 	var.SetPreferSyntheticValue(false);
 	SBType vartype = var.GetType();
 	logprintf (LOG_DEBUG, "updateVarState: Var=%-5s: children=%-2d, typeclass=%-10s, basictype=%-10s, bytesize=%-2d, Pointee: typeclass=%-10s, basictype=%-10s, bytesize=%-2d\n",
-			var.GetName(), var.GetNumChildren(), getNameForTypeClass(vartype.GetTypeClass()), getNameForBasicType(vartype.GetBasicType()), vartype.GetByteSize(),
+			getName(var), var.GetNumChildren(), getNameForTypeClass(vartype.GetTypeClass()), getNameForBasicType(vartype.GetBasicType()), vartype.GetByteSize(),
 			getNameForTypeClass(vartype.GetPointeeType().GetTypeClass()), getNameForBasicType(vartype.GetPointeeType().GetBasicType()), vartype.GetPointeeType().GetByteSize());
 	logprintf (LOG_NONE, "updateVarState: Is(%-5s) = %d %d %d %d %s\n",
-			var.GetName(), var.IsValid(), var.IsInScope(), var.IsDynamic(), var.IsSynthetic(), var.GetError().GetCString());
+			getName(var), var.IsValid(), var.IsInScope(), var.IsDynamic(), var.IsSynthetic(), var.GetError().GetCString());
 	char expressionpathdesc[NAME_MAX];												// temp
 	formatExpressionPath (expressionpathdesc, sizeof(expressionpathdesc), var);		// temp
 	// Force a value to update
-	var.GetValue();				// get value to activate changes
+	var.GetValue();									// get value to activate changes
 	int changes = var.GetValueDidChange();
 	const char *summary = var.GetSummary();			// get value to activate changes  ????
 	int varnumchildren = var.GetNumChildren();
 	logprintf (LOG_DEBUG, "updateVarState: name=%s, varexpressionpath=%s, varnumchildren=%d, value=%s, summary=%s, changed=%d\n",
-			var.GetName(), expressionpathdesc, varnumchildren, var.GetValue(), summary, var.GetValueDidChange());
+			getName(var), expressionpathdesc, varnumchildren, var.GetValue(), summary, var.GetValueDidChange());
     // And update its children
 	if (!vartype.IsPointerType() && !vartype.IsReferenceType() && !vartype.IsArrayType()) {
 		for (int ichild = 0; ichild < min(varnumchildren,CHILDREN_MAX); ++ichild) {
@@ -153,18 +205,56 @@ updateVarState (SBValue var, int depth)
 	return changes;
 }
 
+// list children variables
+char *
+formatChildrenList (char *childrendesc, size_t descsize, SBValue var, char *expression, int threadindexid, int &varnumchildren)
+{
+	varnumchildren = var.GetNumChildren();
+
+	const char *sep="";
+	int ichild;
+	for (ichild=0; ichild<min(varnumchildren,CHILDREN_MAX); ichild++) {
+		SBValue child = var.GetChildAtIndex(ichild);
+		if (!child.IsValid() || child.GetError().Fail())
+			continue;
+		child.SetPreferSyntheticValue (false);
+		const char *childname = getName(child);				// displayed name
+		int childnumchildren = child.GetNumChildren();
+		char expressionpathdesc[NAME_MAX];					// real path
+		formatExpressionPath (expressionpathdesc, sizeof(expressionpathdesc), child);
+		if (strcmp((const char *)expression,(const char *)expressionpathdesc)==0 &&
+				childnumchildren>0 &&
+				(strchr(childname,'<')!=NULL /*|| strstr(childname,"(anonymous)")!=NULL*/)) {
+			// special case with casts like String or Vector. Add the name to the expression
+			strlcat (expressionpathdesc, ".", sizeof(expressionpathdesc));
+			strlcat (expressionpathdesc, childname, sizeof(expressionpathdesc));
+		}
+		logprintf (LOG_DEBUG, "formatChildrenList (expressionpathdesc=%s, children=%d, childname=%s)\n",
+				expressionpathdesc, childnumchildren, childname);
+		SBType childtype = child.GetType();
+		// [child={name="var2.*b",exp="*b",numchild="0",type="char",thread-id="1"}]
+		int childrendesclength = strlen(childrendesc);
+		snprintf (childrendesc+childrendesclength, descsize-childrendesclength,
+			"%schild={name=\"%s\",exp=\"%s\",numchild=\"%d\","
+			"type=\"%s\",thread-id=\"%d\"}",
+			sep,expressionpathdesc,childname,childnumchildren,
+			childtype.GetDisplayTypeName(),threadindexid);
+		sep = ",";
+	}
+	return childrendesc;
+}
 
 // search changed variables
 char *
 formatChangedList (char *changedesc, size_t descsize, SBValue var, bool &separatorvisible, int depth)
 {
 	logprintf (LOG_TRACE, "formatChangedList (%s, %d, 0x%x, %B, %d)\n", changedesc, descsize, &var, separatorvisible, depth);
-	char expressionpathdesc[NAME_MAX];												// temp
-	formatExpressionPath (expressionpathdesc, sizeof(expressionpathdesc), var);		// temp
+	char expressionpathdesc[NAME_MAX];
+	formatExpressionPath (expressionpathdesc, sizeof(expressionpathdesc), var);
 	if (*expressionpathdesc=='\0')
 		return changedesc;
 	logprintf (LOG_DEBUG, "formatChangedList: name=%s, expressionpath=%s, value=%s, summary=%s, changed=%d\n",
-			var.GetName(), expressionpathdesc, var.GetValue(), var.GetSummary(), var.GetValueDidChange());
+			getName(var), expressionpathdesc, var.GetValue(), var.GetSummary(), var.GetValueDidChange());
 	var.GetValue();					// required to get value to activate changes
 	var.GetSummary();				// required to get value to activate changes
 	SBType vartype = var.GetType();
@@ -185,7 +275,7 @@ formatChangedList (char *changedesc, size_t descsize, SBValue var, bool &separat
 	if (var.GetValueDidChange() || childrenchanged>0) {
 		const char *separator = separatorvisible? ",":"";
 		const char *varinscope = var.IsInScope()? "true": "false";
-		char vardesc[NAME_MAX];
+		char vardesc[VALUE_MAX];
 		formatValue(vardesc,sizeof(vardesc),var,NO_SUMMARY);
 		snprintf (changedesc, descsize,
 			"%s{name=\"%s\",value=\"%s\",in_scope=\"%s\",type_changed=\"false\",has_more=\"0\"}",
@@ -225,20 +315,20 @@ formatVariables (char *varsdesc, size_t descsize, SBValueList varslist)
 		if (var.IsValid() && var.GetError().Success()) {
 			SBType vartype = var.GetType();
 			logprintf (LOG_DEBUG, "formatVariables: var=%s, type class=%s, basic type=%s \n",
-					var.GetName(), getNameForTypeClass(vartype.GetTypeClass()), getNameForBasicType(vartype.GetBasicType()));
+					getName(var), getNameForTypeClass(vartype.GetTypeClass()), getNameForBasicType(vartype.GetBasicType()));
 			const char *varvalue = var.GetValue();
 			// basic type valid only when type class is Builtin
 			if ((vartype.GetBasicType()!=eBasicTypeInvalid && varvalue!=NULL) || true) {
 				updateVarState (var);
 				int varslength = strlen(varsdesc);
-				char vardesc[NAME_MAX*2];
+				char vardesc[BIG_VALUE_MAX];
 				formatValue (vardesc, sizeof(vardesc), var, FULL_SUMMARY);
 				snprintf (varsdesc+varslength, descsize-varslength, "%s{name=\"%s\",value=\"%s\"}",
-						separator, var.GetName(), vardesc);
+						separator, getName(var), vardesc);
 				separator=",";
 			}
 			else
-				logprintf (LOG_INFO, "formatVariables: var name=%s, invalid\n",	var.GetName());
+				logprintf (LOG_INFO, "formatVariables: var name=%s, invalid\n",	getName(var));
 		}
 	}
 	if (strlen(varsdesc) >= descsize-1)
@@ -279,7 +369,7 @@ formatSummary (char *summarydesc, size_t descsize, SBValue var)
 	const char *varsummary;
 	SBType vartype = var.GetType();
 	logprintf (LOG_DEBUG, "formatSummary: Var=%-5s: children=%-2d, typeclass=%-10s, basictype=%-10s, bytesize=%-2d, Pointee: typeclass=%-10s, basictype=%-10s, bytesize=%-2d\n",
-				var.GetName(), var.GetNumChildren(), getNameForTypeClass(vartype.GetTypeClass()), getNameForBasicType(vartype.GetBasicType()), vartype.GetByteSize(),
+				getName(var), var.GetNumChildren(), getNameForTypeClass(vartype.GetTypeClass()), getNameForBasicType(vartype.GetBasicType()), vartype.GetByteSize(),
 				getNameForTypeClass(vartype.GetPointeeType().GetTypeClass()), getNameForBasicType(vartype.GetPointeeType().GetBasicType()), vartype.GetPointeeType().GetByteSize());
 	if ((varsummary=var.GetSummary()) != NULL) {				// string
 		snprintf (summarydesc, descsize, "%s", varsummary+1);	// copy and remove start apostrophe
@@ -301,7 +391,7 @@ formatSummary (char *summarydesc, size_t descsize, SBValue var)
 	if (vartypeclass==eTypeClassClass || vartypeclass==eTypeClassStruct || vartypeclass==eTypeClassUnion || vartype.IsArrayType()) {
 		const char *separator="";
 		char *ps=summarydesc;
-		char vardesc[NAME_MAX];
+		char vardesc[VALUE_MAX];
 		strlcat (ps++, "{", descsize--);
 		for (int ichild=0; ichild<min(numchildren,CHILDREN_MAX); ichild++) {
 			SBValue child = var.GetChildAtIndex(ichild);
@@ -313,7 +403,7 @@ formatSummary (char *summarydesc, size_t descsize, SBValue var)
 				if (vartype.IsArrayType())
 					snprintf (vardesc, sizeof(vardesc), "%s%s", separator, childvalue);
 				else
-					snprintf (vardesc, sizeof(vardesc), "%s%s=%s", separator, child.GetName(), childvalue);
+					snprintf (vardesc, sizeof(vardesc), "%s%s=%s", separator, getName(child), childvalue);
 			else {
 				SBType childtype = var.GetType();
 				lldb::addr_t childaddr;
@@ -324,7 +414,7 @@ formatSummary (char *summarydesc, size_t descsize, SBValue var)
 				if (vartype.IsArrayType())
 					snprintf (vardesc, sizeof(vardesc), "%s0x%llx", separator, childaddr);
 				else
-					snprintf (vardesc, sizeof(vardesc), "%s%s=0x%llx", separator, child.GetName(), childaddr);
+					snprintf (vardesc, sizeof(vardesc), "%s%s=0x%llx", separator, getName(child), childaddr);
 			}
 			if (descsize>0) {
 				strlcat (ps, vardesc, descsize);
@@ -350,7 +440,7 @@ formatValue (char *vardesc, size_t descsize, SBValue var, VariableDetails detail
 	//	value = {{a=1,b=0x33},...{a=1,b=2}}
 	SBType vartype = var.GetType();
 	logprintf (LOG_DEBUG, "formatValue: Var=%-5s: children=%-2d, typeclass=%-10s, basictype=%-10s, bytesize=%-2d, Pointee: typeclass=%-10s, basictype=%-10s, bytesize=%-2d\n",
-		var.GetName(), var.GetNumChildren(), getNameForTypeClass(vartype.GetTypeClass()), getNameForBasicType(vartype.GetBasicType()), vartype.GetByteSize(),
+		getName(var), var.GetNumChildren(), getNameForTypeClass(vartype.GetTypeClass()), getNameForBasicType(vartype.GetBasicType()), vartype.GetByteSize(),
 		getNameForTypeClass(vartype.GetPointeeType().GetTypeClass()), getNameForBasicType(vartype.GetPointeeType().GetBasicType()), vartype.GetPointeeType().GetByteSize());
 	int varnumchildren = var.GetNumChildren();
 	if (vartype.IsReferenceType() && varnumchildren==1) {
@@ -364,7 +454,7 @@ formatValue (char *vardesc, size_t descsize, SBValue var, VariableDetails detail
 			varnumchildren = var.GetNumChildren();
 		}
 	}
-	const char *varname = var.GetName();
+	const char *varname = getName(var);
 	char summarydesc[LINE_MAX];
 	const char *varsummary = formatSummary (summarydesc, sizeof(summarydesc), var);
 	const char *varvalue = var.GetValue();
@@ -409,25 +499,31 @@ formatExpressionPath (char *expressionpathdesc, size_t descsize, SBValue var)
 	SBStream stream;
 	var.GetExpressionPath (stream, true);
 	strlcpy (expressionpathdesc, stream.GetData(), descsize);
+	const char *varname = var.GetName();
+	if (varname==NULL)
+		strlcat (expressionpathdesc, "(anonymous)", descsize);
 	logprintf (LOG_DEBUG, "formatExpressionPath: expressionpathdesc=%s\n",
-			var.GetName(), expressionpathdesc);
+			varname, expressionpathdesc);
 	if (strlen(expressionpathdesc) >= descsize-1)
-		logprintf (LOG_ERROR, "formatValue: expressionpathdesc size (%d) too small\n", descsize);
+		logprintf (LOG_ERROR, "formatExpressionPath: expressionpathdesc size (%d) too small\n", descsize);
 	// correct expression
 	char *pp;
-	int suppress = 0;
-	if ((pp=strstr(expressionpathdesc,"->[")) != NULL)
-		suppress = 2;
-	else if ((pp=strstr(expressionpathdesc,".[")) != NULL)
-		suppress = 1;
-	else if ((pp=strstr(expressionpathdesc,"..")) != NULL)
-		suppress = 1;		// may happen if unions with no name
-	if (suppress > 0) {
-		pp += suppress;		// remove the offending characters
-		do
-			*(pp-suppress) = *pp;
-		while (*pp++);
-	}
+	int suppress;
+	do {
+		suppress = 0;
+		if ((pp=strstr(expressionpathdesc,"->[")) != NULL)
+			suppress = 2;
+		else if ((pp=strstr(expressionpathdesc,".[")) != NULL)
+			suppress = 1;
+		else if ((pp=strstr(expressionpathdesc,"..")) != NULL)
+			suppress = 1;		// may happen if unions with no name
+		if (suppress > 0) {
+			pp += suppress;		// remove the offending characters
+			do
+				*(pp-suppress) = *pp;
+			while (*pp++);
+		}
+	} while (suppress>0);
 	int expressionpathdesclength = strlen(expressionpathdesc);
 	if (expressionpathdesclength>0 && expressionpathdesc[expressionpathdesclength-1]=='.')
 		expressionpathdesc[expressionpathdesclength-1] = '\0';

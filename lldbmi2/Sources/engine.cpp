@@ -599,6 +599,7 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 	}
 	// VARIABLES COMMANDS
 	else if (strcmp(cc.argv[0],"-var-create")==0) {
+		// TODO: strlen(dst) doesn't work in expression pane
 		// var-create --thread 1 --frame 0 - * a
 		//     name="var1",numchild="0",value="1",type="int",thread-id="1",has_more="0"
 		//     name="var2",numchild="1",value="0x100000f76 \"2\"",type="char *",thread-id="1",has_more=a"0"
@@ -623,7 +624,7 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 						SBType vartype = var.GetType();
 						char expressionpathdesc[NAME_MAX];
 						formatExpressionPath (expressionpathdesc, sizeof(expressionpathdesc), var);
-						char vardesc[NAME_MAX];
+						char vardesc[VALUE_MAX];
 						formatValue (vardesc, sizeof(vardesc), var, NO_SUMMARY);
 						if (vartype.IsReferenceType() && varnumchildren==1)	// correct numchildren and value if reference
 							--varnumchildren;
@@ -646,6 +647,7 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 	}
 	else if (strcmp(cc.argv[0],"-var-update")==0) {
 		// TODO: int hello.c, var-update py return no change, but children changed. same for global y
+		// TODO: integer in argument list do not change at next call
 		// 47-var-update 1 var2
 		// 47^done,changelist=[]
 		// 41^done,changelist=[{name="var3",value="44",in_scope="true",type_changed="false",has_more="0"}]
@@ -695,53 +697,14 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 			if (frame.IsValid()) {
 				SBValue var = getVariable (frame, expression);
 				if (var.IsValid() && var.GetError().Success()) {
-					int varnumchildren = var.GetNumChildren();
-					char childlist[LINE_MAX];
-					*childlist = '\0';
-					const char *sep="";
-					int ichild;
-					for (ichild=0; ichild<min(varnumchildren,CHILDREN_MAX); ichild++) {
-						SBValue child = var.GetChildAtIndex(ichild);
-						if (!child.IsValid() || child.GetError().Fail())
-							continue;
-						child.SetPreferSyntheticValue (false);
-						const char *childname = child.GetName();			// displayed name
-						if (childname==NULL)
-							childname = "";
-						char expressionpathdesc[NAME_MAX];					// real path
-						formatExpressionPath (expressionpathdesc, sizeof(expressionpathdesc), child);
-						int childnumchildren = child.GetNumChildren();
-						logprintf (LOG_DEBUG, "fromCDT (expression=%s, expressionpathdesc=%s, children=%d, chikdname=%s)\n",
-								expression, expressionpathdesc, childnumchildren, childname);
-						if (false && strcmp((const char *)expression,(const char *)expressionpathdesc)==0 &&
-								childnumchildren>0 && (strchr(childname,'<')!=NULL || *childname=='\0')) {
-							// special case with casts like String or Vector. We want the child of the child
-							// TODO: not correct to skip cast expressions if #children>0. Must find a way to evaluate cast expressions
-							// TODO: TO REMOVE
-							SBValue childchild = child.GetChildAtIndex(0);
-							if (childchild.IsValid() && childchild.GetError().Success()) {
-								child = childchild;
-								childchild.SetPreferSyntheticValue (false);
-								child.SetPreferSyntheticValue (false);
-								childname = child.GetName();			// displayed name
-								formatExpressionPath (expressionpathdesc, sizeof(expressionpathdesc), child);
-								childnumchildren = child.GetNumChildren();
-							}
-						}
-						SBType childtype = child.GetType();
-						int threadindexid = thread.GetIndexID();
-						// [child={name="var2.*b",exp="*b",numchild="0",type="char",thread-id="1"}]
-						int childlistlength = strlen(childlist);
-						snprintf (childlist+childlistlength, sizeof(childlist)-childlistlength,
-							"%schild={name=\"%s\",exp=\"%s\",numchild=\"%d\","
-							"type=\"%s\",thread-id=\"%d\"}",
-							sep,expressionpathdesc,childname,childnumchildren,
-							childtype.GetDisplayTypeName(),threadindexid);
-						sep = ",";
-					}
+					char childrendesc[LINE_MAX];
+					*childrendesc = '\0';
+					int varnumchildren = 0;
+					int threadindexid = thread.GetIndexID();
+					formatChildrenList (childrendesc, sizeof(childrendesc), var, expression, threadindexid, varnumchildren);
 					// 34^done,numchild="1",children=[child={name="var2.*b",exp="*b",numchild="0",type="char",thread-id="1"}],has_more="0"
 					cdtprintf ("%d^done,numchild=\"%d\",children=[%s]\",has_more=\"0\"\n(gdb)\n",
-							cc.sequence, varnumchildren, childlist);
+							cc.sequence, varnumchildren, childrendesc);
 				}
 				else
 					cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
@@ -807,7 +770,7 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 				if (frame.IsValid()) {
 				SBValue var = getVariable (frame, expression);		// createVariable
 					if (var.IsValid() && var.GetError().Success()) {
-						char vardesc[NAME_MAX];
+						char vardesc[VALUE_MAX];
 						formatValue (vardesc, sizeof(vardesc), var, FULL_SUMMARY);
 						cdtprintf ("%d^done,value=\"%s\"\n(gdb)\n", cc.sequence, vardesc);
 					}
@@ -853,7 +816,7 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 				SBValue var = getVariable (frame, expression);
 				if (var.IsValid() && var.GetError().Success()) {
 					var.SetFormat(formatcode);
-					char vardesc[NAME_MAX];
+					char vardesc[VALUE_MAX];
 					formatValue (vardesc, sizeof(vardesc), var, NO_SUMMARY);
 					cdtprintf ("%d^done,format=\"%s\",value=\"%s\"\n(gdb)\n", cc.sequence, format, vardesc);
 				}
