@@ -11,13 +11,13 @@
 //#define TEST_C
 //#define TEST_C_ATTACH
 //#define TEST_C_VARS
-#define TEST_C_UPDATE
+//#define TEST_C_UPDATE
 //#define TEST_C_SIMPLE
 //#define TEST_C_POINTERS
 //#define TEST_C_LARGE_ARRAY
 //#define TEST_CPP_MEMBERS
 //#define TEST_CPP_STRING
-//#define TEST_CPP_ARGS
+#define TEST_CPP_ARGS
 //#define TEST_OTHER
 
 
@@ -235,6 +235,7 @@ const char *testcommands[] = {
 	"51-environment-cd /Users/didier/Projets/git-lldbmi2/test_hello_cpp/LLVM",
 	"52-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_cpp/LLVM/test_hello_cpp",
 	"64-list-thread-groups",
+	"19-gdb-show --thread-group i1 language",
 	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_cpp/Sources/hello.cpp:74",
 	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_cpp/Sources/hello.cpp:85",
 	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_cpp/Sources/hello.cpp:87",

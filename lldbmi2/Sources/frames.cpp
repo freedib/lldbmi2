@@ -53,7 +53,7 @@ getNumFrames (SBThread thread)
 	logprintf (LOG_TRACE, "getNumFrames (0x%x)\n", &thread);
 	int numframes=thread.GetNumFrames();
 #ifndef SHOW_STARTUP
-	for (int iframe=numframes-1; iframe>=0; iframe--) {
+	for (int iframe=min(numframes-1,MAX_FRAMES); iframe>=0; iframe--) {
 		SBFrame frame = thread.GetFrameAtIndex(iframe);
 		if (!frame.IsValid())
 			continue;

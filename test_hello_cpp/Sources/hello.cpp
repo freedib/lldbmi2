@@ -1,8 +1,8 @@
 
 //#define TEST_CRASH
-//#define TEST_ARGS
+#define TEST_ARGS
 //#define TEST_MEMBERS
-#define TEST_STRING
+//#define TEST_STRING
 
 #include <iostream>
 using namespace std;

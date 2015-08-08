@@ -139,6 +139,7 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 	}
 	else if (strcmp(cc.argv[0],"-gdb-show")==0) {
 		// 21-gdb-show --thread-group i1 language
+		// do no work. eclipse send it too early. must not rely on frame
 		SBThread thread = process.GetSelectedThread();
 		if (thread.IsValid()) {
 			SBFrame frame = thread.GetSelectedFrame();
@@ -508,6 +509,8 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 				endframe = getNumFrames (thread);
 			else
 				++endframe;
+			if (endframe-startframe > MAX_FRAMES)
+				endframe = startframe + MAX_FRAMES;			// limit # frames
 			const char *separator="";
 			cdtprintf ("%d^done,stack=[", cc.sequence);
 			char framedesc[LINE_MAX];
@@ -542,6 +545,8 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 				endframe = getNumFrames (thread);
 			else
 				++endframe;
+			if (endframe-startframe > MAX_FRAMES)
+				endframe = startframe + MAX_FRAMES;			// limit # frames
 			const char *separator="";
 			cdtprintf ("%d^done,stack-args=[", cc.sequence);
 			char argsdesc[LINE_MAX];
