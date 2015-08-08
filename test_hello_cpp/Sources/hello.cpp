@@ -64,7 +64,7 @@ int main()
 #endif
 
 #ifdef TEST_ARGS
-void testfunction (int *i, char (&sr)[7], char *s, char *ps, const char*v, double *d, bool &b, struct CD (*cdp) [3], struct CD (&cdr)[3], AB &ab)
+void testfunction (int *i, char (&sr)[7], char *s, char *ps, const char*v, double *d, bool &b, struct CD (*cdp) [3], struct CD (&cdr)[3], AB &ab, AB *pab)
 {								// note: struct CD (*cd) [2] is invalid syntax for a pointer to a structure of 2 elements
 	int bb=b;	(void)bb;
 	return;
@@ -78,15 +78,15 @@ int main()
 	struct CD cd[3] = {{10,"10"}, {20,"20"}, {30,"30"}};
 	double d[5] = {1.1, 2.2, 3.3, 4.4, 5.5};
 	strcpy (s, "A");
-	testfunction (i, s, s, &s[0], "a", d, b, &cd, cd, ab);
+	testfunction (i, s, s, &s[0], "a", d, b, &cd, cd, ab, NULL);
 	strcpy (s, "B");
 	b=false;
 	ab.setb(4);
 	cd[1].c=30;
 	d[0] = 6.6;
-	testfunction (i, s, s, &s[0], "b", d, b, NULL, cd, ab);
+	testfunction (i, s, s, &s[0], "b", d, b, NULL, cd, ab, &ab);
 	d[0] = 9.9;
-	testfunction (i, s, s, &s[0], "b", d, b, NULL, cd, ab);
+	testfunction (i, s, s, &s[0], "b", d, b, NULL, cd, ab, &ab);
 }
 #endif
 
