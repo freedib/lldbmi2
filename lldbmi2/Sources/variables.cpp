@@ -21,7 +21,7 @@
 
 // TODO: implement @ formats for structures like struct S. seems to be a bug in lldb
 bool
-getPeudoArrayVariable (SBFrame frame, const char *expression, SBValue &var)
+getPeudoArrayVariable (STATE *pstate, SBFrame frame, const char *expression, SBValue &var)
 {
 	logprintf (LOG_TRACE, "getPeudoArrayVariable (0x%x, %s, 0x%x)\n", &frame, expression, &var);
 // just support *((var)+0)@100 and &(*((var)+0)@100) forms
@@ -57,7 +57,7 @@ getPeudoArrayVariable (SBFrame frame, const char *expression, SBValue &var)
 		*pe = '\0';
 	}
 	snprintf (varpointername, sizeof(varpointername), "&%s", varname);	// get var type
-	SBValue basevar = getVariable (frame, varpointername);				// vaname ¬ &var
+	SBValue basevar = getVariable (pstate, frame, varpointername);				// vaname ¬ &var
 	char newvartype[NAME_MAX];
 	strlcpy (newvartype, basevar.GetTypeName(), sizeof(vartype));		// typename ~ char (*)[101]
 	if ((pe = strchr (newvartype,'[')) == NULL)
@@ -66,7 +66,7 @@ getPeudoArrayVariable (SBFrame frame, const char *expression, SBValue &var)
 	char newexpression[NAME_MAX];				// create expression
 	snprintf (newexpression, sizeof(newexpression), "%s*(%s[%s])&%s[%s]%s",	// (char(*)[100])&c[0] or &((char(*)[100])&c[0])
 			ampersand?"&(":"", newvartype, varlength, varname, varoffset, ampersand?")":"");
-	var = getVariable (frame, newexpression);
+	var = getVariable (pstate, frame, newexpression);
 	logprintf (LOG_DEBUG, "getPeudoArrayVariable: expression %s -> %s\n", expression, newexpression);
 	if (!var.IsValid() || var.GetError().Fail())
 		return false;
@@ -163,17 +163,17 @@ getDirectPathVariable (SBFrame frame, const char *expression, SBValue *foundvar,
 
 // get a variable by trying many approaches
 SBValue
-getVariable (SBFrame frame, const char *expression)
+getVariable (STATE *pstate, SBFrame frame, const char *expression)
 {
 	logprintf (LOG_TRACE, "getVariable (0x%x, %s)\n", &frame, expression);
 	SBValue var;
 	if (strchr(expression,'@') != NULL)
-		getPeudoArrayVariable (frame, expression, var);
+		getPeudoArrayVariable (pstate, frame, expression, var);
 	if ((!var.IsValid() || var.GetError().Fail()) && *expression=='$')
 		var = frame.FindRegister(expression);
 	if (!var.IsValid() || var.GetError().Fail()) {
 		SBValue parent;
-		getDirectPathVariable (frame, expression, &var, parent, WALK_DEPTH_MAX);
+		getDirectPathVariable (frame, expression, &var, parent, pstate->walk_depth_max);
 	}
 	if (!var.IsValid() || var.GetError().Fail())
 		getStandardPathVariable (frame, expression, var);
@@ -363,7 +363,7 @@ formatChangedList (char *changedesc, size_t descsize, SBValue var, bool &separat
 // format a list of variables into a GDB string
 // called for arguments and locals var after a breakpoint
 char *
-formatVariables (char *varsdesc, size_t descsize, SBValueList varslist)
+formatVariables (char *varsdesc, size_t descsize, SBValueList varslist, STATE *pstate)
 {
 	logprintf (LOG_TRACE, "formatVariables (..., %zd, 0x%x)\n", descsize, &varslist);
 	*varsdesc = '\0';
@@ -378,7 +378,7 @@ formatVariables (char *varsdesc, size_t descsize, SBValueList varslist)
 			const char *varvalue = var.GetValue();
 			// basic type valid only when type class is Builtin
 			if ((vartype.GetBasicType()!=eBasicTypeInvalid && varvalue!=NULL) || true) {
-				updateVarState (var);
+				updateVarState (var, pstate->change_depth_max);
 				int varslength = strlen(varsdesc);
 				char vardesc[BIG_VALUE_MAX];
 				formatValue (vardesc, sizeof(vardesc), var, FULL_SUMMARY);

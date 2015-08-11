@@ -12,7 +12,7 @@ typedef enum
 } VariableDetails;
 
 
-#define CHANGED_DEPTH_MAX   3		// maximum depth to check variables changed
+#define CHANGE_DEPTH_MAX    3		// maximum depth to check variables changed
 #define WALK_DEPTH_MAX     10		// maximum depth to walk variables when searching expressions
 #define ARRAY_MAX         200		// maximum number of children to display. must be a multiple of 8
 #define CHILDREN_MAX      100		// limit of children to examine when walking in them
@@ -20,13 +20,13 @@ typedef enum
 
 #define min(a,b) ((a) < (b) ? (a) : (b))
 
-SBValue getVariable (SBFrame frame, const char *expression);
-int     updateVarState (SBValue var, int depth=CHANGED_DEPTH_MAX);
+SBValue getVariable (STATE *pstate, SBFrame frame, const char *expression);
+int     updateVarState (SBValue var, int depth);
 
 char *  formatExpressionPath (char *expressionpathdesc, size_t descsize, SBValue var);
 char *  formatChildrenList (char *childrendesc, size_t descsize, SBValue var, char *expression, int threadindexid, int &varnumchildren);
-char *  formatChangedList (char *changedesc, size_t descsize, SBValue var, bool &separatorvisible, int depth=CHANGED_DEPTH_MAX);
-char *  formatVariables (char *varsdesc, size_t descsize, SBValueList varslist);
+char *  formatChangedList (char *changedesc, size_t descsize, SBValue var, bool &separatorvisible, int depth);
+char *  formatVariables (char *varsdesc, size_t descsize, SBValueList varslist, STATE *pstate);
 char *  formatSummary (char *summarydesc, size_t descsize, SBValue var);
 char *  formatValue (char *varsdesc, size_t descsize, SBValue var, VariableDetails details);
 

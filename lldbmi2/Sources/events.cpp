@@ -201,7 +201,7 @@ onStopped (STATE *pstate, SBProcess process)
 	    	return;
 		}
 		char framedesc[LINE_MAX];
-		formatFrame (framedesc, sizeof(framedesc), frame, WITH_ARGS);
+		formatFrame (framedesc, sizeof(framedesc), frame, WITH_ARGS, pstate);
 		int threadindexid=thread.GetIndexID();
 		cdtprintf ("*stopped,%s%s,thread-id=\"%d\",stopped-threads=\"all\"\n(gdb)\n",
 					reasondesc,framedesc,threadindexid);
@@ -225,7 +225,7 @@ onStopped (STATE *pstate, SBProcess process)
 	    	return;
 		}
 		char framedesc[LINE_MAX];
-		formatFrame (framedesc, sizeof(framedesc), frame, WITH_ARGS);
+		formatFrame (framedesc, sizeof(framedesc), frame, WITH_ARGS, pstate);
 		int threadindexid = thread.GetIndexID();
 		//signal-name="SIGSEGV",signal-meaning="Segmentation fault"
 		cdtprintf ("*stopped,%s%sthread-id=\"%d\",stopped-threads=\"all\"\n(gdb)\n",
@@ -265,8 +265,8 @@ checkThreadsLife (STATE *pstate, SBProcess process)
 	SBThread thread;
 	const size_t nthreads = process.GetNumThreads();
 	int indexlist;
-	bool stillalive[MAX_THREADS];
-	for (indexlist=0; indexlist<MAX_THREADS; indexlist++)			// init live list
+	bool stillalive[THREADS_MAX];
+	for (indexlist=0; indexlist<THREADS_MAX; indexlist++)			// init live list
 		stillalive[indexlist] = false;
 	for (size_t indexthread=0; indexthread<nthreads; indexthread++) {
 		SBThread thread = process.GetThreadAtIndex(indexthread);
@@ -274,14 +274,14 @@ checkThreadsLife (STATE *pstate, SBProcess process)
 			int stopreason = thread.GetStopReason();
 			int threadindexid = thread.GetIndexID();
 			logprintf (LOG_NONE, "thread threadindexid=%d stopreason=%d\n", threadindexid, stopreason);
-			for (indexlist=0; indexlist<MAX_THREADS; indexlist++) {
+			for (indexlist=0; indexlist<THREADS_MAX; indexlist++) {
 				if (threadindexid == pstate->threadids[indexlist])	// existing thread
 					break;
 			}
-			if (indexlist<MAX_THREADS)								// existing thread. mark as alive
+			if (indexlist<THREADS_MAX)								// existing thread. mark as alive
 				stillalive[indexlist] = true;
 			else {													// new thread. add to the thread list list
-				for (indexlist=0; indexlist<MAX_THREADS; indexlist++) {
+				for (indexlist=0; indexlist<THREADS_MAX; indexlist++) {
 					if (pstate->threadids[indexlist]==0) {
 						pstate->threadids[indexlist] = threadindexid;
 						stillalive[indexlist] = true;
@@ -289,12 +289,12 @@ checkThreadsLife (STATE *pstate, SBProcess process)
 						break;
 					}
 				}
-				if (indexlist >= MAX_THREADS)
-					logprintf (LOG_ERROR, "threads table too small (%d)\n", MAX_THREADS);
+				if (indexlist >= THREADS_MAX)
+					logprintf (LOG_ERROR, "threads table too small (%d)\n", THREADS_MAX);
 			}
 		}
 	}
-	for (indexlist=0; indexlist<MAX_THREADS; indexlist++) {			// find finished threads
+	for (indexlist=0; indexlist<THREADS_MAX; indexlist++) {			// find finished threads
 		if (pstate->threadids[indexlist]>0 && !stillalive[indexlist]) {
 			cdtprintf ("=thread-exited,id=\"%d\",group-id=\"%s\"\n",
 					pstate->threadids[indexlist], pstate->threadgroup);

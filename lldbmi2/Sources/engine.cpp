@@ -468,7 +468,7 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 		}
 		else if (strcmp(cc.argv[nextarg],pstate->threadgroup) == 0) {
 			char threaddesc[BIG_LINE_MAX];
-			formatThreadInfo (threaddesc, sizeof(threaddesc), process, -1);
+			formatThreadInfo (pstate, threaddesc, sizeof(threaddesc), process, -1);
 			if (threaddesc[0] != '\0')
 				cdtprintf ("%d^done,threads=[%s]\n(gdb)\n", cc.sequence, threaddesc);
 			else
@@ -485,7 +485,7 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 		if (process.IsValid()) {
 			SBThread thread = process.GetSelectedThread();
 			if (thread.IsValid()) {
-				int numframes = getNumFrames (thread);
+				int numframes = getNumFrames (pstate, thread);
 				cdtprintf ("%d^done,depth=\"%d\"\n(gdb)\n", cc.sequence, numframes);
 			}
 			else
@@ -506,11 +506,11 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 		SBThread thread = process.GetSelectedThread();
 		if (thread.IsValid()) {
 			if (endframe<0)
-				endframe = getNumFrames (thread);
+				endframe = getNumFrames (pstate, thread);
 			else
 				++endframe;
-			if (endframe-startframe > MAX_FRAMES)
-				endframe = startframe + MAX_FRAMES;			// limit # frames
+			if (endframe-startframe > pstate->frames_max)
+				endframe = startframe + pstate->frames_max;			// limit # frames
 			const char *separator="";
 			cdtprintf ("%d^done,stack=[", cc.sequence);
 			char framedesc[LINE_MAX];
@@ -518,7 +518,7 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 				SBFrame frame = thread.GetFrameAtIndex(iframe);
 				if (!frame.IsValid())
 					continue;
-				formatFrame (framedesc, sizeof(framedesc), frame, WITH_LEVEL);
+				formatFrame (framedesc, sizeof(framedesc), frame, WITH_LEVEL, pstate);
 				cdtprintf ("%s%s", separator, framedesc);
 				separator=",";
 			}
@@ -542,11 +542,11 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 		SBThread thread = process.GetSelectedThread();
 		if (thread.IsValid()) {
 			if (endframe<0)
-				endframe = getNumFrames (thread);
+				endframe = getNumFrames (pstate, thread);
 			else
 				++endframe;
-			if (endframe-startframe > MAX_FRAMES)
-				endframe = startframe + MAX_FRAMES;			// limit # frames
+			if (endframe-startframe > pstate->frames_max)
+				endframe = startframe + pstate->frames_max;			// limit # frames
 			const char *separator="";
 			cdtprintf ("%d^done,stack-args=[", cc.sequence);
 			char argsdesc[LINE_MAX];
@@ -554,7 +554,7 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 				SBFrame frame = thread.GetFrameAtIndex(iframe);
 				if (!frame.IsValid())
 					continue;
-				formatFrame (argsdesc, sizeof(argsdesc), frame, JUST_LEVEL_AND_ARGS);
+				formatFrame (argsdesc, sizeof(argsdesc), frame, JUST_LEVEL_AND_ARGS, pstate);
 				cdtprintf ("%s%s", separator, argsdesc);
 				separator=",";
 			}
@@ -569,7 +569,7 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 		if (cc.argv[nextarg] != NULL)
 			if (isdigit(*cc.argv[nextarg]))
 				sscanf (cc.argv[nextarg++], "%d", &threadindexid);
-		formatThreadInfo (threaddesc, sizeof(threaddesc), process, threadindexid);
+		formatThreadInfo (pstate, threaddesc, sizeof(threaddesc), process, threadindexid);
 		if (threaddesc[0] != '\0')
 			cdtprintf ("%d^done,threads=[%s]\n(gdb)\n", cc.sequence, threaddesc);
 		else
@@ -593,7 +593,7 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 						isValid = true;
 						SBValueList localvars = frame.GetVariables(0,1,0,0);
 						char varsdesc[BIG_LINE_MAX];			// may be very big
-						formatVariables (varsdesc,sizeof(varsdesc),localvars);
+						formatVariables (varsdesc,sizeof(varsdesc),localvars,pstate);
 						cdtprintf ("%d^done,locals=[%s]\n(gdb)\n", cc.sequence, varsdesc);
 					}
 				}
@@ -623,7 +623,7 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 				SBFrame frame = thread.GetSelectedFrame();
 				if (frame.IsValid()) {
 					// Find then Evaluate to avoid recreate variable
-					SBValue var = getVariable (frame, expression);
+					SBValue var = getVariable (pstate, frame, expression);
 					if (var.IsValid() && var.GetError().Success()) {
 						int varnumchildren = var.GetNumChildren();
 						SBType vartype = var.GetType();
@@ -665,13 +665,13 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 		if (thread.IsValid()) {
 			SBFrame frame = thread.GetSelectedFrame();
 			if (frame.IsValid()) {
-				SBValue var = getVariable (frame, expression);			// find variable
+				SBValue var = getVariable (pstate, frame, expression);			// find variable
 				char changedesc[BIG_LINE_MAX];
 				changedesc[0] = '\0';
 				if (var.IsValid() && var.GetError().Success()) {
 					bool separatorvisible = false;
 					SBFunction function = frame.GetFunction();
-					formatChangedList (changedesc, sizeof(changedesc), var, separatorvisible);
+					formatChangedList (changedesc, sizeof(changedesc), var, separatorvisible, pstate->change_depth_max);
 				}
 				cdtprintf ("%d^done,changelist=[%s]\n(gdb)\n", cc.sequence, changedesc);
 			}
@@ -698,7 +698,7 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 		if (thread.IsValid()) {
 			SBFrame frame = thread.GetSelectedFrame();
 			if (frame.IsValid()) {
-				SBValue var = getVariable (frame, expression);
+				SBValue var = getVariable (pstate, frame, expression);
 				if (var.IsValid() && var.GetError().Success()) {
 					char childrendesc[LINE_MAX];
 					*childrendesc = '\0';
@@ -736,7 +736,7 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 			if (thread.IsValid()) {
 				SBFrame frame = thread.GetSelectedFrame();
 				if (frame.IsValid()) {
-					SBValue var = getVariable (frame, expression);
+					SBValue var = getVariable (pstate, frame, expression);
 					if (var.IsValid() && var.GetError().Success()) {
 						char expressionpathdesc[NAME_MAX];
 						formatExpressionPath (expressionpathdesc, sizeof(expressionpathdesc), var);
@@ -771,7 +771,7 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 			if (thread.IsValid()) {
 				SBFrame frame = thread.GetSelectedFrame();
 				if (frame.IsValid()) {
-				SBValue var = getVariable (frame, expression);		// createVariable
+				SBValue var = getVariable (pstate, frame, expression);		// createVariable
 					if (var.IsValid() && var.GetError().Success()) {
 						char vardesc[VALUE_MAX];
 						formatValue (vardesc, sizeof(vardesc), var, FULL_SUMMARY);
@@ -816,7 +816,7 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 		if (thread.IsValid()) {
 			SBFrame frame = thread.GetSelectedFrame();
 			if (frame.IsValid()) {
-				SBValue var = getVariable (frame, expression);
+				SBValue var = getVariable (pstate, frame, expression);
 				if (var.IsValid() && var.GetError().Success()) {
 					var.SetFormat(formatcode);
 					char vardesc[VALUE_MAX];

@@ -18,8 +18,8 @@ using namespace lldb;
 #define FALSE 0
 #define TRUE  1
 
-#define MAX_THREADS 50
-#define MAX_FRAMES 20
+#define THREADS_MAX 50
+#define FRAMES_MAX  50
 
 #define VALUE_MAX (NAME_MAX<<1)
 #define BIG_VALUE_MAX (NAME_MAX<<2)
@@ -31,6 +31,9 @@ typedef struct {
 	int  lockcdt;
 	int  ptyfd;
 	bool istest;
+	int frames_max;
+	int walk_depth_max;
+	int change_depth_max;
 	bool eof;
 	bool isrunning;
 	const char *envp[ENV_ENTRIES];
@@ -47,7 +50,7 @@ typedef struct {
 	SBDebugger debugger;
 	SBProcess process;
 	SBListener listener;
-	int threadids[MAX_THREADS];
+	int threadids[THREADS_MAX];
 } STATE;
 
 

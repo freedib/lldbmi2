@@ -13,6 +13,7 @@
 
 #include "lldbmi2.h"
 #include "engine.h"
+#include "variables.h"
 #include "log.h"
 #include "version.h"
 
@@ -29,13 +30,16 @@ void help (STATE *pstate)
 	fprintf (stderr, "   lldbmi2 --interpreter mi2 [options]\n");
 	fprintf (stderr, "   lldbmi2 --test [options]\n");
 	fprintf (stderr, "Arguments:\n");
-	fprintf (stderr, "   --version:     Return GDB's version (GDB 7.7.1) and exits.\n");
-	fprintf (stderr, "   --interpreter: Standard mi2 interface.\n");
+	fprintf (stderr, "   --version:           Return GDB's version (GDB 7.7.1) and exits.\n");
+	fprintf (stderr, "   --interpreter mi2:   Standard mi2 interface.\n");
 	fprintf (stderr, "Options:\n");
-	fprintf (stderr, "   --log:         Create log file in project root directory.\n");
-	fprintf (stderr, "   --logmask:     Select log categories. 0xFFF. See source code for values.\n");
-	fprintf (stderr, "   --test:        Execute test sequence (to debug lldmi2).\n");
-	fprintf (stderr, "   --nx:          Ignored.\n");
+	fprintf (stderr, "   --log:                Create log file in project root directory.\n");
+	fprintf (stderr, "   --logmask mask:       Select log categories. 0xFFF. See source code for values.\n");
+	fprintf (stderr, "   --test:               Execute test sequence (to debug lldmi2).\n");
+	fprintf (stderr, "   --nx:                 Ignored.\n");
+	fprintf (stderr, "   --frames frames:      Max number of frames to display (%d).\n", FRAMES_MAX);
+	fprintf (stderr, "   --walkdepth depth:    Max walk depth in search for variables (%d).\n", WALK_DEPTH_MAX);
+	fprintf (stderr, "   --changedepth depth:  Max depth to check for variables change (%d).\n", CHANGE_DEPTH_MAX);
 }
 
 
@@ -63,6 +67,9 @@ main (int argc, char **argv, char **envp)
 	sprintf (state.lldbmi2Prompt, "lldbmi2 version %s, Copyright (C) 2015 Didier Bertrand\n", LLDBMI2_VERSION);
 
 	state.logbuffer[0] = '\0';
+	state.frames_max = FRAMES_MAX;
+	state.walk_depth_max = WALK_DEPTH_MAX;
+	state.change_depth_max = CHANGE_DEPTH_MAX;
 
 	// get args
 	for (narg=0; narg<argc; narg++) {
@@ -87,6 +94,18 @@ main (int argc, char **argv, char **envp)
 			isLog = 1;
 			if (++narg<argc)
 				sscanf (argv[narg], "%x", &logmask);
+		}
+		else if (strcmp (argv[narg],"--frames") == 0 ) {
+			if (++narg<argc)
+				sscanf (argv[narg], "%d", &state.frames_max);
+		}
+		else if (strcmp (argv[narg],"--walkdepth") == 0 ) {
+			if (++narg<argc)
+				sscanf (argv[narg], "%d", &state.walk_depth_max);
+		}
+		else if (strcmp (argv[narg],"--changedepth") == 0 ) {
+			if (++narg<argc)
+				sscanf (argv[narg], "%d", &state.change_depth_max);
 		}
 	}
 
