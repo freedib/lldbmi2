@@ -9,8 +9,22 @@ using namespace std;
 
 #include <string.h>
 
-class AB {
+class BA {
+protected:
+	const char *n;
 public:
+	BA ();
+	void setn  (const char *s);
+};
+BA::BA () {
+	n = "";
+}
+void BA::setn (const char *s) {
+	n = s;
+}
+
+class AB : public BA {
+private:
 	int a;
 	int b;
 	int c;
@@ -64,7 +78,7 @@ int main()
 #endif
 
 #ifdef TEST_ARGS
-void testfunction (int *i, char (&sr)[7], char *s, char *ps, const char*v, double *d, bool &b, struct CD (*cdp) [3], struct CD (&cdr)[3], AB &ab, AB *pab)
+void testfunction (int *i, char (&sr)[7], char *s, char *ps, const char*v, double *d, bool &b, struct CD (*cdp) [3], struct CD (&cdr)[3], AB &ab, BA *pba)
 {								// note: struct CD (*cd) [2] is invalid syntax for a pointer to a structure of 2 elements
 	int bb=b;	(void)bb;
 	return;
@@ -72,19 +86,20 @@ void testfunction (int *i, char (&sr)[7], char *s, char *ps, const char*v, doubl
 int main()
 {
 	AB ab;
+	((BA *)&ab)->setn("Hello world!");
 	char s[7];
 	bool b=true;
 	int i[3] = {5,3,1};
 	struct CD cd[3] = {{10,"10"}, {20,"20"}, {30,"30"}};
 	double d[5] = {1.1, 2.2, 3.3, 4.4, 5.5};
 	strcpy (s, "A");
-	testfunction (i, s, s, &s[0], "a", d, b, &cd, cd, ab, NULL);
+	testfunction (i, s, s, &s[0], "a", d, b, &cd, cd, ab, &ab);
 	strcpy (s, "B");
 	b=false;
 	ab.setb(4);
 	cd[1].c=30;
 	d[0] = 6.6;
-	testfunction (i, s, s, &s[0], "b", d, b, NULL, cd, ab, &ab);
+	testfunction (i, s, s, &s[0], "b", d, b, NULL, cd, ab, NULL);
 	d[0] = 9.9;
 	testfunction (i, s, s, &s[0], "b", d, b, NULL, cd, ab, &ab);
 }

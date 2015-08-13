@@ -19,21 +19,27 @@ using namespace lldb;
 #define TRUE  1
 
 #define THREADS_MAX 50
-#define FRAMES_MAX  50
+#define FRAMES_MAX  75
 
 #define VALUE_MAX (NAME_MAX<<1)
-#define BIG_VALUE_MAX (NAME_MAX<<2)
+#define BIG_VALUE_MAX (NAME_MAX<<3)
 #define BIG_LINE_MAX (LINE_MAX<<3)
 
 #define ENV_ENTRIES 100
 
+// static context
+typedef struct {
+	bool istest;
+	int frames_max;
+	int children_max;
+	int walk_depth_max;
+	int change_depth_max;
+} LIMITS;
+
+// dynamic context
 typedef struct {
 	int  lockcdt;
 	int  ptyfd;
-	bool istest;
-	int frames_max;
-	int walk_depth_max;
-	int change_depth_max;
 	bool eof;
 	bool isrunning;
 	const char *envp[ENV_ENTRIES];

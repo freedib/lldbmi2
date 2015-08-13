@@ -38,14 +38,14 @@ void help (STATE *pstate)
 	fprintf (stderr, "   --test:               Execute test sequence (to debug lldmi2).\n");
 	fprintf (stderr, "   --nx:                 Ignored.\n");
 	fprintf (stderr, "   --frames frames:      Max number of frames to display (%d).\n", FRAMES_MAX);
+	fprintf (stderr, "   --children children:  Max number of children to check for update (%d).\n", CHILDREN_MAX);
 	fprintf (stderr, "   --walkdepth depth:    Max walk depth in search for variables (%d).\n", WALK_DEPTH_MAX);
-	fprintf (stderr, "   --changedepth depth:  Max depth to check for variables change (%d).\n", CHANGE_DEPTH_MAX);
+	fprintf (stderr, "   --changedepth depth:  Max depth to check for updated variables (%d).\n", CHANGE_DEPTH_MAX);
 }
 
 
+LIMITS limits;
 static STATE state;
-bool global_istest = false;
-
 
 int
 main (int argc, char **argv, char **envp)
@@ -67,9 +67,10 @@ main (int argc, char **argv, char **envp)
 	sprintf (state.lldbmi2Prompt, "lldbmi2 version %s, Copyright (C) 2015 Didier Bertrand\n", LLDBMI2_VERSION);
 
 	state.logbuffer[0] = '\0';
-	state.frames_max = FRAMES_MAX;
-	state.walk_depth_max = WALK_DEPTH_MAX;
-	state.change_depth_max = CHANGE_DEPTH_MAX;
+	limits.frames_max = FRAMES_MAX;
+	limits.children_max = CHILDREN_MAX;
+	limits.walk_depth_max = WALK_DEPTH_MAX;
+	limits.change_depth_max = CHANGE_DEPTH_MAX;
 
 	// get args
 	for (narg=0; narg<argc; narg++) {
@@ -85,8 +86,7 @@ main (int argc, char **argv, char **envp)
 			}
 		}
 		else if (strcmp (argv[narg],"--test") == 0 ) {
-			state.istest = true;
-			global_istest = true;
+			limits.istest = true;
 		}
 		else if (strcmp (argv[narg],"--log") == 0 )
 			isLog = 1;
@@ -97,21 +97,25 @@ main (int argc, char **argv, char **envp)
 		}
 		else if (strcmp (argv[narg],"--frames") == 0 ) {
 			if (++narg<argc)
-				sscanf (argv[narg], "%d", &state.frames_max);
+				sscanf (argv[narg], "%d", &limits.frames_max);
+		}
+		else if (strcmp (argv[narg],"--children") == 0 ) {
+			if (++narg<argc)
+				sscanf (argv[narg], "%d", &limits.children_max);
 		}
 		else if (strcmp (argv[narg],"--walkdepth") == 0 ) {
 			if (++narg<argc)
-				sscanf (argv[narg], "%d", &state.walk_depth_max);
+				sscanf (argv[narg], "%d", &limits.walk_depth_max);
 		}
 		else if (strcmp (argv[narg],"--changedepth") == 0 ) {
 			if (++narg<argc)
-				sscanf (argv[narg], "%d", &state.change_depth_max);
+				sscanf (argv[narg], "%d", &limits.change_depth_max);
 		}
 	}
 
 	// create a log filename from program name and open log file
 	if (isLog) {
-		if (state.istest)
+		if (limits.istest)
 			setlogfile (state.logfilename, sizeof(state.logfilename), argv[0], "lldbmi2t.log");
 		else
 			setlogfile (state.logfilename, sizeof(state.logfilename), argv[0], "lldbmi2.log");
@@ -148,14 +152,14 @@ main (int argc, char **argv, char **envp)
 	// main loop
 	FD_ZERO (&set);
 	while (!state.eof) {
-		if (state.istest)
+		if (limits.istest)
 			logprintf (LOG_NONE, "main loop\n");
 		// get command from CDT
 		timeout.tv_sec  = 0;
 		timeout.tv_usec = 200000;
 		FD_SET (STDIN_FILENO, &set);
 		select(STDIN_FILENO+1, &set, NULL, NULL, &timeout);
-		if (FD_ISSET(STDIN_FILENO, &set) && !state.eof && !state.istest) {
+		if (FD_ISSET(STDIN_FILENO, &set) && !state.eof && !limits.istest) {
 			logprintf (LOG_NONE, "read in\n");
 			chars = read (STDIN_FILENO, line, sizeof(line)-1);
 			logprintf (LOG_NONE, "read out %d\n", chars);
@@ -168,7 +172,7 @@ main (int argc, char **argv, char **envp)
 				state.eof = true;
 		}
 		// execute test command if test mode
-		if (!state.lockcdt && !state.eof && state.istest && !state.isrunning) {
+		if (!state.lockcdt && !state.eof && limits.istest && !state.isrunning) {
 			if ((pTestCommand=getTestCommand (&idTestCommand))!=NULL) {
 				snprintf (line, sizeof(line), "%s\n", pTestCommand);
 				fromCDT (&state, line, sizeof(line));

@@ -9,6 +9,8 @@
 #include "frames.h"
 
 
+extern LIMITS limits;
+
 static pthread_t sbTID;
 
 
@@ -17,7 +19,7 @@ setSignals (STATE *pstate)
 {
 	logprintf (LOG_TRACE, "setSignals (0x%x)\n", pstate);
 	SBUnixSignals us = pstate->process.GetUnixSignals();
-	if (!pstate->istest || true) {
+	if (!limits.istest || true) {
 		const char *signame = "SIGINT";
 		int signo = us.GetSignalNumberFromName(signame);
 		logprintf (LOG_NONE, "signals before for %s (%d): suppress=%d, stop=%d, notify=%d\n",
@@ -201,7 +203,7 @@ onStopped (STATE *pstate, SBProcess process)
 	    	return;
 		}
 		char framedesc[LINE_MAX];
-		formatFrame (framedesc, sizeof(framedesc), frame, WITH_ARGS, pstate);
+		formatFrame (framedesc, sizeof(framedesc), frame, WITH_ARGS);
 		int threadindexid=thread.GetIndexID();
 		cdtprintf ("*stopped,%s%s,thread-id=\"%d\",stopped-threads=\"all\"\n(gdb)\n",
 					reasondesc,framedesc,threadindexid);
@@ -225,7 +227,7 @@ onStopped (STATE *pstate, SBProcess process)
 	    	return;
 		}
 		char framedesc[LINE_MAX];
-		formatFrame (framedesc, sizeof(framedesc), frame, WITH_ARGS, pstate);
+		formatFrame (framedesc, sizeof(framedesc), frame, WITH_ARGS);
 		int threadindexid = thread.GetIndexID();
 		//signal-name="SIGSEGV",signal-meaning="Segmentation fault"
 		cdtprintf ("*stopped,%s%sthread-id=\"%d\",stopped-threads=\"all\"\n(gdb)\n",

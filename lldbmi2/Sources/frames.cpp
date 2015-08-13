@@ -6,6 +6,9 @@
 #include "names.h"
 
 
+extern LIMITS limits;
+
+
 // Should make breakpoint pending if invalid
 // 017,435 29^done,bkpt={number="5",type="breakpoint",disp="keep",enabled="y",addr="<PENDING>",pending=\
 // "/Users/didier/Projets/git-lldbmi2/test_hello_c/Sources/hello.c:33",times="0",original-location="/Users/\
@@ -48,12 +51,12 @@ formatBreakpoint (char *breakpointdesc, size_t descsize, SBBreakpoint breakpoint
 // get the number of frames in a thread
 // adjust the number of frames if libdyld.dylib is there
 int
-getNumFrames (STATE *pstate, SBThread thread)
+getNumFrames (SBThread thread)
 {
 	logprintf (LOG_TRACE, "getNumFrames (0x%x)\n", &thread);
 	int numframes=thread.GetNumFrames();
 #ifndef SHOW_STARTUP
-	for (int iframe=min(numframes-1,pstate->frames_max); iframe>=0; iframe--) {
+	for (int iframe=min(numframes-1,limits.frames_max); iframe>=0; iframe--) {
 		SBFrame frame = thread.GetFrameAtIndex(iframe);
 		if (!frame.IsValid())
 			continue;
@@ -76,7 +79,7 @@ getNumFrames (STATE *pstate, SBThread thread)
 
 // format a frame description into a GDB string
 char *
-formatFrame (char *framedesc, size_t descsize, SBFrame frame, FrameDetails framedetails, STATE *pstate)
+formatFrame (char *framedesc, size_t descsize, SBFrame frame, FrameDetails framedetails)
 {
 	logprintf (LOG_TRACE, "formatFrame (%s, %d, 0x%x, 0x%x)\n", framedesc, descsize, &frame, framedetails);
 	int frameid = frame.GetFrameID();
@@ -98,7 +101,7 @@ formatFrame (char *framedesc, size_t descsize, SBFrame frame, FrameDetails frame
 
 	*framedesc = '\0';
 	const char *func_name="??";
-	char argsstring[LINE_MAX];
+	char argsstring[BIG_LINE_MAX];
 	if (function.IsValid()) {
 		const char *filename, *filedir;
 		int line = 0;
@@ -110,9 +113,9 @@ formatFrame (char *framedesc, size_t descsize, SBFrame frame, FrameDetails frame
 		line = line_entry.GetLine();
 		if (framedetails&WITH_ARGS) {
 			SBValueList args = frame.GetVariables(1,0,0,0);
-			char argsdesc[LINE_MAX];
+			char argsdesc[BIG_LINE_MAX];
 			SBFunction function = frame.GetFunction();
-			formatVariables (argsdesc, sizeof(argsdesc), args, pstate);
+			formatVariables (argsdesc, sizeof(argsdesc), args);
 			snprintf (argsstring, sizeof(argsstring), "%sargs=[%s]", (framedetails==JUST_LEVEL_AND_ARGS)?"":",", argsdesc);
 		}
 		else
@@ -146,9 +149,9 @@ formatFrame (char *framedesc, size_t descsize, SBFrame frame, FrameDetails frame
 
 // format a thread description into a GDB string
 char *
-formatThreadInfo (STATE *pstate, char *threaddesc, size_t descsize, SBProcess process, int threadindexid)
+formatThreadInfo (char *threaddesc, size_t descsize, SBProcess process, int threadindexid)
 {
-	logprintf (LOG_TRACE, "formformatThreadInfoatFrame (%s, %d, 0x%x, %d)\n", threaddesc, descsize, &process, threadindexid);
+	logprintf (LOG_TRACE, "formatThreadInfo (%s, %d, 0x%x, %d)\n", threaddesc, descsize, &process, threadindexid);
 	*threaddesc = '\0';
 	if (!process.IsValid())
 		return threaddesc;
@@ -178,12 +181,12 @@ formatThreadInfo (STATE *pstate, char *threaddesc, size_t descsize, SBProcess pr
 				continue;
 			int tid=thread.GetThreadID();
 			threadindexid=thread.GetIndexID();
-			int frames = getNumFrames (pstate, thread);
+			int frames = getNumFrames (thread);
 			if (frames > 0) {
 				SBFrame frame = thread.GetFrameAtIndex(0);
 				if (frame.IsValid()) {
 					char framedesc[LINE_MAX];
-					formatFrame (framedesc, sizeof(framedesc), frame, WITH_LEVEL_AND_ARGS, pstate);
+					formatFrame (framedesc, sizeof(framedesc), frame, WITH_LEVEL_AND_ARGS);
 					int desclength = strlen(threaddesc);
 					snprintf (threaddesc+desclength, descsize-desclength,
 						"%s{id=\"%d\",target-id=\"Thread 0x%x of process %d\",%s,state=\"stopped\"}",

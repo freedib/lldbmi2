@@ -4,7 +4,13 @@
 #include "variables.h"
 #include "names.h"
 
-// extern bool global_istest;
+
+extern LIMITS limits;
+
+
+// TODO: error on evaluating...
+// XMLTableImportContext::CreateChildContext() at XMLTableImport.cxx:495 0x46f759 ...
+// mxTableModel	sdr::table::TableModelRef	Error: Multiple errors reported.\ Failed to execute MI command: -var-evaluate-expression this->mxRows._pInterface->mxTableModel \ Failed to execute MI command: -data-evaluate-expression this->mxRows._pInterface->mxTableModel \ Failed to execute MI command: -var-set-format this->mxRows._pInterface->mxTableModel octal \ Failed to execute MI command: -var-set-format this->mxRows._pInterface->mxTableModel decimal \ Failed to execute MI command: -var-set-format this->mxRows._pInterface->mxTableModel binary \ Failed to execute MI command: -var-set-format this->mxRows._pInterface->mxTableModel hexadecimal
 
 
 // bug struct CD (*cdp)[2]
@@ -21,7 +27,7 @@
 
 // TODO: implement @ formats for structures like struct S. seems to be a bug in lldb
 bool
-getPeudoArrayVariable (STATE *pstate, SBFrame frame, const char *expression, SBValue &var)
+getPeudoArrayVariable (SBFrame frame, const char *expression, SBValue &var)
 {
 	logprintf (LOG_TRACE, "getPeudoArrayVariable (0x%x, %s, 0x%x)\n", &frame, expression, &var);
 // just support *((var)+0)@100 and &(*((var)+0)@100) forms
@@ -57,7 +63,7 @@ getPeudoArrayVariable (STATE *pstate, SBFrame frame, const char *expression, SBV
 		*pe = '\0';
 	}
 	snprintf (varpointername, sizeof(varpointername), "&%s", varname);	// get var type
-	SBValue basevar = getVariable (pstate, frame, varpointername);				// vaname ¬ &var
+	SBValue basevar = getVariable (frame, varpointername);				// vaname ¬ &var
 	char newvartype[NAME_MAX];
 	strlcpy (newvartype, basevar.GetTypeName(), sizeof(vartype));		// typename ~ char (*)[101]
 	if ((pe = strchr (newvartype,'[')) == NULL)
@@ -66,7 +72,7 @@ getPeudoArrayVariable (STATE *pstate, SBFrame frame, const char *expression, SBV
 	char newexpression[NAME_MAX];				// create expression
 	snprintf (newexpression, sizeof(newexpression), "%s*(%s[%s])&%s[%s]%s",	// (char(*)[100])&c[0] or &((char(*)[100])&c[0])
 			ampersand?"&(":"", newvartype, varlength, varname, varoffset, ampersand?")":"");
-	var = getVariable (pstate, frame, newexpression);
+	var = getVariable (frame, newexpression);
 	logprintf (LOG_DEBUG, "getPeudoArrayVariable: expression %s -> %s\n", expression, newexpression);
 	if (!var.IsValid() || var.GetError().Fail())
 		return false;
@@ -123,9 +129,14 @@ getDirectPathVariable (SBFrame frame, const char *expression, SBValue *foundvar,
 	if (!parent.IsValid() || parent.GetError().Fail()) {
 		// if root, search root variable. start from the bottom up to a valid variable
 		do {
-			if ((pchildren = strrchr (expression_parts, '.')) == NULL)
+			if ((pchildren = strrchr (expression_parts, '.')) != NULL)
+				*pchildren++ = '\0';
+			else if ((pchildren = strstr (expression_parts, "->")) != NULL) {
+				*pchildren++ = '\0';
+				*pchildren++ = '\0';
+			}
+			else
 				return false;					// no more parent/children form
-			*pchildren++ = '\0';
 		} while (!getStandardPathVariable (frame, expression_parts, parent));
 		// copy again the string which may have now full of \0 ...
 		strlcpy (expression_parts, expression, sizeof(expression_parts));
@@ -135,12 +146,16 @@ getDirectPathVariable (SBFrame frame, const char *expression, SBValue *foundvar,
 	// split expression between parent and children
 	if ((pchildren = strchr (expression_parts, '.')) != NULL)
 		*pchildren++ = '\0';
+	else if ((pchildren = strstr (expression_parts, "->")) != NULL) {
+		*pchildren++ = '\0';
+		*pchildren++ = '\0';
+	}
 	// search children var
 	int parentnumchildren = parent.GetNumChildren();
 	const char *parentname = getName (parent);
 	logprintf (LOG_DEBUG, "getDirectPathVariable: expression part: parentname=%s child-searched=%s, other-children=%s\n",
 			parentname, expression_parts, pchildren==NULL?"":pchildren);
-	for (int ichild = 0; ichild < min(parentnumchildren,CHILDREN_MAX); ++ichild) {
+	for (int ichild = 0; ichild < min(parentnumchildren,limits.children_max); ++ichild) {
 		SBValue child = parent.GetChildAtIndex(ichild);
 		if (child.IsValid() && child.GetError().Success() && depth>1) {
 			child.SetPreferSyntheticValue (false);
@@ -163,17 +178,17 @@ getDirectPathVariable (SBFrame frame, const char *expression, SBValue *foundvar,
 
 // get a variable by trying many approaches
 SBValue
-getVariable (STATE *pstate, SBFrame frame, const char *expression)
+getVariable (SBFrame frame, const char *expression)
 {
 	logprintf (LOG_TRACE, "getVariable (0x%x, %s)\n", &frame, expression);
 	SBValue var;
 	if (strchr(expression,'@') != NULL)
-		getPeudoArrayVariable (pstate, frame, expression, var);
+		getPeudoArrayVariable (frame, expression, var);
 	if ((!var.IsValid() || var.GetError().Fail()) && *expression=='$')
 		var = frame.FindRegister(expression);
 	if (!var.IsValid() || var.GetError().Fail()) {
 		SBValue parent;
-		getDirectPathVariable (frame, expression, &var, parent, pstate->walk_depth_max);
+		getDirectPathVariable (frame, expression, &var, parent, limits.walk_depth_max);
 	}
 	if (!var.IsValid() || var.GetError().Fail())
 		getStandardPathVariable (frame, expression, var);
@@ -207,7 +222,7 @@ updateVarState (SBValue var, int depth)
 			getName(var), expressionpathdesc, varnumchildren, var.GetValue(), summary, var.GetValueDidChange());
     // And update its children
 	if (/*!vartype.IsPointerType() && !vartype.IsReferenceType() &&*/ !vartype.IsArrayType()) {
-		for (int ichild = 0; ichild < min(varnumchildren,CHILDREN_MAX); ++ichild) {
+		for (int ichild = 0; ichild < min(varnumchildren,limits.children_max); ++ichild) {
 			SBValue child = var.GetChildAtIndex(ichild);
 			if (child.IsValid() && var.GetError().Success() && depth>1) {
 				child.SetPreferSyntheticValue (false);
@@ -268,7 +283,7 @@ formatChildrenList (char *childrendesc, size_t descsize, SBValue var, char *expr
 	varnumchildren = var.GetNumChildren();
 	const char *sep="";
 	int ichild;
-	for (ichild=0; ichild<min(varnumchildren,CHILDREN_MAX); ichild++) {
+	for (ichild=0; ichild<min(varnumchildren,limits.children_max); ichild++) {
 		SBValue child = var.GetChildAtIndex(ichild);
 		if (!child.IsValid() || child.GetError().Fail())
 			continue;
@@ -330,7 +345,7 @@ formatChangedList (char *changedesc, size_t descsize, SBValue var, bool &separat
 		}
 	}
 	int childrenchanged = 0;
-//	childrenchanged = updateVarState(var);
+//	childrenchanged = updateVarState(var, limits.change_depth_max);
 	if (var.GetValueDidChange() || childrenchanged>0) {
 		const char *separator = separatorvisible? ",":"";
 		const char *varinscope = var.IsInScope()? "true": "false";
@@ -343,7 +358,7 @@ formatChangedList (char *changedesc, size_t descsize, SBValue var, bool &separat
 		return changedesc;
 	}
 	if (/*!vartype.IsPointerType() && !vartype.IsReferenceType() && */ !vartype.IsArrayType()) {
-		for (int ichild = 0; ichild < min(varnumchildren,CHILDREN_MAX); ++ichild) {
+		for (int ichild = 0; ichild < min(varnumchildren,limits.children_max); ++ichild) {
 			SBValue child = var.GetChildAtIndex(ichild);
 			if (!child.IsValid() || var.GetError().Fail())
 				continue;
@@ -363,7 +378,7 @@ formatChangedList (char *changedesc, size_t descsize, SBValue var, bool &separat
 // format a list of variables into a GDB string
 // called for arguments and locals var after a breakpoint
 char *
-formatVariables (char *varsdesc, size_t descsize, SBValueList varslist, STATE *pstate)
+formatVariables (char *varsdesc, size_t descsize, SBValueList varslist)
 {
 	logprintf (LOG_TRACE, "formatVariables (..., %zd, 0x%x)\n", descsize, &varslist);
 	*varsdesc = '\0';
@@ -378,7 +393,7 @@ formatVariables (char *varsdesc, size_t descsize, SBValueList varslist, STATE *p
 			const char *varvalue = var.GetValue();
 			// basic type valid only when type class is Builtin
 			if ((vartype.GetBasicType()!=eBasicTypeInvalid && varvalue!=NULL) || true) {
-				updateVarState (var, pstate->change_depth_max);
+			//	updateVarState (var, limits.change_depth_max);
 				int varslength = strlen(varsdesc);
 				char vardesc[BIG_VALUE_MAX];
 				formatValue (vardesc, sizeof(vardesc), var, FULL_SUMMARY);
@@ -452,7 +467,7 @@ formatSummary (char *summarydesc, size_t descsize, SBValue var)
 		char *ps=summarydesc;
 		char vardesc[VALUE_MAX];
 		strlcat (ps++, "{", descsize--);
-		for (int ichild=0; ichild<min(numchildren,CHILDREN_MAX); ichild++) {
+		for (int ichild=0; ichild<min(numchildren,limits.children_max); ichild++) {
 			SBValue child = var.GetChildAtIndex(ichild);
 			if (!child.IsValid() || var.GetError().Fail())
 				continue;

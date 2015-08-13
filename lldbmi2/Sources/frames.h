@@ -12,8 +12,8 @@ typedef enum
 
 
 char *  formatBreakpoint (char *breakpointdesc, size_t descsize, SBBreakpoint breakpoint, STATE *pstate);
-int     getNumFrames     (STATE *pstate, SBThread thread);
-char *  formatFrame      (char *framedesc, size_t descsize, SBFrame frame, FrameDetails details, STATE *pstate);
-char *  formatThreadInfo (STATE *pstate, char *threaddesc, size_t descsize, SBProcess process, int threadindexid);
+int     getNumFrames     (SBThread thread);
+char *  formatFrame      (char *framedesc, size_t descsize, SBFrame frame, FrameDetails details);
+char *  formatThreadInfo (char *threaddesc, size_t descsize, SBProcess process, int threadindexid);
 
 #endif // FORMFRAMES_HAT_H
