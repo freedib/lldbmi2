@@ -163,10 +163,10 @@ void
 onStopped (STATE *pstate, SBProcess process)
 {
 	logprintf (LOG_TRACE, "onStopped (0x%x, 0x%x)\n", pstate, &process);
-//	-3-38-5.140 <<=  |=breakpoint-modified,bkpt={number="breakpoint 1",type="breakpoint",disp="del",enabled="y",addr="0x0000000100000f06",func="main",file="hello.c",fullname="hello.c",line="33",thread-groups=["i1"],times="1",original-location="hello.c:33"}\n|
-//	-3-38-5.140 <<=  |*stopped,reason="breakpoint-hit",disp="keep",bkptno="breakpoint 1",frame={addr="0x0000000100000f06",func="main",args=[],file="hello.c",fullname="hello.c",line="33"},thread-id="1",stopped-threads="all"\n|
-//	-3-40-7.049 <<=  |*stopped,reason="breakpoint-hit",disp="keep",bkptno="1",frame={addr="0000000000000f06",func="main",args=[],file="hello.c",fullname="/Users/didier/Projets/LLDB/hello/Debug/../Sources/hello.c",line="33"},thread-id="1",stopped-threads="all"(gdb)\n|
-//                    *stopped,reason="signal-received",signal-name="SIGSEGV",signal-meaning="Segmentation fault",frame={addr="0x0000000100000f7b",func="main",args=[],file="../Sources/hello.cpp",fullname="/Users/didier/Projets/git-lldbmi2/test_hello_cpp/Sources/hello.cpp",line="44"},thread-id="1",stopped-threads="all"
+//	-3-38-5.140 <<=  |=breakpoint-modified,bkpt={number="breakpoint 1",type="breakpoint",disp="del",enabled="y",addr="0x0000000100000f06",func="main",file="tests.c",fullname="tests.c",line="33",thread-groups=["i1"],times="1",original-location="tests.c:33"}\n|
+//	-3-38-5.140 <<=  |*stopped,reason="breakpoint-hit",disp="keep",bkptno="breakpoint 1",frame={addr="0x0000000100000f06",func="main",args=[],file="tests.c",fullname="tests.c",line="33"},thread-id="1",stopped-threads="all"\n|
+//	-3-40-7.049 <<=  |*stopped,reason="breakpoint-hit",disp="keep",bkptno="1",frame={addr="0000000000000f06",func="main",args=[],file="tests.c",fullname="/Users/didier/Projets/git-lldbmi2/tests/Debug/../Sources/tests.c",line="33"},thread-id="1",stopped-threads="all"(gdb)\n|
+//                    *stopped,reason="signal-received",signal-name="SIGSEGV",signal-meaning="Segmentation fault",frame={addr="0x0000000100000f7b",func="main",args=[],file="../Sources/tests.cpp",fullname="/Users/didier/Projets/git-lldbmi2/test_hello_cpp/Sources/tests.cpp",line="44"},thread-id="1",stopped-threads="all"
 	checkThreadsLife (pstate, process);
 	updateSelectedThread (process);				// search which thread is stopped
 	SBTarget target = process.GetTarget();
@@ -207,7 +207,7 @@ onStopped (STATE *pstate, SBProcess process)
 		int threadindexid=thread.GetIndexID();
 		cdtprintf ("*stopped,%s%s,thread-id=\"%d\",stopped-threads=\"all\"\n(gdb)\n",
 					reasondesc,framedesc,threadindexid);
-	//	cdtprintf ("*stopped,reason=\"breakpoint-hit\",disp=\"keep\",bkptno=\"1\",frame={addr=\"0x0000000100000f06\",func=\"main\",args=[],file=\"../Sources/hello.c\",fullname=\"/Users/didier/Projets/LLDB/hello/Sources/hello.c\",line=\"33\"},thread-id=\"1\",stopped-threads=\"all\"\n(gdb) \n");
+	//	cdtprintf ("*stopped,reason=\"breakpoint-hit\",disp=\"keep\",bkptno=\"1\",frame={addr=\"0x0000000100000f06\",func=\"main\",args=[],file=\"../Sources/tests.c\",fullname=\"/Users/didier/Projets/git-lldbmi2/tests/Sources/tests.c\",line=\"33\"},thread-id=\"1\",stopped-threads=\"all\"\n(gdb) \n");
 		if (strcmp(dispose,"del")==0) {
 			target.BreakpointDelete(bpid);
 			cdtprintf ("=breakpoint-deleted,id=\"%d\"\n", bpid);
@@ -232,7 +232,7 @@ onStopped (STATE *pstate, SBProcess process)
 		//signal-name="SIGSEGV",signal-meaning="Segmentation fault"
 		cdtprintf ("*stopped,%s%sthread-id=\"%d\",stopped-threads=\"all\"\n(gdb)\n",
 					reasondesc,framedesc,threadindexid);
-		// *stopped,reason="signal-received",signal-name="SIGSEGV",signal-meaning="Segmentation fault",frame={addr="0x0000000100000f7b",func="main",args=[],file="../Sources/hello.cpp",fullname="/Users/didier/Projets/git-lldbmi2/test_hello_cpp/Sources/hello.cpp",line="44"},thread-id="1",stopped-threads="all"
+		// *stopped,reason="signal-received",signal-name="SIGSEGV",signal-meaning="Segmentation fault",frame={addr="0x0000000100000f7b",func="main",args=[],file="../Sources/tests.cpp",fullname="/Users/didier/Projets/git-lldbmi2/test_hello_cpp/Sources/tests.cpp",line="44"},thread-id="1",stopped-threads="all"
 	}
 	else if (stopreason==eStopReasonNone) {
 		// raised when a thread different from the selected thread stops

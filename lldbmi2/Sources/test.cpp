@@ -7,28 +7,14 @@
 
 // test commands will pause after a exec-run, exec-continue or target-attach
 
-// remove comment above wanted commands set
-//#define TEST_C
-//#define TEST_C_ATTACH
-//#define TEST_C_VARS
-//#define TEST_C_UPDATE
-//#define TEST_C_SIMPLE
-//#define TEST_C_POINTERS
-//#define TEST_C_LARGE_ARRAY
-//#define TEST_CPP_MEMBERS
-//#define TEST_CPP_STRING
-#define TEST_CPP_ARGS
-//#define TEST_OTHER
 
-
-#ifdef TEST_C
-const char *testcommands[] = {
-	"51-environment-cd /Users/didier/Projets/git-lldbmi2/test_hello_c/Debug",
-	"52-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_c/Debug/test_hello_c",
-	"53-gdb-set --thread-group i1 args -h localhost",
-	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_c/Sources/hello.c:77",
-	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_c/Sources/hello.c:34",
-	"61-inferior-tty-set --thread-group i1 %1",	// stdout instead of /dev/ptyxx
+const char *testcommands_THREAD[] = {
+	"51-environment-cd /Users/didier/Projets/git-lldbmi2/tests/LLVM",
+	"52-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Debug/tests",
+	"53-gdb-set --thread-group i1 args %?",
+	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Sources/tests.c:34",
+	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Sources/tests.c:77",
+	"61-inferior-tty-set --thread-group i1 %?",		// stdout instead of /dev/ptyxx
 	"62-exec-run --thread-group i1",
 	"64-list-thread-groups",
 	"65-list-thread-groups i1",
@@ -46,14 +32,13 @@ const char *testcommands[] = {
 	"80-gdb-exit",
 	NULL
 };
-#endif	// TEST_C
 
-#ifdef TEST_C_VARS
-const char *testcommands[] = {
-	"51-environment-cd /Users/didier/Projets/git-lldbmi2/test_hello_c/Debug",
-	"52-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_c/Debug/test_hello_c",
-	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_c/Sources/hello.c:74",
-	"61-inferior-tty-set --thread-group i1 %1",	// stdout instead of /dev/ptyxx
+const char *testcommands_VARS[] = {
+	"51-environment-cd /Users/didier/Projets/git-lldbmi2/tests/LLVM",
+	"52-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Debug/tests",
+	"53-gdb-set --thread-group i1 args %?",
+	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Sources/tests.c:74",
+	"61-inferior-tty-set --thread-group i1 %?",		// stdout instead of /dev/ptyxx
 	"62-exec-run --thread-group i1",
 	"76-var-evaluate-expression c",
 	"76-var-evaluate-expression pz->a",
@@ -62,14 +47,13 @@ const char *testcommands[] = {
 	"80-gdb-exit",
 	NULL
 };
-#endif	// TEST_C_VARS
 
-#ifdef TEST_C_UPDATE
-const char *testcommands[] = {
-	"51-environment-cd /Users/didier/Projets/git-lldbmi2/test_hello_c/Debug",
-	"52-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_c/Debug/test_hello_c",
-	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_c/Sources/hello.c:76",
-	"61-inferior-tty-set --thread-group i1 %1",	// stdout instead of /dev/ptyxx
+const char *testcommands_UPDATE[] = {
+	"51-environment-cd /Users/didier/Projets/git-lldbmi2/tests/LLVM",
+	"52-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Debug/tests",
+	"53-gdb-set --thread-group i1 args %?",
+	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Sources/tests.c:76",
+	"61-inferior-tty-set --thread-group i1 %?",		// stdout instead of /dev/ptyxx
 	"62-exec-run --thread-group i1",
 	"41-stack-list-locals --thread 1 --frame 0 1",
 	"42-stack-info-depth --thread 1 11",
@@ -82,14 +66,13 @@ const char *testcommands[] = {
 	"80-gdb-exit",
 	NULL
 };
-#endif	// TEST_C_UPDATE
 
-#ifdef TEST_C_LARGE_ARRAY
-const char *testcommands[] = {
-	"3-environment-cd /Users/didier/Projets/git-lldbmi2/test_hello_c",
-	"17-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_c/Debug/test_hello_c",
+const char *testcommands_LARGE_ARRAY[] = {
+	"3-environment-cd /Users/didier/Projets/git-lldbmi2/tests",
+	"17-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Debug/tests",
 //	"19-gdb-show --thread-group i1 language",
-	"26-break-insert -f /Users/didier/Projets/git-lldbmi2/test_hello_c/Sources/hello.c:98",
+	"53-gdb-set --thread-group i1 args %?",
+	"26-break-insert -f /Users/didier/Projets/git-lldbmi2/tests/Sources/test.c:97",
 	"28-exec-run --thread-group i1",
 	"35-stack-list-locals --thread 1 --frame 0 1",
 	"36-var-create --thread 1 --frame 0 - * c",
@@ -114,13 +97,12 @@ const char *testcommands[] = {
 	"80-gdb-exit",
 	NULL
 };
-#endif	// TEST_C_LARGE_ARRAY
 
-#ifdef TEST_C_POINTERS
-const char *testcommands[] = {
-	"51-environment-cd /Users/didier/Projets/git-lldbmi2/test_hello_c/Debug",
-	"52-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_c/Debug/test_hello_c",
-	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_c/Sources/hello.c:118",
+const char *testcommands_POINTERS[] = {
+	"51-environment-cd /Users/didier/Projets/git-lldbmi2/tests/LLVM",
+	"52-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Debug/tests",
+	"53-gdb-set --thread-group i1 args %?",
+	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Sources/tests.c:113",
 	"62-exec-run --thread-group i1",
 	"64-list-thread-groups",
 	"65-list-thread-groups i1",
@@ -156,14 +138,12 @@ const char *testcommands[] = {
 	"80-gdb-exit",
 	NULL
 };
-#endif	// TEST_C_POINTERS
 
-#ifdef TEST_C_ATTACH
-const char *testcommands[] = {
-	"51-environment-cd /Users/didier/Projets/git-lldbmi2/test_hello_c/Debug",
-	"62-target-attach --thread-group i1 test_hello_c",
-	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_c/Sources/hello.c:34",
-	"61-inferior-tty-set --thread-group i1 %1",	// stdout instead of /dev/ptyxx
+const char *testcommands_ATTACH[] = {
+	"51-environment-cd /Users/didier/Projets/git-lldbmi2/tests/LLVM",
+	"62-target-attach --thread-group i1 tests",
+	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Sources/tests.c:34",
+	"61-inferior-tty-set --thread-group i1 %?",		// stdout instead of /dev/ptyxx
 	"65-list-thread-groups i1",
 	"69-thread-info 1",
 	"79-thread-info 2",
@@ -173,14 +153,13 @@ const char *testcommands[] = {
 	"80-gdb-exit",
 	NULL
 };
-#endif	// TEST_C_ATTACH
 
-#ifdef TEST_CPP_MEMBERS
-const char *testcommands[] = {
-	"51-environment-cd /Users/didier/Projets/git-lldbmi2/test_hello_cpp/Debug",
-	"52-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_cpp/Debug/test_hello_cpp",
+const char *testcommands_MEMBERS[] = {
+	"51-environment-cd /Users/didier/Projets/git-lldbmi2/tests/LLVM",
+	"52-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Debug/tests",
+	"53-gdb-set --thread-group i1 args %?",
 	"64-list-thread-groups",
-	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_cpp/Sources/hello.cpp:49",
+	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Sources/tests.cpp:163",
 	"62-exec-run --thread-group i1",
 	"64-list-thread-groups",
 	"65-list-thread-groups i1",
@@ -197,14 +176,13 @@ const char *testcommands[] = {
 	"80-gdb-exit",
 	NULL
 };
-#endif	// TEST_CPP_MEMBERS
 
-#ifdef TEST_CPP_STRING
-const char *testcommands[] = {
-	"51-environment-cd /Users/didier/Projets/git-lldbmi2/test_hello_cpp/Debug",
-	"52-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_cpp/Debug/test_hello_cpp",
+const char *testcommands_STRING[] = {
+	"51-environment-cd /Users/didier/Projets/git-lldbmi2/tests/LLVM",
+	"52-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Debug/tests",
+	"53-gdb-set --thread-group i1 args %?",
 	"64-list-thread-groups",
-	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_cpp/Sources/hello.cpp:117",
+	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Sources/tests.cpp:251",
 	"62-exec-run --thread-group i1",
 	"64-list-thread-groups",
 	"65-list-thread-groups i1",
@@ -213,8 +191,8 @@ const char *testcommands[] = {
 	"72-var-create --thread 1 --frame 0 - * s",
 	"73-var-list-children s",
 	"73-var-list-children s.__r_",
-	"107-var-list-children s.__r_.__first_",
-	"104-var-list-children s.__r_.__first_.__s.(anonymous)",
+	"73-var-list-children s.__r_.__first_",
+	"73-var-list-children s.__r_.__first_.__s.(anonymous)",
 	"73-var-list-children \"s.__r_.std::__1::__libcpp_compressed_pair_imp<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >::__rep, std::__1::allocator<char>, 2>\"",
 	"73-var-list-children \"s.__r_.std::__1::__libcpp_compressed_pair_imp<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >::__rep, std::__1::allocator<char>, 2>.__first_\"",
 	"72-var-create --thread 1 --frame 0 - * cc",
@@ -228,23 +206,29 @@ const char *testcommands[] = {
 	"80-gdb-exit",
 	NULL
 };
-#endif	// TEST_CPP_STRING
 
-#ifdef TEST_CPP_ARGS
-const char *testcommands[] = {
-	"51-environment-cd /Users/didier/Projets/git-lldbmi2/test_hello_cpp/LLVM",
-	"52-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_cpp/LLVM/test_hello_cpp",
+const char *testcommands_ARGS[] = {
+	"51-environment-cd /Users/didier/Projets/git-lldbmi2/tests/LLVM",
+	"52-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Debug/tests",
+	"53-gdb-set --thread-group i1 args %?",
 	"64-list-thread-groups",
 	"19-gdb-show --thread-group i1 language",
-	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_cpp/Sources/hello.cpp:74",
-	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_cpp/Sources/hello.cpp:85",
-	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/test_hello_cpp/Sources/hello.cpp:87",
+	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Sources/tests.cpp:198",
+	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Sources/tests.cpp:212",
+	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Sources/tests.cpp:214",
 	"62-exec-run --thread-group i1",
 	"64-list-thread-groups",
 	"65-list-thread-groups i1",
 	"69-thread-info 1",
 	"67-stack-list-locals --thread 1 --frame 0 1",
 	"38-var-create --thread 1 --frame 0 - * s",
+	"38-var-create --thread 1 --frame 0 - * s[0]",
+	"38-var-create --thread 1 --frame 0 - * ab",
+	"57-var-list-children ab",
+	"58-var-info-path-expression ab.BA",
+	"63-data-evaluate-expression --thread 1 --frame 0 ab.BA",
+	"63-var-evaluate-expression ab.BA",
+	"57-var-list-children ab.BA",
 	"77-exec-continue --thread 1",
 	"64-list-thread-groups",
 	"65-list-thread-groups i1",
@@ -255,9 +239,9 @@ const char *testcommands[] = {
 	"38-var-create --thread 1 --frame 0 - * v",
 	"38-var-create --thread 1 --frame 0 - * d",
 	"38-var-create --thread 1 --frame 0 - * b",
+	"67-var-list-children b",
 	"38-var-create --thread 1 --frame 0 - * cdp",
 	"38-var-create --thread 1 --frame 0 - * cdr",
-	"67-var-list-children b",
 	"77-exec-continue --thread 1",
 	"64-list-thread-groups",
 	"65-list-thread-groups i1",
@@ -280,10 +264,11 @@ const char *testcommands[] = {
 	"80-gdb-exit",
 	NULL
 };
-#endif	// TEST_CPP_ARGS
 
-#ifdef TEST_OTHER
-const char *testcommands[] = {
+const char *testcommands_OTHER[] = {
+	"51-environment-cd /Users/didier/Projets/git-lldbmi2/tests/LLVM",
+	"52-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Debug/tests",
+	"53-gdb-set --thread-group i1 args %?",
 	"5-enable-pretty-printing",
 	"52-gdb-set solib-search-path /Users/didier/Projets/git-gasio/gasio/Debug",
 	"52-gdb-set env DYLD_LIBRARY_PATH = /gasio/Debug",
@@ -312,4 +297,35 @@ const char *testcommands[] = {
 	"80-gdb-exit",
 	NULL
 };
-#endif	// TEST_OTHER
+
+const char *testcommands_CRASH[] = {
+	"51-environment-cd /Users/didier/Projets/git-lldbmi2/tests/LLVM",
+	"52-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Debug/tests",
+	"53-gdb-set --thread-group i1 args %?",
+	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Sources/tests.c:190",
+	"61-inferior-tty-set --thread-group i1 %?",		// stdout instead of /dev/ptyxx
+	"62-exec-run --thread-group i1",
+	"76-var-evaluate-expression err",
+	"80-gdb-exit",
+	NULL
+};
+
+
+const char **
+getTestcommands (int test_sequence)
+{
+	switch (test_sequence) {
+	case 1:		return testcommands_THREAD;
+	case 2:		return testcommands_VARS;
+	case 3:		return testcommands_UPDATE;
+	case 4:		return testcommands_LARGE_ARRAY;
+	case 5:		return testcommands_POINTERS;
+	case 6:		return testcommands_ATTACH;
+	case 7:		return testcommands_MEMBERS;
+	case 8:		return testcommands_STRING;
+	case 9:		return testcommands_ARGS;
+	case 10:	return testcommands_OTHER;
+	case 11:	return testcommands_CRASH;
+	default:	return NULL;
+	}
+}

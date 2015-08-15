@@ -11,8 +11,8 @@ extern LIMITS limits;
 
 // Should make breakpoint pending if invalid
 // 017,435 29^done,bkpt={number="5",type="breakpoint",disp="keep",enabled="y",addr="<PENDING>",pending=\
-// "/Users/didier/Projets/git-lldbmi2/test_hello_c/Sources/hello.c:33",times="0",original-location="/Users/\
-// didier/Projets/git-lldbmi2/test_hello_c/Sources/hello.c:33"}
+// "/Users/didier/Projets/git-lldbmi2/test_hello_c/Sources/tests.cpp:33",times="0",original-location="/Users/\
+// didier/Projets/git-lldbmi2/test_hello_c/Sources/tests.cpp:33"}
 
 // format a breakpoint description into a GDB string
 char *
@@ -20,8 +20,8 @@ formatBreakpoint (char *breakpointdesc, size_t descsize, SBBreakpoint breakpoint
 {
 	logprintf (LOG_TRACE, "formatBreakpoint (%s, %d, 0x%x, 0x%x)\n", breakpointdesc, descsize, &breakpoint, pstate);
 	// 18^done,bkpt={number="1",type="breakpoint",disp="keep",enabled="y",addr="0x00000001000/00f58",
-	//  func="main",file="../Sources/hello.c",fullname="/pro/runtime-EclipseApplication/hello/Sources/hello.c",
-	//  line="17",thread-groups=["i1"],times="0",original-location="/pro/runtime-EclipseApplication/hello/Sources/hello.c:17"}
+	//  func="main",file="../Sources/tests.cpp",fullname="/pro/runtime-EclipseApplication/tests/Sources/tests.cpp",
+	//  line="17",thread-groups=["i1"],times="0",original-location="/pro/runtime-EclipseApplication/tests/Sources/tests.cpp:17"}
 	int bpid = breakpoint.GetID();
 	SBBreakpointLocation location = breakpoint.GetLocationAtIndex(0);
 	SBAddress addr = location.GetAddress();

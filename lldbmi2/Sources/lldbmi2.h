@@ -42,6 +42,7 @@ typedef struct {
 	int  ptyfd;
 	bool eof;
 	bool isrunning;
+	int test_sequence;
 	const char *envp[ENV_ENTRIES];
 	int  envpentries;
 	char envs[BIG_LINE_MAX];
@@ -60,7 +61,7 @@ typedef struct {
 } STATE;
 
 
-const char *getTestCommand (int *idTestCommand);
+const char *getTestCommand (const char **testCommands, int *idTestCommand);
 void        writetocdt     (const char *line);
 void        cdtprintf      (const char *format, ... );
 void        signalHandler (int vSigno);

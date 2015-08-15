@@ -118,6 +118,21 @@ const char *getName ( SBValue &var)
 }
 
 
+char *
+strrstr (char *string, const char *find)
+{
+	size_t stringlen, findlen;
+	char *cp;
+	findlen = strlen(find);
+	stringlen = strlen(string);
+	if (findlen > stringlen)
+		return NULL;
+	for (cp = string + stringlen - findlen; cp >= string; cp--)
+		if (strncmp(cp, find, findlen) == 0)
+			return cp;
+	return NULL;
+}
+
 // try go get a variable child from a path by walking its children
 // while there are parts, search children for the remaining
 bool
@@ -131,10 +146,12 @@ getDirectPathVariable (SBFrame frame, const char *expression, SBValue *foundvar,
 		do {
 			if ((pchildren = strrchr (expression_parts, '.')) != NULL)
 				*pchildren++ = '\0';
-			else if ((pchildren = strstr (expression_parts, "->")) != NULL) {
+			else if ((pchildren = strrstr (expression_parts, "->")) != NULL) {
 				*pchildren++ = '\0';
 				*pchildren++ = '\0';
 			}
+			else if ((pchildren = strrchr (expression_parts, '[')) != NULL)
+				*pchildren = '\0';
 			else
 				return false;					// no more parent/children form
 		} while (!getStandardPathVariable (frame, expression_parts, parent));
@@ -150,6 +167,18 @@ getDirectPathVariable (SBFrame frame, const char *expression, SBValue *foundvar,
 		*pchildren++ = '\0';
 		*pchildren++ = '\0';
 	}
+	/*
+	else if ((pchildren = strchr (expression_parts, '[')) != NULL) {
+		size_t lep = strlen(expression_parts);		// shift children on the right
+		if (lep<sizeof(expression_parts)-2) {		// room for shift and final \0
+			char *pep = expression_parts+lep+1;
+			do {
+				*pep = *(pep-1);
+			} while (--pep > pchildren);
+			*pchildren++ = '\0';
+		}
+	}
+	*/
 	// search children var
 	int parentnumchildren = parent.GetNumChildren();
 	const char *parentname = getName (parent);
@@ -235,7 +264,7 @@ updateVarState (SBValue var, int depth)
 
 // get and correct and expression path
 // correct cd->[] and cd.[] expressions to cd[]
-// TODO: correct for argument like  struct CD (*cd) [2]. in hello.cpp reference works but not pointer
+// TODO: correct for argument like  struct CD (*cd) [2]. in tests.cpp reference works but not pointer
 char *
 formatExpressionPath (char *expressionpathdesc, size_t descsize, SBValue var)
 {
@@ -544,18 +573,18 @@ formatValue (char *vardesc, size_t descsize, SBValue var, VariableDetails detail
 	if (varvalue != NULL) {			// basic types and arrays
 		if (vartype.IsPointerType() || vartype.IsReferenceType() || vartype.IsArrayType()) {
 			if (varsummary!=NULL && details==FULL_SUMMARY)
-				snprintf (vardesc, descsize, "@1 %s \\\"%s\\\"", varvalue, varsummary);
+				snprintf (vardesc, descsize, "%s \\\"%s\\\"", varvalue, varsummary);
 			else
-				snprintf (vardesc, descsize, "@2 %s {...}", varvalue);
+				snprintf (vardesc, descsize, "%s {...}", varvalue);
 		}
 		else		// basic type
 			strlcpy (vardesc, varvalue, descsize);
 	}
 	// classes and structures
 	else if (varsummary!=NULL && details==FULL_SUMMARY)
-		snprintf (vardesc, descsize, "@3 0x%llx \\\"%s\\\"", varaddr, varsummary);
+		snprintf (vardesc, descsize, "0x%llx \\\"%s\\\"", varaddr, varsummary);
 	else
-		snprintf (vardesc, descsize, "@4 0x%llx {...}", varaddr);
+		snprintf (vardesc, descsize, "0x%llx {...}", varaddr);
 	if (strlen(vardesc) >= descsize-1)
 		logprintf (LOG_ERROR, "formatValue: vardesc size (%d) too small\n", descsize);
 	return vardesc;

@@ -93,7 +93,7 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 			"features=[\"frozen-varobjs\",\"pending-breakpoints\",\"thread-info\",\"data-read-memory-bytes\",\"breakpoint-notifications\",\"ada-task-info\",\"python\"]");
 	}
 	else if (strcmp(cc.argv[0],"-environment-cd")==0) {
-		// environment-cd /Users/didier/Projets/LLDB/hello
+		// environment-cd /Users/didier/Projets/git-lldbmi2/tests
 		launchInfo.SetWorkingDirectory (cc.argv[nextarg]);
 	//	logprintf (LOG_THREAD, "cwd=%s pwd=%s\n", cc.argv[nextarg], launchInfo.GetWorkingDirectory());
 		cdtprintf ("%d^done\n(gdb)\n", cc.sequence);
@@ -122,7 +122,9 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 		// -gdb-set auto-solib-add on
 		// -gdb-set language c
 		if (strcmp(cc.argv[nextarg],"args") == 0) {
-			launchInfo.SetArguments (&cc.argv[++nextarg], false);
+			if (strcmp(cc.argv[++nextarg],"%?") == 0)
+				sprintf ((char *)cc.argv[nextarg], "%2d", pstate->test_sequence);
+			launchInfo.SetArguments (&cc.argv[nextarg], false);
 		}
 		else if (strcmp(cc.argv[nextarg],"env") == 0) {
 			// eclipse put a space around the equal in VAR = value. we have to combine all 3 part to form env entry
@@ -168,7 +170,7 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 	else if (strcmp(cc.argv[0],"-inferior-tty-set")==0) {
 		// inferior-tty-set --thread-group i1 /dev/ttyp0
 		strlcpy (pstate->cdtptyname, cc.argv[nextarg], sizeof(pstate->cdtptyname));
-		if (strcmp(pstate->cdtptyname,"%1") == 0)
+		if (strcmp(pstate->cdtptyname,"%?") == 0)
 			pstate->ptyfd = EOF;
 		else
 			pstate->ptyfd = open (pstate->cdtptyname, O_RDWR);
@@ -177,7 +179,7 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 	}
 	// TARGET AND RUN COMMANDS
 	else if (strcmp(cc.argv[0],"-file-exec-and-symbols")==0) {
-		// file-exec-and-symbols --thread-group i1 /Users/didier/Projets/LLDB/hello/Debug/hello
+		// file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Debug/tests
 		strlcpy (programpath, cc.argv[nextarg], sizeof(programpath));
 		target = pstate->debugger.CreateTargetWithFileAndArch (programpath, "x86_64");
 		if (!target.IsValid())
@@ -371,7 +373,7 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 	}
 	// BEAKPOINT COMMANDS
 	else if (strcmp(cc.argv[0],"-break-insert")==0) {
-		// break-insert --thread-group i1 -f /Users/didier/Projets/LLDB/hello/Sources/hello.c:17
+		// break-insert --thread-group i1 -f /Users/didier/Projets/git-lldbmi2/tests/Sources/tests.cpp:17
 		// break-insert --thread-group i1 -t -f main
 		int isoneshot=0;
 		char path[LINE_MAX];
@@ -434,13 +436,13 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 		// list-thread-groups --available
 		//    ^error,msg="Can not fetch data now."
 		// list-thread-groups
-		//    ^done,groups=[{id="i1",type="process",pid="1186",executable="/Users/didier/Projets/LLDB/hello/Debug/hello"}]
+		//    ^done,groups=[{id="i1",type="process",pid="1186",executable="/Users/didier/Projets/git-lldbmi2/tests/Debug/tests"}]
 		// list-thread-groups i1
 		//    ^done,threads=[{id="1",target-id="Thread 0x1503 of process 1186",frame={level="0",addr="0x0000000100000f46",
-		//    func="main",args=[],file="../Sources/hello.c",fullname="/Users/didier/Projets/LLDB/hello/Sources/hello.c",
+		//    func="main",args=[],file="../Sources/tests.cpp",fullname="/Users/didier/Projets/git-lldbmi2/tests/Sources/tests.cpp",
 		//    line="15"},state="stopped"}]
-		//		233857.215 <<=  |65^done,threads=[{id="1",target-id="Thread 0x89b52 of process 94273",frame={level="0",addr="0x0000000000000ebf",func="main",args=[{name="argc",value="3"},{name="argv",value="0x00007fff5fbffeb0"},{name="envp",value="0x00007fff5fbffed0"}],file="hello.c",fullname="/Users/didier/Projets/LLDB/hello/Debug/../Sources/hello.c",line="69"},state="stopped"},{id="2",target-id="Thread 0x89b61 of process 94273",frame={level="0",addr="0x000000000001648a",func="__semwait_signal"},state="stopped"}]\n(gdb)\n|
-		//		         491,415 47^done,threads=[{id="2",target-id="Thread 0x110f of process 96806",frame={level="0",addr="0x00007fff88a3848a",func="??",args=[]},state="stopped"},{id="1",target-id="Thread 0x1003 of process 96806",frame={level="0",addr="0x0000000100000ebf",func="main",args=[{name="argc",value="1"},{name="argv",value="0x7fff5fbff5c0"},{name="envp",value="0x7fff5fbff5d0"}],file="../Sources/hello.c",fullname="/Users/didier/Projets/LLDB/hello/Sources/hello.c",line="69"},state="stopped"}]
+		//		233857.215 <<=  |65^done,threads=[{id="1",target-id="Thread 0x89b52 of process 94273",frame={level="0",addr="0x0000000000000ebf",func="main",args=[{name="argc",value="3"},{name="argv",value="0x00007fff5fbffeb0"},{name="envp",value="0x00007fff5fbffed0"}],file="tests.cpp",fullname="/Users/didier/Projets/git-lldbmi2/tests/Debug/../Sources/tests.cpp",line="69"},state="stopped"},{id="2",target-id="Thread 0x89b61 of process 94273",frame={level="0",addr="0x000000000001648a",func="__semwait_signal"},state="stopped"}]\n(gdb)\n|
+		//		         491,415 47^done,threads=[{id="2",target-id="Thread 0x110f of process 96806",frame={level="0",addr="0x00007fff88a3848a",func="??",args=[]},state="stopped"},{id="1",target-id="Thread 0x1003 of process 96806",frame={level="0",addr="0x0000000100000ebf",func="main",args=[{name="argc",value="1"},{name="argv",value="0x7fff5fbff5c0"},{name="envp",value="0x7fff5fbff5d0"}],file="../Sources/tests.cpp",fullname="/Users/didier/Projets/git-lldbmi2/tests/Sources/tests.cpp",line="69"},state="stopped"}]
 
 		if (cc.available > 0) {
 			cdtprintf ("%d^error,msg=\"%s\"\n(gdb)\n", cc.sequence, "Can not fetch data now.");

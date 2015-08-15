@@ -15,10 +15,9 @@
 #include "engine.h"
 #include "variables.h"
 #include "log.h"
+#include "test.h"
 #include "version.h"
 
-
-extern const char *testcommands[];
 
 void help (STATE *pstate)
 {
@@ -35,7 +34,7 @@ void help (STATE *pstate)
 	fprintf (stderr, "Options:\n");
 	fprintf (stderr, "   --log:                Create log file in project root directory.\n");
 	fprintf (stderr, "   --logmask mask:       Select log categories. 0xFFF. See source code for values.\n");
-	fprintf (stderr, "   --test:               Execute test sequence (to debug lldmi2).\n");
+	fprintf (stderr, "   --test n:             Execute test sequence (to debug lldmi2).\n");
 	fprintf (stderr, "   --nx:                 Ignored.\n");
 	fprintf (stderr, "   --frames frames:      Max number of frames to display (%d).\n", FRAMES_MAX);
 	fprintf (stderr, "   --children children:  Max number of children to check for update (%d).\n", CHILDREN_MAX);
@@ -56,6 +55,7 @@ main (int argc, char **argv, char **envp)
 	long chars;
 	struct timeval timeout;
 	int isVersion=0, isInterpreter=0;
+	const char **testCommands;
 	const char *pTestCommand=NULL;
 	int  idTestCommand=0;
 	int  isLog=0;
@@ -87,6 +87,8 @@ main (int argc, char **argv, char **envp)
 		}
 		else if (strcmp (argv[narg],"--test") == 0 ) {
 			limits.istest = true;
+			if (++narg<argc)
+				sscanf (argv[narg], "%d", &state.test_sequence);
 		}
 		else if (strcmp (argv[narg],"--log") == 0 )
 			isLog = 1;
@@ -112,6 +114,9 @@ main (int argc, char **argv, char **envp)
 				sscanf (argv[narg], "%d", &limits.change_depth_max);
 		}
 	}
+
+	if (limits.istest)
+		testCommands = getTestcommands(state.test_sequence);
 
 	// create a log filename from program name and open log file
 	if (isLog) {
@@ -173,7 +178,7 @@ main (int argc, char **argv, char **envp)
 		}
 		// execute test command if test mode
 		if (!state.lockcdt && !state.eof && limits.istest && !state.isrunning) {
-			if ((pTestCommand=getTestCommand (&idTestCommand))!=NULL) {
+			if ((pTestCommand=getTestCommand (testCommands, &idTestCommand))!=NULL) {
 				snprintf (line, sizeof(line), "%s\n", pTestCommand);
 				fromCDT (&state, line, sizeof(line));
 			}
@@ -197,12 +202,12 @@ main (int argc, char **argv, char **envp)
 }
 
 const char *
-getTestCommand (int *idTestCommand)
+getTestCommand (const char **testCommands, int *idTestCommand)
 {
 	logprintf (LOG_TRACE, "getTestCommand (0x%x)\n", idTestCommand);
 	const char *commandLine;
-	if (testcommands[*idTestCommand]!=NULL) {
-		commandLine = testcommands[*idTestCommand];
+	if (testCommands[*idTestCommand]!=NULL) {
+		commandLine = testCommands[*idTestCommand];
 		++*idTestCommand;
 		write(STDOUT_FILENO, commandLine, strlen(commandLine));
 		write(STDOUT_FILENO, "\n", 1);
