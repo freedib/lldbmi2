@@ -7,6 +7,14 @@
 
 // test commands will pause after a exec-run, exec-continue or target-attach
 
+#define WITH_TESTS
+#define WITH_LO_TESTS
+
+const char *testcommands_NONE[] = {
+	NULL
+};
+
+#ifdef WITH_TESTS
 
 const char *testcommands_THREAD[] = {
 	"51-environment-cd /Users/didier/Projets/git-lldbmi2/tests/LLVM",
@@ -310,11 +318,31 @@ const char *testcommands_CRASH[] = {
 	NULL
 };
 
+#endif // WITH_TESTS
+
+#ifdef WITH_LO_TESTS
+
+const char *testcommands_LO[] = {
+	"51-environment-cd /pro/lo/libreoffice",
+	"52-file-exec-and-symbols --thread-group i1 /pro/lo/libreoffice/instdir/LibreOfficeDev.app/Contents/MacOS/soffice",
+	"53-gdb-set --thread-group i1 args %?",
+	"58-break-insert --thread-group i1 SdXMLTableShapeContext::StartElement",
+	"61-inferior-tty-set --thread-group i1 %?",		// stdout instead of /dev/ptyxx
+	"62-exec-run --thread-group i1",
+	"71-var-create --thread 1 --frame 0 - * this",
+	"71-var-list-children --thread 1 --frame 0 - * this",
+	"80-gdb-exit",
+	NULL
+};
+
+#endif // WITH_LO_TESTS
+
 
 const char **
 getTestcommands (int test_sequence)
 {
 	switch (test_sequence) {
+#ifdef WITH_TESTS
 	case 1:		return testcommands_THREAD;
 	case 2:		return testcommands_VARS;
 	case 3:		return testcommands_UPDATE;
@@ -326,6 +354,10 @@ getTestcommands (int test_sequence)
 	case 9:		return testcommands_ARGS;
 	case 10:	return testcommands_OTHER;
 	case 11:	return testcommands_CRASH;
-	default:	return NULL;
+#endif // WITH_TESTS
+#ifdef WITH_LO_TESTS
+	case 12:	return testcommands_LO;
+#endif // WITH_LO_TESTS
+	default:	return testcommands_NONE;
 	}
 }
