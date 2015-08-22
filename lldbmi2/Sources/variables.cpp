@@ -5,6 +5,10 @@
 #include "names.h"
 
 
+// TODO: cast this to actual type
+// TODO: check why walk/changed is slow set to 1/1
+
+
 extern LIMITS limits;
 
 
@@ -221,10 +225,24 @@ getVariable (SBFrame frame, const char *expression)
 	}
 	if (!var.IsValid() || var.GetError().Fail())
 		getStandardPathVariable (frame, expression, var);
-
+/*
+	if ((!var.IsValid() || var.GetError().Fail()) && *expression=='&' && *(expression+1)=='(') {
+		// remove &() and retry
+		char subexpression[NAME_MAX];
+		strlcpy (subexpression, expression+2, sizeof(subexpression));
+		char *pse= strrchr(subexpression,')');
+		if (*pse)
+			*pse = '\0';
+		SBValue parent;
+		getDirectPathVariable (frame, subexpression, &var, parent, limits.walk_depth_max);
+		if (!var.IsValid() || var.GetError().Fail())
+			getStandardPathVariable (frame, subexpression, var);
+	}
+*/
 	logprintf (LOG_DEBUG, "getVariable: expression=%s, name=%s, value=%s, changed=%d\n",
 			expression, getName(var), var.GetValue(), var.GetValueDidChange());
-	var.SetPreferSyntheticValue (false);
+	if (var.IsValid() && var.GetError().Success())
+		var.SetPreferSyntheticValue (false);
 	return var;
 }
 
@@ -314,10 +332,14 @@ formatChildrenList (char *childrendesc, size_t descsize, SBValue var, char *expr
 	int ichild;
 	for (ichild=0; ichild<min(varnumchildren,limits.children_max); ichild++) {
 		SBValue child = var.GetChildAtIndex(ichild);
-		if (!child.IsValid() || child.GetError().Fail())
+		if (!child.IsValid())
 			continue;
-		child.SetPreferSyntheticValue (false);
 		const char *childname = getName(child);				// displayed name
+		if (child.GetError().Fail()) {
+			logprintf (LOG_DEBUG, "formatChildrenList: error on child %s: %s\n",
+					childname==NULL? "": childname, child.GetError().GetCString());
+		}
+		child.SetPreferSyntheticValue (false);
 		int childnumchildren = child.GetNumChildren();
 		char expressionpathdesc[NAME_MAX];					// real path
 		formatExpressionPath (expressionpathdesc, sizeof(expressionpathdesc), child);
@@ -373,9 +395,10 @@ formatChangedList (char *changedesc, size_t descsize, SBValue var, bool &separat
 			varnumchildren = var.GetNumChildren();
 		}
 	}
-	int childrenchanged = 0;
-//	childrenchanged = updateVarState(var, limits.change_depth_max);
-	if (var.GetValueDidChange() || childrenchanged>0) {
+	int varandchildrenchanged = 0;
+//	varandchildrenchanged = updateVarState(var, limits.change_depth_max);
+	int varchanged = var.GetValueDidChange();
+	if (varchanged) {
 		const char *separator = separatorvisible? ",":"";
 		const char *varinscope = var.IsInScope()? "true": "false";
 		char vardesc[VALUE_MAX];
@@ -384,9 +407,10 @@ formatChangedList (char *changedesc, size_t descsize, SBValue var, bool &separat
 			"%s{name=\"%s\",value=\"%s\",in_scope=\"%s\",type_changed=\"false\",has_more=\"0\"}",
 			separator, expressionpathdesc, vardesc, varinscope);
 		separatorvisible = true;
-		return changedesc;
+	//	return changedesc;
 	}
-	if (/*!vartype.IsPointerType() && !vartype.IsReferenceType() && */ !vartype.IsArrayType()) {
+	if (varandchildrenchanged>varchanged &&
+			/*!vartype.IsPointerType() && !vartype.IsReferenceType() && */ !vartype.IsArrayType()) {
 		for (int ichild = 0; ichild < min(varnumchildren,limits.children_max); ++ichild) {
 			SBValue child = var.GetChildAtIndex(ichild);
 			if (!child.IsValid() || var.GetError().Fail())
@@ -541,6 +565,9 @@ formatValue (char *vardesc, size_t descsize, SBValue var, VariableDetails detail
 	//	value = "HFG\123klj\b"
 	//	value={2,5,7,0 <repeat 5 times>, 7}
 	//	value = {{a=1,b=0x33},...{a=1,b=2}}
+	*vardesc = '\0';
+	if (var.GetError().Fail())		// invalid value. show nothing
+		return vardesc;
 	SBType vartype = var.GetType();
 	logprintf (LOG_DEBUG, "formatValue: Var=%-5s: children=%-2d, typeclass=%-10s, basictype=%-10s, bytesize=%-2d, Pointee: typeclass=%-10s, basictype=%-10s, bytesize=%-2d\n",
 		getName(var), var.GetNumChildren(), getNameForTypeClass(vartype.GetTypeClass()), getNameForBasicType(vartype.GetBasicType()), vartype.GetByteSize(),
@@ -569,7 +596,6 @@ formatValue (char *vardesc, size_t descsize, SBValue var, VariableDetails detail
 	logprintf (LOG_DEBUG, "formatValue: var=0x%llx, name=%s, summary=%s, value=%s, address=0x%llx\n",
 			&var, varname, varsummary, varvalue, varaddr);
 
-	*vardesc = '\0';
 	if (varvalue != NULL) {			// basic types and arrays
 		if (vartype.IsPointerType() || vartype.IsReferenceType() || vartype.IsArrayType()) {
 			if (varsummary!=NULL && details==FULL_SUMMARY)

@@ -630,13 +630,20 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 					// Find then Evaluate to avoid recreate variable
 					SBValue var = getVariable (frame, expression);
 					if (var.IsValid() && var.GetError().Success()) {
+						// should remove var.GetError().Success() but update do not work very well
 						updateVarState (var, limits.change_depth_max);
 						int varnumchildren = var.GetNumChildren();
 						SBType vartype = var.GetType();
 						char expressionpathdesc[NAME_MAX];
 						formatExpressionPath (expressionpathdesc, sizeof(expressionpathdesc), var);
 						char vardesc[VALUE_MAX];
-						formatValue (vardesc, sizeof(vardesc), var, NO_SUMMARY);
+						if (var.GetError().Fail()) {
+							vardesc[0] = '\0';
+							// create a name because in this case, name=(anonymous)
+							strlcpy (expressionpathdesc, expression, sizeof(expressionpathdesc));
+						}
+						else
+							formatValue (vardesc, sizeof(vardesc), var, NO_SUMMARY);
 						if (vartype.IsReferenceType() && varnumchildren==1)	// correct numchildren and value if reference
 							--varnumchildren;
 						cdtprintf ("%d^done,name=\"%s\",numchild=\"%d\",value=\"%s\","
@@ -696,6 +703,7 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 		// 61-var-list-children var5.y
 		// 52^done,numchild="3",children=[child={name="var5.a",exp="a",numchild="0",type="int",thread-id="1"},child={name="var5.b",exp="b",numchild="1",type="char *",thread-id="1"},child={name="var5.y",exp="y",numchild="4",type="Y *",thread-id="1"}],has_more="0"
 		//|52^done,numchild="3",children=[child={name="z->a",exp="a",numchild="0",type"int",thread-id="1"},child={name="z->b",exp="b",numchild="1",type"char *",thread-id="1"},child={name="z->y",exp="y",numchild="4",type"Y *",thread-id="1"}]",has_more="0"\n(gdb)\n|
+
 		char expression[NAME_MAX];
 		*expression = '\0';
 		if (nextarg<cc.argc)
@@ -731,6 +739,7 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 		// 55^done,path_expr="(z)->y"
 		// 65-var-info-path-expression var5.y.d
 		// 65^done,path_expr="((z)->y)->d"
+		// TODO: in tests.cpp:64 var-info-path-expression should not return error but value=""
 		char expression[NAME_MAX];
 		*expression = '\0';
 		if (nextarg<cc.argc)
@@ -778,7 +787,7 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 				SBFrame frame = thread.GetSelectedFrame();
 				if (frame.IsValid()) {
 				SBValue var = getVariable (frame, expression);		// createVariable
-					if (var.IsValid() && var.GetError().Success()) {
+					if (var.IsValid()) {
 						char vardesc[BIG_VALUE_MAX];
 						formatValue (vardesc, sizeof(vardesc), var, FULL_SUMMARY);
 						cdtprintf ("%d^done,value=\"%s\"\n(gdb)\n", cc.sequence, vardesc);

@@ -13,8 +13,8 @@ typedef struct {
 	short m;
 	long n;
 	long long o;
+	char s[10];
 } Y;
-
 typedef struct {
 	int a;
 	const char *b;
@@ -262,6 +262,7 @@ main (int argc, char **argv)
 	int test_sequence = 0;
 	if (argc>1)
 		sscanf (*++argv, "%d", &test_sequence);
+	printf ("tests %d\n", test_sequence);
 
 	switch (test_sequence) {		// must match test.cpp in lldbmi2
 	case 1:		return test_BASE ();		// test_THREAD

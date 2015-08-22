@@ -20,8 +20,8 @@ const char *testcommands_THREAD[] = {
 	"51-environment-cd /Users/didier/Projets/git-lldbmi2/tests/LLVM",
 	"52-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Debug/tests",
 	"53-gdb-set --thread-group i1 args %?",
-	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Sources/tests.c:34",
-	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Sources/tests.c:77",
+	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Sources/tests.cpp:34",
+	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Sources/tests.cpp:77",
 	"61-inferior-tty-set --thread-group i1 %?",		// stdout instead of /dev/ptyxx
 	"62-exec-run --thread-group i1",
 	"64-list-thread-groups",
@@ -45,7 +45,7 @@ const char *testcommands_VARS[] = {
 	"51-environment-cd /Users/didier/Projets/git-lldbmi2/tests/LLVM",
 	"52-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Debug/tests",
 	"53-gdb-set --thread-group i1 args %?",
-	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Sources/tests.c:74",
+	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Sources/tests.cpp:74",
 	"61-inferior-tty-set --thread-group i1 %?",		// stdout instead of /dev/ptyxx
 	"62-exec-run --thread-group i1",
 	"76-var-evaluate-expression c",
@@ -60,15 +60,19 @@ const char *testcommands_UPDATE[] = {
 	"51-environment-cd /Users/didier/Projets/git-lldbmi2/tests/LLVM",
 	"52-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Debug/tests",
 	"53-gdb-set --thread-group i1 args %?",
-	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Sources/tests.c:76",
+	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Sources/tests.cpp:65",
 	"61-inferior-tty-set --thread-group i1 %?",		// stdout instead of /dev/ptyxx
 	"62-exec-run --thread-group i1",
 	"41-stack-list-locals --thread 1 --frame 0 1",
 	"42-stack-info-depth --thread 1 11",
 	"37-var-create --thread 1 --frame 0 - * py",
 	"129-var-list-children py",
-	"132-var-info-path-expression py->o",
+	"55-var-create --thread 1 --frame 0 - * py->s[0]",
+	"132-var-info-path-expression py->m",
+	"52-var-evaluate-expression py->m",
 	"40-exec-next --thread 1 1",
+	"41-stack-list-locals --thread 1 --frame 0 1",
+	"42-stack-info-depth --thread 1 11",
 	"45-var-update 1 py",
 	"64-var-create --thread 1 --frame 0 - * strlen(b)",
 	"80-gdb-exit",
@@ -110,7 +114,7 @@ const char *testcommands_POINTERS[] = {
 	"51-environment-cd /Users/didier/Projets/git-lldbmi2/tests/LLVM",
 	"52-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Debug/tests",
 	"53-gdb-set --thread-group i1 args %?",
-	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Sources/tests.c:113",
+	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Sources/tests.cpp:113",
 	"62-exec-run --thread-group i1",
 	"64-list-thread-groups",
 	"65-list-thread-groups i1",
@@ -150,7 +154,7 @@ const char *testcommands_POINTERS[] = {
 const char *testcommands_ATTACH[] = {
 	"51-environment-cd /Users/didier/Projets/git-lldbmi2/tests/LLVM",
 	"62-target-attach --thread-group i1 tests",
-	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Sources/tests.c:34",
+	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Sources/tests.cpp:34",
 	"61-inferior-tty-set --thread-group i1 %?",		// stdout instead of /dev/ptyxx
 	"65-list-thread-groups i1",
 	"69-thread-info 1",
@@ -310,7 +314,7 @@ const char *testcommands_CRASH[] = {
 	"51-environment-cd /Users/didier/Projets/git-lldbmi2/tests/LLVM",
 	"52-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Debug/tests",
 	"53-gdb-set --thread-group i1 args %?",
-	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Sources/tests.c:190",
+	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Sources/tests.cpp:190",
 	"61-inferior-tty-set --thread-group i1 %?",		// stdout instead of /dev/ptyxx
 	"62-exec-run --thread-group i1",
 	"76-var-evaluate-expression err",
@@ -325,12 +329,28 @@ const char *testcommands_CRASH[] = {
 const char *testcommands_LO[] = {
 	"51-environment-cd /pro/lo/libreoffice",
 	"52-file-exec-and-symbols --thread-group i1 /pro/lo/libreoffice/instdir/LibreOfficeDev.app/Contents/MacOS/soffice",
-	"53-gdb-set --thread-group i1 args %?",
-	"58-break-insert --thread-group i1 SdXMLTableShapeContext::StartElement",
+	"53-gdb-set --thread-group i1 args /Users/didier/Projets/LO/documents/Archive.odg",
+	"58-break-insert --thread-group i1 XMLShapeImportHelper::CreateGroupChildContext",	// shapeimport.css:540
+	"58-break-insert --thread-group i1 /pro/lo/libreoffice/xmloff/source/draw/shapeimport.cxx:540",
+//	"58-break-insert --thread-group i1 SdXMLGenericPageContext::CreateChildContext",	// ximppage.cxx:262
+//	"58-break-insert --thread-group i1 SdXMLTableShapeContext::StartElement",			// ximpbody.cxx:253
 	"61-inferior-tty-set --thread-group i1 %?",		// stdout instead of /dev/ptyxx
 	"62-exec-run --thread-group i1",
-	"71-var-create --thread 1 --frame 0 - * this",
-	"71-var-list-children --thread 1 --frame 0 - * this",
+	"53-stack-list-frames --thread 1",
+	"259-stack-list-locals --thread 1 --frame 1 1",
+	"261-var-create --thread 1 --frame 1 - * this",
+	"261-var-create --thread 1 --frame 1 - * nPrefix",
+	"261-var-create --thread 1 --frame 1 - * rLocalName",
+	"261-var-create --thread 1 --frame 1 - * xAttrList",
+	"261-var-create --thread 1 --frame 1 - * pContext",
+	"266-var-list-children this",
+	"270-var-info-path-expression this->maStyleName",
+	"280-var-list-children this->maName",
+	"283-var-list-children this->maName.pData",
+	"286-var-info-path-expression this->maName.pData->buffer",
+	"289-var-create --thread 1 --frame 1 - * &(this->maName.pData->buffer)",
+	"290-data-evaluate-expression --thread 1 --frame 1 this->maName.pData->buffer",
+	"338-var-create --thread 1 --frame 1 - * this->maName.pData->buffer[0]",
 	"80-gdb-exit",
 	NULL
 };
