@@ -395,8 +395,7 @@ formatChangedList (char *changedesc, size_t descsize, SBValue var, bool &separat
 			varnumchildren = var.GetNumChildren();
 		}
 	}
-	int varandchildrenchanged = 0;
-//	varandchildrenchanged = updateVarState(var, limits.change_depth_max);
+//	int varandchildrenchanged = updateVarState(var, limits.change_depth_max);
 	int varchanged = var.GetValueDidChange();
 	if (varchanged) {
 		const char *separator = separatorvisible? ",":"";
@@ -409,7 +408,7 @@ formatChangedList (char *changedesc, size_t descsize, SBValue var, bool &separat
 		separatorvisible = true;
 	//	return changedesc;
 	}
-	if (varandchildrenchanged>varchanged &&
+	if (/*varandchildrenchanged>varchanged && */
 			/*!vartype.IsPointerType() && !vartype.IsReferenceType() && */ !vartype.IsArrayType()) {
 		for (int ichild = 0; ichild < min(varnumchildren,limits.children_max); ++ichild) {
 			SBValue child = var.GetChildAtIndex(ichild);
