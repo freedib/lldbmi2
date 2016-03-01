@@ -2,7 +2,7 @@
 #ifndef LLDBMIG_H
 #define LLDBMIG_H
 
-#include </usr/include/sys/syslimits.h>
+#include <sys/syslimits.h>
 #include <lldb/API/LLDB.h>
 using namespace lldb;
 
