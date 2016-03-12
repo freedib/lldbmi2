@@ -257,9 +257,9 @@ signalHandler (int signo)
 		if (state.process.IsValid() && signals_received==0) {
 			int selfPID = getpid();
 			int processPID = state.process.GetProcessID();
-			logprintf (LOG_INFO, "signal_handler: signal SIGINT. self PID = %d, process pid = %d\n", selfPID, processPID);
-			logprintf (LOG_INFO, "send signal SIGINT to process %d\n", processPID);
-			state.process.Signal (SIGINT);
+			logprintf (LOG_INFO, "signal_handler: signal SIGSTOP. self PID = %d, process pid = %d\n", selfPID, processPID);
+			logprintf (LOG_INFO, "send signal SIGSTOP to process %d\n", processPID);
+			state.process.Signal (SIGSTOP);
 			++signals_received;
 		}
 		else
