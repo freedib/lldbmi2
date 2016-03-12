@@ -739,7 +739,6 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 		// 55^done,path_expr="(z)->y"
 		// 65-var-info-path-expression var5.y.d
 		// 65^done,path_expr="((z)->y)->d"
-		// TODO: in tests.cpp:64 var-info-path-expression should not return error but value=""
 		char expression[NAME_MAX];
 		*expression = '\0';
 		if (nextarg<cc.argc)
