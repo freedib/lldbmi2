@@ -4,6 +4,7 @@
 #include <ctype.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <termios.h>
 
 #include "lldbmi2.h"
 #include "log.h"
@@ -172,8 +173,25 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 		strlcpy (pstate->cdtptyname, cc.argv[nextarg], sizeof(pstate->cdtptyname));
 		if (strcmp(pstate->cdtptyname,"%?") == 0)
 			pstate->ptyfd = EOF;
-		else
+		else {
 			pstate->ptyfd = open (pstate->cdtptyname, O_RDWR);
+			// set pty in raw mode
+			struct termios t;
+			if (tcgetattr(pstate->ptyfd, &t) != -1) {
+				// Noncanonical mode, disable signals, extended input processing, and echoing
+				t.c_lflag &= ~(ICANON | ISIG | IEXTEN | ECHO);
+				// Disable special handling of CR, NL, and BREAK.
+				// No 8th-bit stripping or parity error handling
+				// Disable START/STOP output flow control
+				t.c_iflag &= ~(BRKINT | ICRNL | IGNBRK | IGNCR | INLCR |
+						INPCK | ISTRIP | IXON | PARMRK);
+				// Disable all output processing
+				t.c_oflag &= ~OPOST;
+				t.c_cc[VMIN] = 1;		// Character-at-a-time input
+				t.c_cc[VTIME] = 0;		// with blocking
+				tcsetattr(pstate->ptyfd, TCSAFLUSH, &t);
+		    }
+		}
 		logprintf (LOG_NONE, "pty = %d\n", pstate->ptyfd);
 		cdtprintf ("%d^done\n(gdb)\n", cc.sequence);
 	}
