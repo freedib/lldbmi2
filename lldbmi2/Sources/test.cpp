@@ -32,6 +32,7 @@ const char *testcommands_THREAD[] = {
 	"68-stack-info-depth --thread 1 11",
 	"66-stack-list-frames --thread 1",
 	"67-stack-list-locals --thread 1 --frame 0 1",
+	"73-var-evaluate-expression &(z->y->s)",
 	"76-exec-next --thread-group i1",
 	"78-exec-finish --thread-group i1",
 	"79-exec-continue --thread-group i1",
@@ -49,6 +50,7 @@ const char *testcommands_VARS[] = {
 	"61-inferior-tty-set --thread-group i1 %?",		// stdout instead of /dev/ptyxx
 	"62-exec-run --thread-group i1",
 	"76-var-evaluate-expression c",
+	"37-var-create --thread 1 --frame 0 - * pz",
 	"76-var-evaluate-expression pz->a",
 	"76-var-evaluate-expression (pz)->a",
 	"76-var-evaluate-expression pz.a",

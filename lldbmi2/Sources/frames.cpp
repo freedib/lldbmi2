@@ -18,7 +18,7 @@ extern LIMITS limits;
 char *
 formatBreakpoint (char *breakpointdesc, size_t descsize, SBBreakpoint breakpoint, STATE *pstate)
 {
-	logprintf (LOG_TRACE, "formatBreakpoint (%s, %d, 0x%x, 0x%x)\n", breakpointdesc, descsize, &breakpoint, pstate);
+	logprintf (LOG_TRACE, "formatBreakpoint (..., %d, 0x%x, 0x%x)\n", descsize, &breakpoint, pstate);
 	// 18^done,bkpt={number="1",type="breakpoint",disp="keep",enabled="y",addr="0x00000001000/00f58",
 	//  func="main",file="../Sources/tests.cpp",fullname="/pro/runtime-EclipseApplication/tests/Sources/tests.cpp",
 	//  line="17",thread-groups=["i1"],times="0",original-location="/pro/runtime-EclipseApplication/tests/Sources/tests.cpp:17"}
@@ -81,7 +81,7 @@ getNumFrames (SBThread thread)
 char *
 formatFrame (char *framedesc, size_t descsize, SBFrame frame, FrameDetails framedetails)
 {
-	logprintf (LOG_TRACE, "formatFrame (%s, %d, 0x%x, 0x%x)\n", framedesc, descsize, &frame, framedetails);
+	logprintf (LOG_TRACE, "formatFrame (..., %d, 0x%x, 0x%x)\n", descsize, &frame, framedetails);
 	int frameid = frame.GetFrameID();
 	SBAddress addr = frame.GetPCAddress();
 	uint32_t file_addr = addr.GetFileAddress();
@@ -151,7 +151,7 @@ formatFrame (char *framedesc, size_t descsize, SBFrame frame, FrameDetails frame
 char *
 formatThreadInfo (char *threaddesc, size_t descsize, SBProcess process, int threadindexid)
 {
-	logprintf (LOG_TRACE, "formatThreadInfo (%s, %d, 0x%x, %d)\n", threaddesc, descsize, &process, threadindexid);
+	logprintf (LOG_TRACE, "formatThreadInfo (..., %d, 0x%x, %d)\n", descsize, &process, threadindexid);
 	*threaddesc = '\0';
 	if (!process.IsValid())
 		return threaddesc;

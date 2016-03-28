@@ -254,6 +254,14 @@ int test_STRING()
 
 /////////////////////////////
 
+int test_INPUT()
+{
+	char c;
+	while ((c=getchar()) != '!')
+		putchar (c);
+	return 0;
+}
+
 // execute a specific test sequence
 
 int
@@ -276,6 +284,7 @@ main (int argc, char **argv)
 	case 9:		return test_ARGS ();
 	case 10:	return test_BASE ();		// OTHER
 	case 11:	return test_CRASH ();
+	case 12:	return test_INPUT ();
 	}
 	return 0;
 }
