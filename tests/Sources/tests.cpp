@@ -262,6 +262,22 @@ int test_INPUT()
 	return 0;
 }
 
+/////////////////////////////
+
+int test_CATCH_THROW()
+{
+	try
+	{
+		throw std::runtime_error("test error");
+	}
+	catch(const std::runtime_error& error)
+	{
+		printf ("catch %s\n", error.what());
+	}
+	return 0;
+}
+
+
 // execute a specific test sequence
 
 int
@@ -285,6 +301,7 @@ main (int argc, char **argv)
 	case 10:	return test_BASE ();		// OTHER
 	case 11:	return test_CRASH ();
 	case 12:	return test_INPUT ();
+	case 13:	return test_CATCH_THROW ();
 	}
 	return 0;
 }
