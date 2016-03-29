@@ -3,10 +3,10 @@
 #include "log.h"
 #include "variables.h"
 #include "names.h"
+#include <ctype.h>
 
 
-// TODO: cast this to actual type
-// TODO: check why walk/changed is slow set to 1/1
+// TODO: check why walk/changed is slow
 
 
 extern LIMITS limits;
@@ -208,6 +208,40 @@ getDirectPathVariable (SBFrame frame, const char *expression, SBValue *foundvar,
 	return false;
 }
 
+// TODO: cast this to actual type
+// example: &(this->maName.pData->buffer)
+// becomes: ((rtl_uString *)((SdXMLDrawPageContext *) this)->maName.pData)->buffer
+// try to cast &(var->...) &((VARTYPE)var)->...)
+char *
+castexpression (SBFrame frame, const char *expression, char *newexpression, size_t expressionsize)
+{
+	// try to cast the variable
+	if (*expression!='&' || *(expression+1)!='(')
+		return NULL;
+	// isolate parent and children
+	char subexpression[NAME_MAX];
+	strlcpy (subexpression, expression, sizeof(subexpression));
+	char *pe = subexpression+2;
+	while (isalnum(*pe) || *pe=='_')
+		++pe;
+	if (*pe=='\0')
+		return NULL;
+	if (*pe!='-' || *(pe+1)!='>')
+		return NULL;
+	*pe++ = '\0';
+	*pe++ = '\0';
+	// search parent
+	SBValue parent;
+	getStandardPathVariable (frame, subexpression+2, parent);
+	if (!parent.IsValid() || parent.GetError().Fail())
+		return NULL;
+	SBType parenttype = parent.GetType();
+	const char *parenttypename = parenttype.GetDisplayTypeName();
+	logprintf (LOG_DEBUG, "castexpression: parent=%s parenttypename=%s, parenttypedisplayname=%s\n",
+				getName(parent), parenttypename, parenttype.GetDisplayTypeName());
+	snprintf (newexpression, expressionsize, "(((%s)%s)->%s", parenttypename, subexpression+2, pe);	// a ) is left at the end
+	return newexpression;
+}
 
 // get a variable by trying many approaches
 SBValue
@@ -225,20 +259,11 @@ getVariable (SBFrame frame, const char *expression)
 	}
 	if (!var.IsValid() || var.GetError().Fail())
 		getStandardPathVariable (frame, expression, var);
-/*
 	if ((!var.IsValid() || var.GetError().Fail()) && *expression=='&' && *(expression+1)=='(') {
-		// remove &() and retry
-		char subexpression[NAME_MAX];
-		strlcpy (subexpression, expression+2, sizeof(subexpression));
-		char *pse= strrchr(subexpression,')');
-		if (*pse)
-			*pse = '\0';
-		SBValue parent;
-		getDirectPathVariable (frame, subexpression, &var, parent, limits.walk_depth_max);
-		if (!var.IsValid() || var.GetError().Fail())
-			getStandardPathVariable (frame, subexpression, var);
+		char newexpression[NAME_MAX];
+		if (castexpression (frame, expression, newexpression, sizeof(newexpression)) != NULL)
+			getStandardPathVariable (frame, newexpression, var);
 	}
-*/
 	logprintf (LOG_DEBUG, "getVariable: expression=%s, name=%s, value=%s, changed=%d\n",
 			expression, getName(var), var.GetValue(), var.GetValueDidChange());
 	if (var.IsValid() && var.GetError().Success())

@@ -165,8 +165,6 @@
 									<listOptionValue builtIn="false" value="/pro/ll/llvm/include"/>
 									<listOptionValue builtIn="false" value="/pro/ll/llvm/tools/clang/include"/>
 									<listOptionValue builtIn="false" value="/pro/ll/llvm/tools/lldb/include"/>
-									<listOptionValue builtIn="false" value="/pro/ll/release/include"/>
-									<listOptionValue builtIn="false" value="/pro/ll/release/tools/clang/include"/>
 								</option>
 								<option id="gnu.cpp.compiler.option.optimization.level.1166665920" name="Optimization Level" superClass="gnu.cpp.compiler.option.optimization.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.optimization.level.none" valueType="enumerated"/>
 								<option id="gnu.cpp.compiler.option.debugging.level.1492348649" name="Debug Level" superClass="gnu.cpp.compiler.option.debugging.level" useByScannerDiscovery="false" value="gnu.cpp.compiler.debugging.level.max" valueType="enumerated"/>

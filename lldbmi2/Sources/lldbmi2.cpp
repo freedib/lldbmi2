@@ -51,7 +51,8 @@ main (int argc, char **argv, char **envp)
 {
 	int narg;
 	fd_set set;
-	char line[LINE_MAX];
+	char line[LINE_MAX];				// data from cdt
+	char consoleLine[LINE_MAX];			// data from eclipse's console
 	long chars;
 	struct timeval timeout;
 	int isVersion=0, isInterpreter=0;
@@ -159,15 +160,22 @@ main (int argc, char **argv, char **envp)
 	while (!state.eof) {
 		if (limits.istest)
 			logprintf (LOG_NONE, "main loop\n");
-		// get command from CDT
+		// get inputs
 		timeout.tv_sec  = 0;
 		timeout.tv_usec = 200000;
+		// check command from CDT
 		FD_SET (STDIN_FILENO, &set);
-		select(STDIN_FILENO+1, &set, NULL, NULL, &timeout);
+		if (state.ptyfd != EOF) {
+			// check data from Eclipse's console
+			FD_SET (state.ptyfd, &set);
+			select(state.ptyfd+1, &set, NULL, NULL, &timeout);
+		}
+		else
+			select(STDIN_FILENO+1, &set, NULL, NULL, &timeout);
 		if (FD_ISSET(STDIN_FILENO, &set) && !state.eof && !limits.istest) {
 			logprintf (LOG_NONE, "read in\n");
 			chars = read (STDIN_FILENO, line, sizeof(line)-1);
-			logprintf (LOG_NONE, "read out %d\n", chars);
+			logprintf (LOG_NONE, "read out %d chars\n", chars);
 			if (chars>0) {
 				line[chars] = '\0';
 				while (fromCDT (&state,line,sizeof(line)) == MORE_DATA)
@@ -175,6 +183,20 @@ main (int argc, char **argv, char **envp)
 			}
 			else
 				state.eof = true;
+		}
+		if (state.ptyfd != EOF) {
+			if (FD_ISSET(state.ptyfd, &set) && !state.eof && !limits.istest) {
+				logprintf (LOG_PROG_OUT, "pty read in\n");
+				chars = read (state.ptyfd, consoleLine, sizeof(consoleLine)-1);
+				logprintf (LOG_PROG_OUT, "pty read out %d chars\n", chars);
+				if (chars>0) {
+					consoleLine[chars] = '\0';
+					SBProcess process = state.process;
+					if (process.IsValid()) {
+						process.PutSTDIN (consoleLine, chars);
+					}
+				}
+			}
 		}
 		// execute test command if test mode
 		if (!state.lockcdt && !state.eof && limits.istest && !state.isrunning) {
