@@ -30,3 +30,10 @@ Note DYLD_FRAMEWORK_PATH and LLDB_DEBUGSERVER_PATH environment variables in laun
 # Run LLDBMI2
 
 No install script is provided. The binary file can be copied manually to /usr/local/bin.
+
+## Install with cmake (no eclipse needed)
+- Create directory where you want to build LLDBMI2
+- From that directory run:
+	- cmake <path_to_project_git>
+	- make
+	- make install

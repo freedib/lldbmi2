@@ -908,6 +908,22 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 		else
 			cdtprintf ("%d^error,msg=\"%s\"\n(gdb)\n", cc.sequence, "Command unimplemented.");
 	}
+	else if (strcmp(cc.argv[0],"catch")==0 && strcmp(cc.argv[1],"catch")==0) {
+		SBBreakpoint breakpoint = target.BreakpointCreateForException(lldb::LanguageType::eLanguageTypeC_plus_plus, true, false);
+		
+		cdtprintf ("&\"catch catch\\n\"\n");
+		cdtprintf ("~\"Catchpoint %d (catch)\\n\"\n", breakpoint.GetID());
+		cdtprintf ("=breakpoint-created,bkpt={number=\"%d\",type=\"breakpoint\",disp=\"keep\",enabled=\"y\",addr=\"<PENDING>\",what=\"exception catch\",catch-type=\"catch\",times=\"0\"}\n", breakpoint.GetID());
+		cdtprintf ("%d^done\n(gdb)\n", cc.sequence);
+	}
+	else if (strcmp(cc.argv[0],"catch")==0 && strcmp(cc.argv[1],"throw")==0) {
+		SBBreakpoint breakpoint = target.BreakpointCreateForException(lldb::LanguageType::eLanguageTypeC_plus_plus, false, true);
+		
+		cdtprintf ("&\"catch throw\\n\"\n");
+		cdtprintf ("~\"Catchpoint %d (throw)\\n\"\n", breakpoint.GetID());
+		cdtprintf ("=breakpoint-created,bkpt={number=\"%d\",type=\"breakpoint\",disp=\"keep\",enabled=\"y\",addr=\"<PENDING>\",what=\"exception throw\",catch-type=\"throw\",times=\"0\"}\n", breakpoint.GetID());
+		cdtprintf ("%d^done\n(gdb)\n", cc.sequence);
+	}
 	else if (strcmp(cc.argv[0],"-data-list-register-names")==0) {
 		// 95-data-list-register-names --thread-group i1
 		// not implemented. no use for now
