@@ -279,6 +279,7 @@ int test_CATCH_THROW()
 
 
 // execute a specific test sequence
+// MUST HAVE A CORRESPONDING TEST SEQUENCE IN lldbmi2/test.cpp
 
 int
 main (int argc, char **argv)

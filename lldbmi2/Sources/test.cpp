@@ -324,6 +324,28 @@ const char *testcommands_CRASH[] = {
 	NULL
 };
 
+const char *testcommands_INPUT[] = {
+	"51-environment-cd /Users/didier/Projets/git-lldbmi2/tests/LLVM",
+	"52-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Debug/tests",
+	"53-gdb-set --thread-group i1 args %?",
+	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Sources/tests.cpp:262",
+	"61-inferior-tty-set --thread-group i1 %?",		// stdout instead of /dev/ptyxx
+	"62-exec-run --thread-group i1",
+	"80-gdb-exit",
+	NULL
+};
+
+const char *testcommands_CATCH_THROW[] = {
+	"51-environment-cd /Users/didier/Projets/git-lldbmi2/tests/LLVM",
+	"52-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Debug/tests",
+	"53-gdb-set --thread-group i1 args %?",
+//	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Sources/tests.cpp:277",
+	"61-inferior-tty-set --thread-group i1 %?",		// stdout instead of /dev/ptyxx
+	"62-exec-run --thread-group i1",
+//	"80-gdb-exit",
+	NULL
+};
+
 #endif // WITH_TESTS
 
 #ifdef WITH_LO_TESTS
@@ -376,9 +398,11 @@ getTestcommands (int test_sequence)
 	case 9:		return testcommands_ARGS;
 	case 10:	return testcommands_OTHER;
 	case 11:	return testcommands_CRASH;
+	case 12:	return testcommands_INPUT;
+	case 13:	return testcommands_CATCH_THROW;
 #endif // WITH_TESTS
 #ifdef WITH_LO_TESTS
-	case 12:	return testcommands_LO;
+	case 14:	return testcommands_LO;
 #endif // WITH_LO_TESTS
 	default:	return testcommands_NONE;
 	}
