@@ -128,6 +128,8 @@ getheader ( unsigned scope )
 		return "###";
 	case LOG_ARGS:
 		return "@@@";
+	case LOG_VARS:
+		return "===";
 	case LOG_STDERR:
 		return "+++";
 	case LOG_DEBUG:

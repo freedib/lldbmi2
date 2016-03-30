@@ -11,18 +11,23 @@
 #define WITH_LO_TESTS
 
 const char *testcommands_NONE[] = {
+	"51-environment-cd %s",
+	"52-file-exec-and-symbols --thread-group i1 %s/Debug/tests",
+	"53-gdb-set --thread-group i1 args %s",
+	"62-exec-run --thread-group i1",
+	"80-gdb-exit",
 	NULL
 };
 
 #ifdef WITH_TESTS
 
 const char *testcommands_THREAD[] = {
-	"51-environment-cd /Users/didier/Projets/git-lldbmi2/tests/LLVM",
-	"52-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Debug/tests",
-	"53-gdb-set --thread-group i1 args %?",
-	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Sources/tests.cpp:34",
-	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Sources/tests.cpp:77",
-	"61-inferior-tty-set --thread-group i1 %?",		// stdout instead of /dev/ptyxx
+	"51-environment-cd %s",
+	"52-file-exec-and-symbols --thread-group i1 %s/Debug/tests",
+	"53-gdb-set --thread-group i1 args %s",
+	"58-break-insert --thread-group i1 %s/Sources/tests.cpp:34",
+	"58-break-insert --thread-group i1 %s/Sources/tests.cpp:77",
+	"61-inferior-tty-set --thread-group i1 %s",		// stdout instead of /dev/ptyxx
 	"62-exec-run --thread-group i1",
 	"64-list-thread-groups",
 	"65-list-thread-groups i1",
@@ -43,11 +48,11 @@ const char *testcommands_THREAD[] = {
 };
 
 const char *testcommands_VARS[] = {
-	"51-environment-cd /Users/didier/Projets/git-lldbmi2/tests/LLVM",
-	"52-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Debug/tests",
-	"53-gdb-set --thread-group i1 args %?",
-	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Sources/tests.cpp:74",
-	"61-inferior-tty-set --thread-group i1 %?",		// stdout instead of /dev/ptyxx
+	"51-environment-cd %s",
+	"52-file-exec-and-symbols --thread-group i1 %s/Debug/tests",
+	"53-gdb-set --thread-group i1 args %s",
+	"58-break-insert --thread-group i1 %s/Sources/tests.cpp:74",
+	"61-inferior-tty-set --thread-group i1 %s",		// stdout instead of /dev/ptyxx
 	"62-exec-run --thread-group i1",
 	"76-var-evaluate-expression c",
 	"37-var-create --thread 1 --frame 0 - * pz",
@@ -59,11 +64,11 @@ const char *testcommands_VARS[] = {
 };
 
 const char *testcommands_UPDATE[] = {
-	"51-environment-cd /Users/didier/Projets/git-lldbmi2/tests/LLVM",
-	"52-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Debug/tests",
-	"53-gdb-set --thread-group i1 args %?",
-	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Sources/tests.cpp:65",
-	"61-inferior-tty-set --thread-group i1 %?",		// stdout instead of /dev/ptyxx
+	"51-environment-cd %s",
+	"52-file-exec-and-symbols --thread-group i1 %s/Debug/tests",
+	"53-gdb-set --thread-group i1 args %s",
+	"58-break-insert --thread-group i1 %s/Sources/tests.cpp:65",
+	"61-inferior-tty-set --thread-group i1 %s",		// stdout instead of /dev/ptyxx
 	"62-exec-run --thread-group i1",
 	"41-stack-list-locals --thread 1 --frame 0 1",
 	"42-stack-info-depth --thread 1 11",
@@ -82,11 +87,11 @@ const char *testcommands_UPDATE[] = {
 };
 
 const char *testcommands_LARGE_ARRAY[] = {
-	"3-environment-cd /Users/didier/Projets/git-lldbmi2/tests",
-	"17-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Debug/tests",
+	"51-environment-cd %s",
+	"17-file-exec-and-symbols --thread-group i1 %s/Debug/tests",
 //	"19-gdb-show --thread-group i1 language",
-	"53-gdb-set --thread-group i1 args %?",
-	"26-break-insert -f /Users/didier/Projets/git-lldbmi2/tests/Sources/test.c:97",
+	"53-gdb-set --thread-group i1 args %s",
+	"26-break-insert -f %s/Sources/test.c:97",
 	"28-exec-run --thread-group i1",
 	"35-stack-list-locals --thread 1 --frame 0 1",
 	"36-var-create --thread 1 --frame 0 - * c",
@@ -113,10 +118,10 @@ const char *testcommands_LARGE_ARRAY[] = {
 };
 
 const char *testcommands_POINTERS[] = {
-	"51-environment-cd /Users/didier/Projets/git-lldbmi2/tests/LLVM",
-	"52-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Debug/tests",
-	"53-gdb-set --thread-group i1 args %?",
-	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Sources/tests.cpp:113",
+	"51-environment-cd %s",
+	"52-file-exec-and-symbols --thread-group i1 %s/Debug/tests",
+	"53-gdb-set --thread-group i1 args %s",
+	"58-break-insert --thread-group i1 %s/Sources/tests.cpp:113",
 	"62-exec-run --thread-group i1",
 	"64-list-thread-groups",
 	"65-list-thread-groups i1",
@@ -154,10 +159,10 @@ const char *testcommands_POINTERS[] = {
 };
 
 const char *testcommands_ATTACH[] = {
-	"51-environment-cd /Users/didier/Projets/git-lldbmi2/tests/LLVM",
+	"51-environment-cd %s",
 	"62-target-attach --thread-group i1 tests",
-	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Sources/tests.cpp:34",
-	"61-inferior-tty-set --thread-group i1 %?",		// stdout instead of /dev/ptyxx
+	"58-break-insert --thread-group i1 %s/Sources/tests.cpp:34",
+	"61-inferior-tty-set --thread-group i1 %s",		// stdout instead of /dev/ptyxx
 	"65-list-thread-groups i1",
 	"69-thread-info 1",
 	"79-thread-info 2",
@@ -169,11 +174,11 @@ const char *testcommands_ATTACH[] = {
 };
 
 const char *testcommands_MEMBERS[] = {
-	"51-environment-cd /Users/didier/Projets/git-lldbmi2/tests/LLVM",
-	"52-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Debug/tests",
-	"53-gdb-set --thread-group i1 args %?",
+	"51-environment-cd %s",
+	"52-file-exec-and-symbols --thread-group i1 %s/Debug/tests",
+	"53-gdb-set --thread-group i1 args %s",
 	"64-list-thread-groups",
-	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Sources/tests.cpp:163",
+	"58-break-insert --thread-group i1 %s/Sources/tests.cpp:163",
 	"62-exec-run --thread-group i1",
 	"64-list-thread-groups",
 	"65-list-thread-groups i1",
@@ -192,11 +197,11 @@ const char *testcommands_MEMBERS[] = {
 };
 
 const char *testcommands_STRING[] = {
-	"51-environment-cd /Users/didier/Projets/git-lldbmi2/tests/LLVM",
-	"52-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Debug/tests",
-	"53-gdb-set --thread-group i1 args %?",
+	"51-environment-cd %s",
+	"52-file-exec-and-symbols --thread-group i1 %s/Debug/tests",
+	"53-gdb-set --thread-group i1 args %s",
 	"64-list-thread-groups",
-	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Sources/tests.cpp:251",
+	"58-break-insert --thread-group i1 %s/Sources/tests.cpp:251",
 	"62-exec-run --thread-group i1",
 	"64-list-thread-groups",
 	"65-list-thread-groups i1",
@@ -222,14 +227,14 @@ const char *testcommands_STRING[] = {
 };
 
 const char *testcommands_ARGS[] = {
-	"51-environment-cd /Users/didier/Projets/git-lldbmi2/tests/LLVM",
-	"52-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Debug/tests",
-	"53-gdb-set --thread-group i1 args %?",
+	"51-environment-cd %s",
+	"52-file-exec-and-symbols --thread-group i1 %s/Debug/tests",
+	"53-gdb-set --thread-group i1 args %s",
 	"64-list-thread-groups",
 	"19-gdb-show --thread-group i1 language",
-	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Sources/tests.cpp:198",
-	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Sources/tests.cpp:212",
-	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Sources/tests.cpp:214",
+	"58-break-insert --thread-group i1 %s/Sources/tests.cpp:198",
+	"58-break-insert --thread-group i1 %s/Sources/tests.cpp:212",
+	"58-break-insert --thread-group i1 %s/Sources/tests.cpp:214",
 	"62-exec-run --thread-group i1",
 	"64-list-thread-groups",
 	"65-list-thread-groups i1",
@@ -280,9 +285,9 @@ const char *testcommands_ARGS[] = {
 };
 
 const char *testcommands_OTHER[] = {
-	"51-environment-cd /Users/didier/Projets/git-lldbmi2/tests/LLVM",
-	"52-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Debug/tests",
-	"53-gdb-set --thread-group i1 args %?",
+	"51-environment-cd %s",
+	"52-file-exec-and-symbols --thread-group i1 %s/Debug/tests",
+	"53-gdb-set --thread-group i1 args %s",
 	"5-enable-pretty-printing",
 	"52-gdb-set solib-search-path /Users/didier/Projets/git-gasio/gasio/Debug",
 	"52-gdb-set env DYLD_LIBRARY_PATH = /gasio/Debug",
@@ -313,11 +318,11 @@ const char *testcommands_OTHER[] = {
 };
 
 const char *testcommands_CRASH[] = {
-	"51-environment-cd /Users/didier/Projets/git-lldbmi2/tests/LLVM",
-	"52-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Debug/tests",
-	"53-gdb-set --thread-group i1 args %?",
-	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Sources/tests.cpp:190",
-	"61-inferior-tty-set --thread-group i1 %?",		// stdout instead of /dev/ptyxx
+	"51-environment-cd %s",
+	"52-file-exec-and-symbols --thread-group i1 %s/Debug/tests",
+	"53-gdb-set --thread-group i1 args %s",
+	"58-break-insert --thread-group i1 %s/Sources/tests.cpp:190",
+	"61-inferior-tty-set --thread-group i1 %s",		// stdout instead of /dev/ptyxx
 	"62-exec-run --thread-group i1",
 	"76-var-evaluate-expression err",
 	"80-gdb-exit",
@@ -325,22 +330,22 @@ const char *testcommands_CRASH[] = {
 };
 
 const char *testcommands_INPUT[] = {
-	"51-environment-cd /Users/didier/Projets/git-lldbmi2/tests/LLVM",
-	"52-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Debug/tests",
-	"53-gdb-set --thread-group i1 args %?",
-	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Sources/tests.cpp:262",
-	"61-inferior-tty-set --thread-group i1 %?",		// stdout instead of /dev/ptyxx
+	"51-environment-cd %s",
+	"52-file-exec-and-symbols --thread-group i1 %s/Debug/tests",
+	"53-gdb-set --thread-group i1 args %s",
+	"58-break-insert --thread-group i1 %s/Sources/tests.cpp:262",
+	"61-inferior-tty-set --thread-group i1 %s",		// stdout instead of /dev/ptyxx
 	"62-exec-run --thread-group i1",
 	"80-gdb-exit",
 	NULL
 };
 
 const char *testcommands_CATCH_THROW[] = {
-	"51-environment-cd /Users/didier/Projets/git-lldbmi2/tests/LLVM",
-	"52-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Debug/tests",
-	"53-gdb-set --thread-group i1 args %?",
-//	"58-break-insert --thread-group i1 /Users/didier/Projets/git-lldbmi2/tests/Sources/tests.cpp:277",
-	"61-inferior-tty-set --thread-group i1 %?",		// stdout instead of /dev/ptyxx
+	"51-environment-cd %s",
+	"52-file-exec-and-symbols --thread-group i1 %s/Debug/tests",
+	"53-gdb-set --thread-group i1 args %s",
+//	"58-break-insert --thread-group i1 %s/Sources/tests.cpp:277",
+	"61-inferior-tty-set --thread-group i1 %s",		// stdout instead of /dev/ptyxx
 	"62-exec-run --thread-group i1",
 //	"80-gdb-exit",
 	NULL
@@ -358,7 +363,7 @@ const char *testcommands_LO[] = {
 	"58-break-insert --thread-group i1 /pro/lo/libreoffice/xmloff/source/draw/shapeimport.cxx:540",
 //	"58-break-insert --thread-group i1 SdXMLGenericPageContext::CreateChildContext",	// ximppage.cxx:262
 //	"58-break-insert --thread-group i1 SdXMLTableShapeContext::StartElement",			// ximpbody.cxx:253
-	"61-inferior-tty-set --thread-group i1 %?",		// stdout instead of /dev/ptyxx
+	"61-inferior-tty-set --thread-group i1 %s",		// stdout instead of /dev/ptyxx
 	"62-exec-run --thread-group i1",
 	"53-stack-list-frames --thread 1",
 	"259-stack-list-locals --thread 1 --frame 1 1",
@@ -382,8 +387,14 @@ const char *testcommands_LO[] = {
 #endif // WITH_LO_TESTS
 
 
+const char *
+getTestDirectory ()
+{
+	return "/Users/didier/Projets/git-lldbmi2/tests";
+}
+
 const char **
-getTestcommands (int test_sequence)
+getTestCommands (int test_sequence)
 {
 	switch (test_sequence) {
 #ifdef WITH_TESTS

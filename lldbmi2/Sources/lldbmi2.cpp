@@ -119,7 +119,7 @@ main (int argc, char **argv, char **envp)
 	}
 
 	if (limits.istest)
-		testCommands = getTestcommands(state.test_sequence);
+		testCommands = getTestCommands(state.test_sequence);
 
 	// create a log filename from program name and open log file
 	if (isLog) {
@@ -228,9 +228,9 @@ main (int argc, char **argv, char **envp)
 const char *
 getTestCommand (const char **testCommands, int *idTestCommand)
 {
-	logprintf (LOG_TRACE, "getTestCommand (0x%x)\n", idTestCommand);
 	const char *commandLine;
 	if (testCommands[*idTestCommand]!=NULL) {
+		logprintf (LOG_NONE, "getTestCommand (0x%x)\n", idTestCommand);
 		commandLine = testCommands[*idTestCommand];
 		++*idTestCommand;
 		write(STDOUT_FILENO, commandLine, strlen(commandLine));
