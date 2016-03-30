@@ -24,6 +24,8 @@ void help (STATE *pstate)
 	fprintf (stderr, "%s", pstate->lldbmi2Prompt);
 	fprintf (stderr, "Description:\n");
 	fprintf (stderr, "   A MI2 interface to LLDB\n");
+	fprintf (stderr, "Author:\n");
+	fprintf (stderr, "   Didier Bertrand, 2015\n");
 	fprintf (stderr, "Syntax:\n");
 	fprintf (stderr, "   lldbmi2 --version [options]\n");
 	fprintf (stderr, "   lldbmi2 --interpreter mi2 [options]\n");
@@ -65,7 +67,7 @@ main (int argc, char **argv, char **envp)
 	memset (&state, '\0', sizeof(state));
 	state.ptyfd = EOF;
 	state.gdbPrompt = "GNU gdb (GDB) 7.7.1\n";
-	sprintf (state.lldbmi2Prompt, "lldbmi2 version %s, Copyright (C) 2015 Didier Bertrand\n", LLDBMI2_VERSION);
+	sprintf (state.lldbmi2Prompt, "lldbmi2 version %s\n", LLDBMI2_VERSION);
 
 	state.logbuffer[0] = '\0';
 	limits.frames_max = FRAMES_MAX;
