@@ -1,7 +1,5 @@
 # LLDBMI2 - An MI2 interface to LLDB
 
-##Author
-Didier Bertrand
+Copyright (C) 2015
 
-##Contributors
-Eduard Matveev
+Didier Bertrand
