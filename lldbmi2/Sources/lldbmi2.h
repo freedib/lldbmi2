@@ -47,6 +47,7 @@ typedef struct {
 	int  envpentries;
 	char envs[BIG_LINE_MAX];
 	char *envspointer;
+	char workspace_loc[PATH_MAX];
 	char cdtbuffer[LINE_MAX];
 	char cdtptyname[NAME_MAX];
 	char logfilename[PATH_MAX];

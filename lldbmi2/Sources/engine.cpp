@@ -97,8 +97,9 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 	else if (strcmp(cc.argv[0],"-environment-cd")==0) {
 		// environment-cd /project_path/tests
 		char path[PATH_MAX];
-		snprintf (path, sizeof(path), cc.argv[nextarg], getTestDirectory());
-		logprintf (LOG_VARS, "%%s -> %s\n", path);
+		snprintf (path, sizeof(path), cc.argv[nextarg], pstate->workspace_loc);
+		if (strstr(cc.argv[nextarg],"%s")!=NULL)
+			logprintf (LOG_VARS, "%%s -> %s\n", path);
 		launchInfo.SetWorkingDirectory (path);
 		logprintf (LOG_NONE, "cwd=%s pwd=%s\n", path, launchInfo.GetWorkingDirectory());
 		cdtprintf ("%d^done\n(gdb)\n", cc.sequence);
@@ -129,7 +130,8 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 		if (strcmp(cc.argv[nextarg],"args") == 0) {
 			if (strcmp(cc.argv[++nextarg],"%s") == 0) {
 				sprintf ((char *)cc.argv[nextarg], "%2d", pstate->test_sequence);
-				logprintf (LOG_VARS, "%%s -> %s\n", cc.argv[nextarg]);
+				if (strstr(cc.argv[nextarg],"%s")!=NULL)
+					logprintf (LOG_VARS, "%%s -> %s\n", cc.argv[nextarg]);
 			}
 			launchInfo.SetArguments (&cc.argv[nextarg], false);
 		}
@@ -205,8 +207,9 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 	else if (strcmp(cc.argv[0],"-file-exec-and-symbols")==0) {
 		// file-exec-and-symbols --thread-group i1 /project_path/tests/Debug/tests
 		char path[PATH_MAX];
-		snprintf (path, sizeof(path), cc.argv[nextarg], getTestDirectory());
-		logprintf (LOG_VARS, "%%s -> %s\n", path);
+		snprintf (path, sizeof(path), cc.argv[nextarg], pstate->workspace_loc);
+		if (strstr(cc.argv[nextarg],"%s")!=NULL)
+			logprintf (LOG_VARS, "%%s -> %s\n", path);
 		strlcpy (programpath, path, sizeof(programpath));
 		target = pstate->debugger.CreateTargetWithFileAndArch (programpath, "x86_64");
 		if (!target.IsValid())
@@ -409,8 +412,9 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 				isoneshot = 1;
 			else if (strcmp(cc.argv[nextarg],"-f")==0)
 				++nextarg;
-			snprintf (path, sizeof(path), cc.argv[nextarg], getTestDirectory());
-			logprintf (LOG_VARS, "%%s -> %s\n", path);
+			snprintf (path, sizeof(path), cc.argv[nextarg], pstate->workspace_loc);
+			if (strstr(cc.argv[nextarg],"%s")!=NULL)
+				logprintf (LOG_VARS, "%%s -> %s\n", path);
 		}
 		char *pline;
 		SBBreakpoint breakpoint;
