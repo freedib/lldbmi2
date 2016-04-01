@@ -5,3 +5,4 @@ Didier Bertrand
 
 ##Contributors
 Eduard Matveev
+Dmitriy Tarasov
