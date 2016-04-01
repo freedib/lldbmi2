@@ -84,20 +84,32 @@ int test_BASE ()
 
 /////////////////////////////
 
-struct S {
+int test_LARGE_CHAR_ARRAY ()
+{
+	char ccc[102];
+
+	strcpy (ccc, "HIJ");
+	strcpy (&ccc[100], "K");						// breakpoint 1 LARGE_CHAR_ARRAY
+
+	return 0;
+}
+
+/////////////////////////////
+
+typedef struct {	// can view structs only if typedef in dwarf
 	double d;
 	const char *c;
-};
+} SSS;
 
 int test_LARGE_ARRAY ()
 {
-	char c[101];
 	int i[200];
-	struct S s[200];
-	c[0] = 'H';								// breakpoint 1 LARGE_ARRAY
+	SSS s[200];
+
 	i[100] = 1001;
 	s[0].c = "hello";
-	return 0;
+
+	return 0;									// breakpoint 1 LARGE_ARRAY
 }
 
 /////////////////////////////
@@ -110,7 +122,7 @@ X x;
 
 int test_POINTERS ()
 {
-	X *px = &x;
+	X *px = &x;									// breakpoint 1 POINTERS
 	x.a = 13;
 	px->a = 26;
 	x.b = "hello";
@@ -187,7 +199,7 @@ int test_CRASH()
 {
 	int *err=NULL;
 	*err=99;
-	return 0;					// breakpoint 1 CRASH
+	return 0;								// breakpoint 1 CRASH
 }
 
 /////////////////////////////
@@ -259,7 +271,7 @@ int test_INPUT()
 	char c;
 	while ((c=getchar()) != '!')
 		putchar (c);
-	return 0;
+	return 0;									// breakpoint 1 INPUT
 }
 
 /////////////////////////////
@@ -293,16 +305,17 @@ main (int argc, char **argv)
 	case 1:		return test_BASE ();		// test_THREAD
 	case 2:		return test_BASE ();		// test_VARS
 	case 3:		return test_BASE ();		// test_UPDATE
-	case 4:		return test_LARGE_ARRAY ();
-	case 5:		return test_POINTERS ();
-	case 6:		return test_BASE ();		// ATTACH
-	case 7:		return test_MEMBERS ();
-	case 8:		return test_STRING ();
-	case 9:		return test_ARGS ();
-	case 10:	return test_BASE ();		// OTHER
+	case 4:		return test_LARGE_CHAR_ARRAY ();
+	case 5:		return test_LARGE_ARRAY ();
+	case 6:		return test_POINTERS ();
+	case 7:		return test_BASE ();		// ATTACH
+	case 8:		return test_MEMBERS ();
+	case 9:		return test_STRING ();
+	case 10:	return test_ARGS ();
 	case 11:	return test_CRASH ();
 	case 12:	return test_INPUT ();
 	case 13:	return test_CATCH_THROW ();
+	case 14:	return test_BASE ();		// OTHER
 	}
 	return 0;
 }

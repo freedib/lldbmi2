@@ -14,6 +14,7 @@ const char *testcommands_NONE[] = {
 	"51-environment-cd %s/tests",
 	"52-file-exec-and-symbols --thread-group i1 %s/tests/Debug/tests",
 	"53-gdb-set --thread-group i1 args %s",
+	"61-inferior-tty-set --thread-group i1 %s",		// stdout instead of /dev/ptyxx
 	"62-exec-run --thread-group i1",
 	"80-gdb-exit",
 	NULL
@@ -67,16 +68,16 @@ const char *testcommands_UPDATE[] = {
 	"51-environment-cd %s/tests",
 	"52-file-exec-and-symbols --thread-group i1 %s/tests/Debug/tests",
 	"53-gdb-set --thread-group i1 args %s",
-	"58-break-insert --thread-group i1 %s/tests/Sources/tests.cpp:65",
+	"58-break-insert --thread-group i1 %s/tests/Sources/tests.cpp:76",
 	"61-inferior-tty-set --thread-group i1 %s",		// stdout instead of /dev/ptyxx
 	"62-exec-run --thread-group i1",
 	"41-stack-list-locals --thread 1 --frame 0 1",
 	"42-stack-info-depth --thread 1 11",
 	"37-var-create --thread 1 --frame 0 - * py",
-	"129-var-list-children py",
+	"38-var-list-children py",
 	"55-var-create --thread 1 --frame 0 - * py->s[0]",
-	"132-var-info-path-expression py->m",
-	"52-var-evaluate-expression py->m",
+	"56-var-info-path-expression py->m",
+	"57-var-evaluate-expression py->m",
 	"40-exec-next --thread 1 1",
 	"41-stack-list-locals --thread 1 --frame 0 1",
 	"42-stack-info-depth --thread 1 11",
@@ -86,33 +87,38 @@ const char *testcommands_UPDATE[] = {
 	NULL
 };
 
+const char *testcommands_LARGE_CHAR_ARRAY[] = {
+	"51-environment-cd %s/tests",
+	"17-file-exec-and-symbols --thread-group i1 %s/tests/Debug/tests",
+//	"19-gdb-show --thread-group i1 language",
+	"53-gdb-set --thread-group i1 args %s",
+	"26-break-insert -f %s/tests/Sources/tests.cpp:92",
+	"28-exec-run --thread-group i1",
+	"35-stack-list-locals --thread 1 --frame 0 1",
+	"36-var-create --thread 1 --frame 0 - * ccc",
+	"37-var-create --thread 1 --frame 0 - * &(ccc)",
+	"38-stack-list-frames --thread 1",
+	"39-var-create --thread 1 --frame 0 - * *((ccc)+0)@100",
+	"39-var-create --thread 1 --frame 0 - * *((ccc)+100)@2",
+	"40-exec-next --thread 1 1",
+	"41-stack-list-locals --thread 1 --frame 0 1",
+	"42-stack-info-depth --thread 1 11",
+	"45-var-update 1 ccc",
+	"46-var-update 1 $0",
+	"47-var-update 1 c[100]",
+	"80-gdb-exit",
+	NULL
+};
+
 const char *testcommands_LARGE_ARRAY[] = {
 	"51-environment-cd %s/tests",
 	"17-file-exec-and-symbols --thread-group i1 %s/tests/Debug/tests",
 //	"19-gdb-show --thread-group i1 language",
 	"53-gdb-set --thread-group i1 args %s",
-	"26-break-insert -f %s/tests/Sources/test.c:97",
+	"26-break-insert -f %s/tests/Sources/tests.cpp:112",
 	"28-exec-run --thread-group i1",
-	"35-stack-list-locals --thread 1 --frame 0 1",
-	"36-var-create --thread 1 --frame 0 - * c",
-	"37-var-create --thread 1 --frame 0 - * &(c)",
-	"38-stack-list-frames --thread 1",
-	"39-var-create --thread 1 --frame 0 - * *((c)+0)@100",
 	"39-var-create --thread 1 --frame 0 - * *((i)+0)@100",
 	"39-var-create --thread 1 --frame 0 - * *((s)+0)@100",
-	"40-exec-next --thread 1 1",
-	"41-stack-list-locals --thread 1 --frame 0 1",
-	"42-stack-info-depth --thread 1 11",
-	"45-var-update 1 c",
-	"46-var-update 1 $0",
-	"47-var-update 1 c[0]",
-	"40-exec-next --thread 1 1",
-	"41-stack-list-locals --thread 1 --frame 0 1",
-	"42-stack-info-depth --thread 1 11",
-	"45-var-update 1 c",
-	"46-var-update 1 $0",
-	"47-var-update 1 c[0]",
-	"59-exec-continue --thread 1",
 	"80-gdb-exit",
 	NULL
 };
@@ -121,7 +127,7 @@ const char *testcommands_POINTERS[] = {
 	"51-environment-cd %s/tests",
 	"52-file-exec-and-symbols --thread-group i1 %s/tests/Debug/tests",
 	"53-gdb-set --thread-group i1 args %s",
-	"58-break-insert --thread-group i1 %s/tests/Sources/tests.cpp:113",
+	"58-break-insert --thread-group i1 %s/tests/Sources/tests.cpp:125",
 	"62-exec-run --thread-group i1",
 	"64-list-thread-groups",
 	"65-list-thread-groups i1",
@@ -178,7 +184,7 @@ const char *testcommands_MEMBERS[] = {
 	"52-file-exec-and-symbols --thread-group i1 %s/tests/Debug/tests",
 	"53-gdb-set --thread-group i1 args %s",
 	"64-list-thread-groups",
-	"58-break-insert --thread-group i1 %s/tests/Sources/tests.cpp:163",
+	"58-break-insert --thread-group i1 %s/tests/Sources/tests.cpp:175",
 	"62-exec-run --thread-group i1",
 	"64-list-thread-groups",
 	"65-list-thread-groups i1",
@@ -201,7 +207,7 @@ const char *testcommands_STRING[] = {
 	"52-file-exec-and-symbols --thread-group i1 %s/tests/Debug/tests",
 	"53-gdb-set --thread-group i1 args %s",
 	"64-list-thread-groups",
-	"58-break-insert --thread-group i1 %s/tests/Sources/tests.cpp:251",
+	"58-break-insert --thread-group i1 %s/tests/Sources/tests.cpp:263",
 	"62-exec-run --thread-group i1",
 	"64-list-thread-groups",
 	"65-list-thread-groups i1",
@@ -232,9 +238,9 @@ const char *testcommands_ARGS[] = {
 	"53-gdb-set --thread-group i1 args %s",
 	"64-list-thread-groups",
 	"19-gdb-show --thread-group i1 language",
-	"58-break-insert --thread-group i1 %s/tests/Sources/tests.cpp:198",
-	"58-break-insert --thread-group i1 %s/tests/Sources/tests.cpp:212",
-	"58-break-insert --thread-group i1 %s/tests/Sources/tests.cpp:214",
+	"58-break-insert --thread-group i1 %s/tests/Sources/tests.cpp:210",
+	"58-break-insert --thread-group i1 %s/tests/Sources/tests.cpp:224",
+	"58-break-insert --thread-group i1 %s/tests/Sources/tests.cpp:226",
 	"62-exec-run --thread-group i1",
 	"64-list-thread-groups",
 	"65-list-thread-groups i1",
@@ -321,7 +327,7 @@ const char *testcommands_CRASH[] = {
 	"51-environment-cd %s/tests",
 	"52-file-exec-and-symbols --thread-group i1 %s/tests/Debug/tests",
 	"53-gdb-set --thread-group i1 args %s",
-	"58-break-insert --thread-group i1 %s/tests/Sources/tests.cpp:190",
+	"58-break-insert --thread-group i1 %s/tests/Sources/tests.cpp:202",
 	"61-inferior-tty-set --thread-group i1 %s",		// stdout instead of /dev/ptyxx
 	"62-exec-run --thread-group i1",
 	"76-var-evaluate-expression err",
@@ -333,7 +339,7 @@ const char *testcommands_INPUT[] = {
 	"51-environment-cd %s/tests",
 	"52-file-exec-and-symbols --thread-group i1 %s/tests/Debug/tests",
 	"53-gdb-set --thread-group i1 args %s",
-	"58-break-insert --thread-group i1 %s/tests/Sources/tests.cpp:262",
+	"58-break-insert --thread-group i1 %s/tests/Sources/tests.cpp:274",
 	"61-inferior-tty-set --thread-group i1 %s",		// stdout instead of /dev/ptyxx
 	"62-exec-run --thread-group i1",
 	"80-gdb-exit",
@@ -344,10 +350,11 @@ const char *testcommands_CATCH_THROW[] = {
 	"51-environment-cd %s/tests",
 	"52-file-exec-and-symbols --thread-group i1 %s/tests/Debug/tests",
 	"53-gdb-set --thread-group i1 args %s",
-//	"58-break-insert --thread-group i1 %s/tests/Sources/tests.cpp:277",
 	"61-inferior-tty-set --thread-group i1 %s",		// stdout instead of /dev/ptyxx
+	"41catch catch",
 	"62-exec-run --thread-group i1",
-//	"80-gdb-exit",
+	"53-stack-list-frames --thread 1",
+	"80-gdb-exit",
 	NULL
 };
 
@@ -396,19 +403,20 @@ getTestCommands (int test_sequence)
 	case 1:		return testcommands_THREAD;
 	case 2:		return testcommands_VARS;
 	case 3:		return testcommands_UPDATE;
-	case 4:		return testcommands_LARGE_ARRAY;
-	case 5:		return testcommands_POINTERS;
-	case 6:		return testcommands_ATTACH;
-	case 7:		return testcommands_MEMBERS;
-	case 8:		return testcommands_STRING;
-	case 9:		return testcommands_ARGS;
-	case 10:	return testcommands_OTHER;
+	case 4:		return testcommands_LARGE_CHAR_ARRAY;
+	case 5:		return testcommands_LARGE_ARRAY;
+	case 6:		return testcommands_POINTERS;
+	case 7:		return testcommands_ATTACH;
+	case 8:		return testcommands_MEMBERS;
+	case 9:		return testcommands_STRING;
+	case 10:	return testcommands_ARGS;
 	case 11:	return testcommands_CRASH;
 	case 12:	return testcommands_INPUT;
 	case 13:	return testcommands_CATCH_THROW;
+	case 14:	return testcommands_OTHER;
 #endif // WITH_TESTS
 #ifdef WITH_LO_TESTS
-	case 14:	return testcommands_LO;
+	case 15:	return testcommands_LO;
 #endif // WITH_LO_TESTS
 	default:	return testcommands_NONE;
 	}

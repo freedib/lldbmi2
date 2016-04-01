@@ -29,3 +29,5 @@ It should be useful for Mac OS x users until LLDB-MI gets enough maturity or whe
 No remote debugging.
 
 No support for Non-stop debugging, Multi-process debugging and Reverse debugging until LLDB support them.
+
+To display arrays of structures, theses structures must be defines with typedef (limitation of DWARF)

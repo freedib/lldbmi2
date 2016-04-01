@@ -20,7 +20,7 @@ typedef enum
 
 #define min(a,b) ((a) < (b) ? (a) : (b))
 
-SBValue getVariable (SBFrame frame, const char *expression);
+SBValue getVariable (SBFrame frame, const char *expression, bool tryDirect=true);
 int     updateVarState (SBValue var, int depth);
 
 char *  formatExpressionPath (char *expressionpathdesc, size_t descsize, SBValue var);
