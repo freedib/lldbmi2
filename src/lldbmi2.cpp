@@ -137,13 +137,13 @@ main (int argc, char **argv, char **envp)
 	state.envp[0] = NULL;
 	state.envpentries = 0;
 	state.envspointer = state.envs;
-	const char *wl = "workspace_loc=";		// want to get eclipse workspace_loc if any
+	const char *wl = "PWD=";		// want to get eclipse project_loc if any
 	int wll = strlen(wl);
 	// copy environment for tested program
 	for (int ienv=0; envp[ienv]; ienv++) {
 		addEnvironment (&state, envp[ienv]);
 		if (strncmp(envp[ienv], wl, wll)==0)
-			strcpy (state.workspace_loc, envp[ienv]+wll);
+			strcpy (state.project_loc, envp[ienv]+wll);
 	}
 
 	// return gdb version if --version
