@@ -12,7 +12,7 @@
 
 const char *testcommands_NONE[] = {
 	"51-environment-cd %s/tests",
-	"52-file-exec-and-symbols --thread-group i1 %s/tests/Debug/tests",
+	"52-file-exec-and-symbols --thread-group i1 %s/build/tests",
 	"53-gdb-set --thread-group i1 args %s",
 	"61-inferior-tty-set --thread-group i1 %s",		// stdout instead of /dev/ptyxx
 	"62-exec-run --thread-group i1",
@@ -23,11 +23,10 @@ const char *testcommands_NONE[] = {
 #ifdef WITH_TESTS
 
 const char *testcommands_THREAD[] = {
-	"51-environment-cd %s/tests",
-	"52-file-exec-and-symbols --thread-group i1 %s/tests/Debug/tests",
+	"52-file-exec-and-symbols --thread-group i1 %s/build/tests",
 	"53-gdb-set --thread-group i1 args %s",
-	"58-break-insert --thread-group i1 %s/tests/Sources/tests.cpp:34",
-	"58-break-insert --thread-group i1 %s/tests/Sources/tests.cpp:77",
+	"58-break-insert --thread-group i1 %s/tests/tests.cpp:34",
+	"58-break-insert --thread-group i1 %s/tests/tests.cpp:77",
 	"61-inferior-tty-set --thread-group i1 %s",		// stdout instead of /dev/ptyxx
 	"62-exec-run --thread-group i1",
 	"64-list-thread-groups",
@@ -49,10 +48,9 @@ const char *testcommands_THREAD[] = {
 };
 
 const char *testcommands_VARS[] = {
-	"51-environment-cd %s/tests",
-	"52-file-exec-and-symbols --thread-group i1 %s/tests/Debug/tests",
+	"52-file-exec-and-symbols --thread-group i1 %s/build/tests",
 	"53-gdb-set --thread-group i1 args %s",
-	"58-break-insert --thread-group i1 %s/tests/Sources/tests.cpp:74",
+	"58-break-insert --thread-group i1 %s/tests/tests.cpp:74",
 	"61-inferior-tty-set --thread-group i1 %s",		// stdout instead of /dev/ptyxx
 	"62-exec-run --thread-group i1",
 	"76-var-evaluate-expression c",
@@ -65,10 +63,9 @@ const char *testcommands_VARS[] = {
 };
 
 const char *testcommands_UPDATE[] = {
-	"51-environment-cd %s/tests",
-	"52-file-exec-and-symbols --thread-group i1 %s/tests/Debug/tests",
+	"52-file-exec-and-symbols --thread-group i1 %s/build/tests",
 	"53-gdb-set --thread-group i1 args %s",
-	"58-break-insert --thread-group i1 %s/tests/Sources/tests.cpp:76",
+	"58-break-insert --thread-group i1 %s/tests/tests.cpp:76",
 	"61-inferior-tty-set --thread-group i1 %s",		// stdout instead of /dev/ptyxx
 	"62-exec-run --thread-group i1",
 	"41-stack-list-locals --thread 1 --frame 0 1",
@@ -88,11 +85,10 @@ const char *testcommands_UPDATE[] = {
 };
 
 const char *testcommands_LARGE_CHAR_ARRAY[] = {
-	"51-environment-cd %s/tests",
-	"17-file-exec-and-symbols --thread-group i1 %s/tests/Debug/tests",
+	"17-file-exec-and-symbols --thread-group i1 %s/build/tests",
 //	"19-gdb-show --thread-group i1 language",
 	"53-gdb-set --thread-group i1 args %s",
-	"26-break-insert -f %s/tests/Sources/tests.cpp:92",
+	"26-break-insert -f %s/tests/tests.cpp:92",
 	"28-exec-run --thread-group i1",
 	"35-stack-list-locals --thread 1 --frame 0 1",
 	"36-var-create --thread 1 --frame 0 - * ccc",
@@ -111,11 +107,10 @@ const char *testcommands_LARGE_CHAR_ARRAY[] = {
 };
 
 const char *testcommands_LARGE_ARRAY[] = {
-	"51-environment-cd %s/tests",
-	"17-file-exec-and-symbols --thread-group i1 %s/tests/Debug/tests",
+	"17-file-exec-and-symbols --thread-group i1 %s/build/tests",
 //	"19-gdb-show --thread-group i1 language",
 	"53-gdb-set --thread-group i1 args %s",
-	"26-break-insert -f %s/tests/Sources/tests.cpp:112",
+	"26-break-insert -f %s/tests/tests.cpp:112",
 	"28-exec-run --thread-group i1",
 	"39-var-create --thread 1 --frame 0 - * *((i)+0)@100",
 	"39-var-create --thread 1 --frame 0 - * *((s)+0)@100",
@@ -124,10 +119,9 @@ const char *testcommands_LARGE_ARRAY[] = {
 };
 
 const char *testcommands_POINTERS[] = {
-	"51-environment-cd %s/tests",
-	"52-file-exec-and-symbols --thread-group i1 %s/tests/Debug/tests",
+	"52-file-exec-and-symbols --thread-group i1 %s/build/tests",
 	"53-gdb-set --thread-group i1 args %s",
-	"58-break-insert --thread-group i1 %s/tests/Sources/tests.cpp:125",
+	"58-break-insert --thread-group i1 %s/tests/tests.cpp:125",
 	"62-exec-run --thread-group i1",
 	"64-list-thread-groups",
 	"65-list-thread-groups i1",
@@ -165,9 +159,8 @@ const char *testcommands_POINTERS[] = {
 };
 
 const char *testcommands_ATTACH[] = {
-	"51-environment-cd %s/tests",
 	"62-target-attach --thread-group i1 tests",
-	"58-break-insert --thread-group i1 %s/tests/Sources/tests.cpp:34",
+	"58-break-insert --thread-group i1 %s/tests/tests.cpp:34",
 	"61-inferior-tty-set --thread-group i1 %s",		// stdout instead of /dev/ptyxx
 	"65-list-thread-groups i1",
 	"69-thread-info 1",
@@ -180,11 +173,10 @@ const char *testcommands_ATTACH[] = {
 };
 
 const char *testcommands_MEMBERS[] = {
-	"51-environment-cd %s/tests",
-	"52-file-exec-and-symbols --thread-group i1 %s/tests/Debug/tests",
+	"52-file-exec-and-symbols --thread-group i1 %s/build/tests",
 	"53-gdb-set --thread-group i1 args %s",
 	"64-list-thread-groups",
-	"58-break-insert --thread-group i1 %s/tests/Sources/tests.cpp:175",
+	"58-break-insert --thread-group i1 %s/tests/tests.cpp:175",
 	"62-exec-run --thread-group i1",
 	"64-list-thread-groups",
 	"65-list-thread-groups i1",
@@ -203,11 +195,10 @@ const char *testcommands_MEMBERS[] = {
 };
 
 const char *testcommands_STRING[] = {
-	"51-environment-cd %s/tests",
-	"52-file-exec-and-symbols --thread-group i1 %s/tests/Debug/tests",
+	"52-file-exec-and-symbols --thread-group i1 %s/build/tests",
 	"53-gdb-set --thread-group i1 args %s",
 	"64-list-thread-groups",
-	"58-break-insert --thread-group i1 %s/tests/Sources/tests.cpp:263",
+	"58-break-insert --thread-group i1 %s/tests/tests.cpp:263",
 	"62-exec-run --thread-group i1",
 	"64-list-thread-groups",
 	"65-list-thread-groups i1",
@@ -233,14 +224,13 @@ const char *testcommands_STRING[] = {
 };
 
 const char *testcommands_ARGS[] = {
-	"51-environment-cd %s/tests",
-	"52-file-exec-and-symbols --thread-group i1 %s/tests/Debug/tests",
+	"52-file-exec-and-symbols --thread-group i1 %s/build/tests",
 	"53-gdb-set --thread-group i1 args %s",
 	"64-list-thread-groups",
 	"19-gdb-show --thread-group i1 language",
-	"58-break-insert --thread-group i1 %s/tests/Sources/tests.cpp:210",
-	"58-break-insert --thread-group i1 %s/tests/Sources/tests.cpp:224",
-	"58-break-insert --thread-group i1 %s/tests/Sources/tests.cpp:226",
+	"58-break-insert --thread-group i1 %s/tests/tests.cpp:210",
+	"58-break-insert --thread-group i1 %s/tests/tests.cpp:224",
+	"58-break-insert --thread-group i1 %s/tests/tests.cpp:226",
 	"62-exec-run --thread-group i1",
 	"64-list-thread-groups",
 	"65-list-thread-groups i1",
@@ -291,8 +281,7 @@ const char *testcommands_ARGS[] = {
 };
 
 const char *testcommands_OTHER[] = {
-	"51-environment-cd %s/tests",
-	"52-file-exec-and-symbols --thread-group i1 %s/tests/Debug/tests",
+	"52-file-exec-and-symbols --thread-group i1 %s/build/tests",
 	"53-gdb-set --thread-group i1 args %s",
 	"5-enable-pretty-printing",
 	"52-gdb-set solib-search-path %s/../git-gasio/gasio/Debug",
@@ -324,10 +313,9 @@ const char *testcommands_OTHER[] = {
 };
 
 const char *testcommands_CRASH[] = {
-	"51-environment-cd %s/tests",
-	"52-file-exec-and-symbols --thread-group i1 %s/tests/Debug/tests",
+	"52-file-exec-and-symbols --thread-group i1 %s/build/tests",
 	"53-gdb-set --thread-group i1 args %s",
-	"58-break-insert --thread-group i1 %s/tests/Sources/tests.cpp:202",
+	"58-break-insert --thread-group i1 %s/tests/tests.cpp:202",
 	"61-inferior-tty-set --thread-group i1 %s",		// stdout instead of /dev/ptyxx
 	"62-exec-run --thread-group i1",
 	"76-var-evaluate-expression err",
@@ -336,10 +324,9 @@ const char *testcommands_CRASH[] = {
 };
 
 const char *testcommands_INPUT[] = {
-	"51-environment-cd %s/tests",
-	"52-file-exec-and-symbols --thread-group i1 %s/tests/Debug/tests",
+	"52-file-exec-and-symbols --thread-group i1 %s/build/tests",
 	"53-gdb-set --thread-group i1 args %s",
-	"58-break-insert --thread-group i1 %s/tests/Sources/tests.cpp:274",
+	"58-break-insert --thread-group i1 %s/tests/tests.cpp:274",
 	"61-inferior-tty-set --thread-group i1 %s",		// stdout instead of /dev/ptyxx
 	"62-exec-run --thread-group i1",
 	"80-gdb-exit",
@@ -347,8 +334,7 @@ const char *testcommands_INPUT[] = {
 };
 
 const char *testcommands_CATCH_THROW[] = {
-	"51-environment-cd %s/tests",
-	"52-file-exec-and-symbols --thread-group i1 %s/tests/Debug/tests",
+	"52-file-exec-and-symbols --thread-group i1 %s/build/tests",
 	"53-gdb-set --thread-group i1 args %s",
 	"61-inferior-tty-set --thread-group i1 %s",		// stdout instead of /dev/ptyxx
 	"41catch catch",
