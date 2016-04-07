@@ -18,7 +18,7 @@
 					<folderInfo id="cdt.managedbuild.toolchain.gnu.macosx.base.12405704.401081395" name="/" resourcePath="">
 						<toolChain id="cdt.managedbuild.toolchain.gnu.macosx.base.1371040626" name="MacOSX GCC" superClass="cdt.managedbuild.toolchain.gnu.macosx.base">
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.MachO64" id="cdt.managedbuild.target.gnu.platform.macosx.base.1256915060" name="Debug Platform" osList="macosx" superClass="cdt.managedbuild.target.gnu.platform.macosx.base"/>
-							<builder arguments="-DCMAKE_BUILD_TYPE=Debug -DBUILD_TESETS=0" buildPath="${workspace_loc:/lldbmi2}" command="${workspace_loc:/lldbmi2}/build.sh" id="cdt.managedbuild.target.gnu.builder.macosx.base.220567480" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="cdt.managedbuild.target.gnu.builder.macosx.base">
+							<builder arguments="-DCMAKE_BUILD_TYPE=Debug -DBUILD_TESETS=1" buildPath="${workspace_loc:/lldbmi2}" command="${workspace_loc:/lldbmi2}/build.sh" id="cdt.managedbuild.target.gnu.builder.macosx.base.220567480" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="cdt.managedbuild.target.gnu.builder.macosx.base">
 								<outputEntries>
 									<entry flags="VALUE_WORKSPACE_PATH" kind="outputPath" name="build"/>
 								</outputEntries>
@@ -57,12 +57,11 @@
 					<fileInfo id="cdt.managedbuild.toolchain.gnu.macosx.base.12405704.964443606" name="make.sh" rcbsApplicability="disable" resourcePath="build.sh" toolsToInvoke=""/>
 					<sourceEntries>
 						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="src"/>
+						<entry flags="VALUE_WORKSPACE_PATH" kind="sourcePath" name="tests"/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
-			<storageModule moduleId="org.eclipse.cdt.core.externalSettings">
-				<externalSettings containerId="lldbmi2;cdt.managedbuild.toolchain.gnu.macosx.base.12405704.1116816015" factoryId="org.eclipse.cdt.core.cfg.export.settings.sipplier"/>
-			</storageModule>
+			<storageModule moduleId="org.eclipse.cdt.core.externalSettings"/>
 		</cconfiguration>
 		<cconfiguration id="cdt.managedbuild.toolchain.gnu.macosx.base.12405704.677054284">
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="cdt.managedbuild.toolchain.gnu.macosx.base.12405704.677054284" moduleId="org.eclipse.cdt.core.settings" name="Release">
@@ -94,7 +93,7 @@
 								</inputType>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.assembler.macosx.base.901739846" name="GCC Assembler" superClass="cdt.managedbuild.tool.gnu.assembler.macosx.base">
-								<option id="gnu.both.asm.option.include.paths.1660036018" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths" valueType="includePath"/>
+								<option id="gnu.both.asm.option.include.paths.1660036018" name="Include paths (-I)" superClass="gnu.both.asm.option.include.paths"/>
 								<inputType id="cdt.managedbuild.tool.gnu.assembler.input.1521716409" superClass="cdt.managedbuild.tool.gnu.assembler.input"/>
 							</tool>
 							<tool id="cdt.managedbuild.tool.gnu.archiver.macosx.base.1054858951" name="GCC Archiver" superClass="cdt.managedbuild.tool.gnu.archiver.macosx.base"/>
@@ -187,13 +186,13 @@
 			<resource resourceType="PROJECT" workspacePath="/lldbmi2"/>
 		</configuration>
 		<configuration configurationName="Debug">
-			<resource resourceType="PROJECT" workspacePath="/lldbmi2"/>
-		</configuration>
-		<configuration configurationName="Tests">
 			<resource resourceType="FOLDER" workspacePath="/lldbmi2/build"/>
 		</configuration>
 		<configuration configurationName="Release">
-			<resource resourceType="PROJECT" workspacePath="/lldbmi2"/>
+			<resource resourceType="FOLDER" workspacePath="/lldbmi2/build"/>
+		</configuration>
+		<configuration configurationName="Tests">
+			<resource resourceType="FOLDER" workspacePath="/lldbmi2/build"/>
 		</configuration>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>

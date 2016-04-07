@@ -3,7 +3,6 @@
 	<name>lldbmi2</name>
 	<comment></comment>
 	<projects>
-		<project>lldbmi2</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>
