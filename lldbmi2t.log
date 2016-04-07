@@ -1,0 +1,63 @@
+161523.185 @@@  /Users/user-i121/git/lldbmi2/build/lldbmi2 --interpreter mi2 --nx --test --log 
+161523.837 <<=  |(gdb)\n|
+161524.040 >>=  |51-environment-cd %s/tests|
+161524.040 ===  %s -> /Users/user-i121/Documents/runtime-EclipseApplication2/tests
+161524.040 <<=  |51^done\n(gdb)\n|
+161524.244 >>=  |52-file-exec-and-symbols --thread-group i1 %s/tests/Debug/tests|
+161524.244 ===  %s -> /Users/user-i121/Documents/runtime-EclipseApplication2/tests/Debug/tests
+161524.244 <<=  |52^error\n(gdb)\n|
+161524.445 >>=  |53-gdb-set --thread-group i1 args %s|
+161524.445 <<=  |53^done\n(gdb)\n|
+161524.649 >>=  |64-list-thread-groups|
+161524.649 <<=  |64^done,groups=[{id="i1",type="process"}]\n(gdb)\n|
+161524.854 >>=  |58-break-insert --thread-group i1 %s/tests/Sources/tests.cpp:263|
+161524.854 ===  %s -> /Users/user-i121/Documents/runtime-EclipseApplication2/tests/Sources/tests.cpp:263
+161524.854 <<=  |58^error\n(gdb)\n|
+161525.057 >>=  |62-exec-run --thread-group i1|
+161525.057 <<=  |62^error,msg="Can not start process."\n(gdb)\n|
+161525.057 ---  process_error=SBTarget is invalid
+161525.258 >>=  |64-list-thread-groups|
+161525.258 <<=  |64^done,groups=[{id="i1",type="process"}]\n(gdb)\n|
+161525.462 >>=  |65-list-thread-groups i1|
+161525.462 <<=  |65^error,msg="Can not fetch data now."\n(gdb)\n|
+161525.666 >>=  |69-thread-info 1|
+161525.666 <<=  |69^error,msg="Can not fetch data now."\n(gdb)\n|
+161525.870 >>=  |67-stack-list-locals --thread 1 --frame 0 1|
+161525.870 <<=  |67^error,msg="Can not select frame. thread is invalid."\n(gdb)\n|
+161525.870 <<=  |67^error\n(gdb)\n|
+161526.072 >>=  |72-var-create --thread 1 --frame 0 - * s|
+161526.073 <<=  |72^error,msg="Can not select frame. thread is invalid."\n(gdb)\n|
+161526.073 <<=  |72^error\n(gdb)\n|
+161526.276 >>=  |73-var-list-children s|
+161526.276 <<=  |73^error\n(gdb)\n|
+161526.476 >>=  |73-var-list-children s.__r_|
+161526.476 <<=  |73^error\n(gdb)\n|
+161526.680 >>=  |73-var-list-children s.__r_.__first_|
+161526.680 <<=  |73^error\n(gdb)\n|
+161526.883 >>=  |73-var-list-children s.__r_.__first_.__s.(anonymous)|
+161526.883 <<=  |73^error\n(gdb)\n|
+161527.086 >>=  |73-var-list-children "s.__r_.std::__1::__libcpp_compressed_pair_imp<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >::__rep, std::__1::allocator<char>, 2>"|
+161527.086 <<=  |73^error\n(gdb)\n|
+161527.288 >>=  |73-var-list-children "s.__r_.std::__1::__libcpp_compressed_pair_imp<std::__1::basic_string<char, std::__1::char_traits<char>, std::__1::allocator<char> >::__rep, std::__1::allocator<char>, 2>.__first_"|
+161527.289 <<=  |73^error\n(gdb)\n|
+161527.491 >>=  |72-var-create --thread 1 --frame 0 - * cc|
+161527.491 <<=  |72^error,msg="Can not select frame. thread is invalid."\n(gdb)\n|
+161527.491 <<=  |72^error\n(gdb)\n|
+161527.695 >>=  |73-var-list-children "cc.data.std::__1::__vector_base<unsigned char, std::__1::allocator<unsigned char> >"|
+161527.695 <<=  |73^error\n(gdb)\n|
+161527.898 >>=  |50-data-evaluate-expression --thread 1 --frame 0 "cc.data.std::__1::__vector_base<unsigned char, std::__1::allocator<unsigned char> >"|
+161527.898 <<=  |50^error,msg="Can not select frame. thread is invalid."\n(gdb)\n|
+161527.898 <<=  |50^error\n(gdb)\n|
+161528.103 >>=  |77-exec-next --thread-group i1|
+161528.103 <<=  |77^error\n(gdb)\n|
+161528.308 >>=  |78-var-update 1 cc|
+161528.308 <<=  |78^error\n(gdb)\n|
+161528.510 >>=  |77-exec-next --thread-group i1|
+161528.510 <<=  |77^error\n(gdb)\n|
+161528.713 >>=  |77-exec-next --thread-group i1|
+161528.713 <<=  |77^error\n(gdb)\n|
+161528.918 >>=  |77-exec-next --thread-group i1|
+161528.918 <<=  |77^error\n(gdb)\n|
+161529.121 >>=  |80-gdb-exit|
+161529.121 ---  pstate->process not valid
+161529.122 ---  main exit
