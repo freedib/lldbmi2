@@ -128,6 +128,8 @@ getheader ( unsigned scope )
 		return "###";
 	case LOG_ARGS:
 		return "@@@";
+	case LOG_VARS:
+		return "===";
 	case LOG_STDERR:
 		return "+++";
 	case LOG_DEBUG:
@@ -150,7 +152,7 @@ logprintf ( unsigned scope, const char *format, ... )
 
 	if (scope==LOG_NONE)
 		return;
-	if (log_fd >= 0 && (scope&log_mask)==scope) {
+	if (log_fd >= 0 && (scope&log_mask)==scope) {	// if logmask don't include LOG_RAW, LOG_XXX|LOG_RAW won't print
 		ts = gettimestamp();
 		write(log_fd, ts, strlen(ts));
 		header = getheader(scope);

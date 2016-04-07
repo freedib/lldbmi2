@@ -24,6 +24,8 @@ void help (STATE *pstate)
 	fprintf (stderr, "%s", pstate->lldbmi2Prompt);
 	fprintf (stderr, "Description:\n");
 	fprintf (stderr, "   A MI2 interface to LLDB\n");
+	fprintf (stderr, "Author:\n");
+	fprintf (stderr, "   Didier Bertrand, 2015\n");
 	fprintf (stderr, "Syntax:\n");
 	fprintf (stderr, "   lldbmi2 --version [options]\n");
 	fprintf (stderr, "   lldbmi2 --interpreter mi2 [options]\n");
@@ -65,7 +67,7 @@ main (int argc, char **argv, char **envp)
 	memset (&state, '\0', sizeof(state));
 	state.ptyfd = EOF;
 	state.gdbPrompt = "GNU gdb (GDB) 7.7.1\n";
-	sprintf (state.lldbmi2Prompt, "lldbmi2 version %s, Copyright (C) 2015 Didier Bertrand\n", LLDBMI2_VERSION);
+	sprintf (state.lldbmi2Prompt, "lldbmi2 version %s\n", LLDBMI2_VERSION);
 
 	state.logbuffer[0] = '\0';
 	limits.frames_max = FRAMES_MAX;
@@ -117,7 +119,7 @@ main (int argc, char **argv, char **envp)
 	}
 
 	if (limits.istest)
-		testCommands = getTestcommands(state.test_sequence);
+		testCommands = getTestCommands(state.test_sequence);
 
 	// create a log filename from program name and open log file
 	if (isLog) {
@@ -135,8 +137,14 @@ main (int argc, char **argv, char **envp)
 	state.envp[0] = NULL;
 	state.envpentries = 0;
 	state.envspointer = state.envs;
-	for (int ienv=0; envp[ienv]; ienv++)
+	const char *wl = "workspace_loc=";		// want to get eclipse workspace_loc if any
+	int wll = strlen(wl);
+	// copy environment for tested program
+	for (int ienv=0; envp[ienv]; ienv++) {
 		addEnvironment (&state, envp[ienv]);
+		if (strncmp(envp[ienv], wl, wll)==0)
+			strcpy (state.workspace_loc, envp[ienv]+wll);
+	}
 
 	// return gdb version if --version
 	if (isVersion) {
@@ -226,9 +234,9 @@ main (int argc, char **argv, char **envp)
 const char *
 getTestCommand (const char **testCommands, int *idTestCommand)
 {
-	logprintf (LOG_TRACE, "getTestCommand (0x%x)\n", idTestCommand);
 	const char *commandLine;
 	if (testCommands[*idTestCommand]!=NULL) {
+		logprintf (LOG_NONE, "getTestCommand (0x%x)\n", idTestCommand);
 		commandLine = testCommands[*idTestCommand];
 		++*idTestCommand;
 		write(STDOUT_FILENO, commandLine, strlen(commandLine));
@@ -273,13 +281,15 @@ signalHandler (int signo)
 	logprintf (LOG_TRACE, "signalHandler (%d)\n", signo);
 	if (signo==SIGINT)
 		logprintf (LOG_INFO, "signal SIGINT\n");
+	else if (signo==SIGSTOP)
+		logprintf (LOG_INFO, "signal SIGSTOP\n");
 	else
 		logprintf (LOG_INFO, "signal %s\n", signo);
 	if (signo==SIGINT) {
 		if (state.process.IsValid() && signals_received==0) {
 			int selfPID = getpid();
 			int processPID = state.process.GetProcessID();
-			logprintf (LOG_INFO, "signal_handler: signal SIGSTOP. self PID = %d, process pid = %d\n", selfPID, processPID);
+			logprintf (LOG_INFO, "signal_handler: signal SIGINT. self PID = %d, process pid = %d\n", selfPID, processPID);
 			logprintf (LOG_INFO, "send signal SIGSTOP to process %d\n", processPID);
 			state.process.Signal (SIGSTOP);
 			++signals_received;

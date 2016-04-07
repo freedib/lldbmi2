@@ -1,2 +1,3 @@
-/.metadata/
-/resources/
+/.metadata
+/resources
+/build

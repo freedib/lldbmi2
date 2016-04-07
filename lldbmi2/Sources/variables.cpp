@@ -76,7 +76,7 @@ getPeudoArrayVariable (SBFrame frame, const char *expression, SBValue &var)
 	char newexpression[NAME_MAX];				// create expression
 	snprintf (newexpression, sizeof(newexpression), "%s*(%s[%s])&%s[%s]%s",	// (char(*)[100])&c[0] or &((char(*)[100])&c[0])
 			ampersand?"&(":"", newvartype, varlength, varname, varoffset, ampersand?")":"");
-	var = getVariable (frame, newexpression);
+	var = getVariable (frame, newexpression, false);
 	logprintf (LOG_DEBUG, "getPeudoArrayVariable: expression %s -> %s\n", expression, newexpression);
 	if (!var.IsValid() || var.GetError().Fail())
 		return false;
@@ -245,7 +245,7 @@ castexpression (SBFrame frame, const char *expression, char *newexpression, size
 
 // get a variable by trying many approaches
 SBValue
-getVariable (SBFrame frame, const char *expression)
+getVariable (SBFrame frame, const char *expression, bool tryDirect)
 {
 	logprintf (LOG_TRACE, "getVariable (0x%x, %s)\n", &frame, expression);
 	SBValue var;
@@ -253,7 +253,7 @@ getVariable (SBFrame frame, const char *expression)
 		getPeudoArrayVariable (frame, expression, var);
 	if ((!var.IsValid() || var.GetError().Fail()) && *expression=='$')
 		var = frame.FindRegister(expression);
-	if (!var.IsValid() || var.GetError().Fail()) {
+	if ((!var.IsValid() || var.GetError().Fail()) && tryDirect) {
 		SBValue parent;
 		getDirectPathVariable (frame, expression, &var, parent, limits.walk_depth_max);
 	}

@@ -8,32 +8,32 @@ LLDB Framework provided with Xcode can be used to run LLDBMI2.
 
 LLDBMI2 comes as an eclipse C++ project.
 
-# Import LLDBMI2
-
-LLDBMI2 can be imported ...
+# Build LLDBMI2 from Eclipse
+##LLDBMI2 can be imported ...
 - With GIT in shell windows
-  - Create and navigate to your root project window
-  - In a shell window type: `svn co https://github.com/freedib/lldbmi2.git lldbmi2`
-  - From Eclipse, create a new workspace or use an existing one
-  - Import the project with menu `File -> Import`. Select `General -> Existing projects in Workspace`, then navigate up to the imported tree. You will need to import each project individually (at least lldbmi2 and lldb-headers).
+  - From Eclipse, create a new workspace or use an existing one (e.g. /Users/**_user_**/lldbmi2workspace)
+  - In a shell window, navigate to your workspace (e.g. /Users/**_user_**/lldbmi2workspace)
+  - From the shell window, import the GIT project: `git clone https://github.com/freedib/lldbmi2.git lldbmi2`
+  - From Eclipse, import the project with menu `File -> Import`. Select `General -> Existing projects in Workspace`, then navigate up to the imported tree (just click Browse). You will need to import all projects (at least lldbmi2 and lldb-headers).
 - From Eclipse with Egit
-  - From Eclipse, create a new workspace or use an existing one
+  - From Eclipse, create a new workspace or use an existing one  (eg /Users/**_user_**/lldbmi2workspace)
   - Import the project with menu `File -> Import`. Select `Git -> Projects from Git`, then click `Next` and `Clone URI`.
-  - Copy `https://github.com/freedib/lldbmi2.git` in URI field, click `Next`, choose Master and click `Next`, `Next`, then let Eclipse import projects it found.
+  - Copy `https://github.com/freedib/lldbmi2.git` in URI field, click `Next`, choose Master and click `Next`.
+  - Specify the destination directory (e.g. /Users/**_user_**/lldbmi2workspace/lldbmi2 then `Next` and `Next`, then let Eclipse import projects it found.
 
-# Test LLDBMI2
+# Test LLDBMI2 from Eclipse
 
 A launch configuration is provided to test it. It requires the Hello test application (which must be built).
 
 Note DYLD_FRAMEWORK_PATH and LLDB_DEBUGSERVER_PATH environment variables in launch configuration.
 
-# Run LLDBMI2
-
-No install script is provided. The binary file can be copied manually to /usr/local/bin.
-
-## Install with cmake (no eclipse needed)
-- Create directory where you want to build LLDBMI2
-- From that directory run:
-	- cmake <path_to_project_git>
-	- make
-	- make install
+# Build and install with cmake (no eclipse needed)
+The default installation directory is /usr/local/bin.
+- In a shell window, create a new root directory where you want to build LLDBMI2 (e.g. `mkdir ~/lldbmi2workspace`)
+- Navigate to your workspace (e.g. `cd ~/lldbmi2workspace`)
+- Import the GIT project: `git clone https://github.com/freedib/lldbmi2.git lldbmi2`. A sub-directory lldmi2 is created
+- Create a build directory: e.g. `mkdir build`
+- Navigate to build directory: e.g. `cd build`
+- Cmake the project: `cmake ../lldbmi2`
+- Build the project: `make`
+- Install lldbmi2: `make install` (may need sudo)
