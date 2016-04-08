@@ -132,27 +132,6 @@ int test_POINTERS ()
 
 ///////////////////////////////
 
-class A {
-    public:
-        int a;
-        A () : a(1){};
-};
-class B : public A {
-    public:
-        int b;
-        B () : b(2){};
-};
-class C : public B {
-    public:
-        int c;
-        C () : c(3){};
-};
-class D : public C {
-    public:
-        int d;
-        D () : d(4){};
-};
-
 #include <iostream>
 using namespace std;
 
@@ -312,10 +291,31 @@ int test_CATCH_THROW()
 
 ///////////////////////////////
 
+class A {
+    public:
+        int a;
+        A () : a(1){};
+};
+class B : public A {
+    public:
+        int b;
+        B () : b(2){};
+};
+class C : public B {
+    public:
+        int c;
+        C () : c(3){};
+};
+class D : public C {
+    public:
+        int d;
+        D () : d(4){};
+};
+
 int test_LONG_INHERITANCE ()
 {
-    D d;
-    return 0; // breakpoint 1 LONG_INHERITANCE
+    D* d = new D();
+    return 0;// breakpoint 1 LONG_INHERITANCE
 }
 
 ///////////////////////////////
