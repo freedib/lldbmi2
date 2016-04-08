@@ -3,11 +3,11 @@ cmake_minimum_required(VERSION 3.1)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-if(BUILD_TESETS)
+if(BUILD_TESTS)
 	project(tests)
 	file(GLOB_RECURSE tests_sources ${CMAKE_CURRENT_SOURCE_DIR}/tests/*.cpp)
 	add_executable(${PROJECT_NAME} ${tests_sources})
-endif(BUILD_TESETS)
+endif(BUILD_TESTS)
 
 project(lldbmi2)
 execute_process(COMMAND git log --oneline
