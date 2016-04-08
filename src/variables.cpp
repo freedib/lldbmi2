@@ -366,29 +366,37 @@ formatChildrenList (char *childrendesc, size_t descsize, SBValue var, char *expr
 		}
 		child.SetPreferSyntheticValue (false);
 		int childnumchildren = child.GetNumChildren();
+        SBType childtype = child.GetType();
+        const char *displaytypename = childtype.GetDisplayTypeName();
 		char expressionpathdesc[NAME_MAX];					// real path
-		formatExpressionPath (expressionpathdesc, sizeof(expressionpathdesc), child);
-		if (strcmp((const char *)expression,(const char *)expressionpathdesc)==0) {
-			SBType vartype = var.GetType();
-			logprintf (LOG_DEBUG, "formatChildrenList: Var=%-5s: children=%-2d, typeclass=%-10s, basictype=%-10s, bytesize=%-2d, Pointee: typeclass=%-10s, basictype=%-10s, bytesize=%-2d\n",
-					getName(var), var.GetNumChildren(), getNameForTypeClass(vartype.GetTypeClass()), getNameForBasicType(vartype.GetBasicType()), vartype.GetByteSize(),
-					getNameForTypeClass(vartype.GetPointeeType().GetTypeClass()), getNameForBasicType(vartype.GetPointeeType().GetBasicType()), vartype.GetPointeeType().GetByteSize());
-			if (childnumchildren>0) {
-				// special case with casts like String or Vector. Add the name to the expression
-				strlcat (expressionpathdesc, ".", sizeof(expressionpathdesc));
-				strlcat (expressionpathdesc, childname, sizeof(expressionpathdesc));
-			}
-		}
+        if (strcmp(childname,displaytypename)==0) { // if extends class name
+            strlcpy (expressionpathdesc, expression, sizeof(expressionpathdesc));
+            strlcat (expressionpathdesc, ".", sizeof(expressionpathdesc));
+            strlcat (expressionpathdesc, childname, sizeof(expressionpathdesc));
+        }
+        else
+        {
+            formatExpressionPath (expressionpathdesc, sizeof(expressionpathdesc), child);
+            if (strcmp((const char *)expression,(const char *)expressionpathdesc)==0) {
+                SBType vartype = var.GetType();
+                logprintf (LOG_ALL, "formatChildrenList: Var=%-5s: children=%-2d, typeclass=%-10s, basictype=%-10s, bytesize=%-2d, Pointee: typeclass=%-10s, basictype=%-10s, bytesize=%-2d\n",
+                        getName(var), var.GetNumChildren(), getNameForTypeClass(vartype.GetTypeClass()), getNameForBasicType(vartype.GetBasicType()), vartype.GetByteSize(),
+                        getNameForTypeClass(vartype.GetPointeeType().GetTypeClass()), getNameForBasicType(vartype.GetPointeeType().GetBasicType()), vartype.GetPointeeType().GetByteSize());
+                if (childnumchildren>0) {
+                    // special case with casts like String or Vector. Add the name to the expression
+                    strlcat (expressionpathdesc, ".", sizeof(expressionpathdesc));
+                    strlcat (expressionpathdesc, childname, sizeof(expressionpathdesc));
+                }
+            }
+        }
 		logprintf (LOG_DEBUG, "formatChildrenList (expressionpathdesc=%s, childchildren=%d, childname=%s)\n",
 				expressionpathdesc, childnumchildren, childname);
-		SBType childtype = child.GetType();
 		// [child={name="var2.*b",exp="*b",numchild="0",type="char",thread-id="1"}]
 		int childrendesclength = strlen(childrendesc);
 		snprintf (childrendesc+childrendesclength, descsize-childrendesclength,
 			"%schild={name=\"%s\",exp=\"%s\",numchild=\"%d\","
 			"type=\"%s\",thread-id=\"%d\"}",
-			sep,expressionpathdesc,childname,childnumchildren,
-			childtype.GetDisplayTypeName(),threadindexid);
+			sep,expressionpathdesc,childname,childnumchildren,displaytypename,threadindexid);
 		sep = ",";
 	}
 	return childrendesc;

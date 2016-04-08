@@ -3,8 +3,13 @@ cmake_minimum_required(VERSION 3.1)
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-project(lldbmi2)
+if(BUILD_TESTS)
+	project(tests)
+	file(GLOB_RECURSE tests_sources ${CMAKE_CURRENT_SOURCE_DIR}/tests/*.cpp)
+	add_executable(${PROJECT_NAME} ${tests_sources})
+endif(BUILD_TESTS)
 
+project(lldbmi2)
 execute_process(COMMAND git log --oneline
                 COMMAND wc -l
                 COMMAND tr -d " "
@@ -19,12 +24,13 @@ mark_as_advanced(LLDB_LIBRARY)
 
 set(CMAKE_INSTALL_RPATH "/Applications/Xcode.app/Contents/SharedFrameworks")
 
-include_directories(${CMAKE_CURRENT_SOURCE_DIR}/lldb-headers)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/includes)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/generated)
 
-file(GLOB_RECURSE lldbmi2_sources ${CMAKE_CURRENT_SOURCE_DIR}/lldbmi2/Sources/*.cpp)
+file(GLOB_RECURSE lldbmi2_sources ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
 
 add_executable(${PROJECT_NAME} ${lldbmi2_sources})
 target_link_libraries(${PROJECT_NAME} ${LLDB_LIBRARY})
 
 install(TARGETS ${PROJECT_NAME} DESTINATION bin)
+
