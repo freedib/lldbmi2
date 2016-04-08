@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 mkdir build
 cd build
 /usr/local/bin/cmake .. $1 $2

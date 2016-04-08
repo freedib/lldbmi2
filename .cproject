@@ -18,7 +18,7 @@
 					<folderInfo id="cdt.managedbuild.toolchain.gnu.macosx.base.12405704.401081395" name="/" resourcePath="">
 						<toolChain id="cdt.managedbuild.toolchain.gnu.macosx.base.1371040626" name="MacOSX GCC" superClass="cdt.managedbuild.toolchain.gnu.macosx.base">
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.MachO64" id="cdt.managedbuild.target.gnu.platform.macosx.base.1256915060" name="Debug Platform" osList="macosx" superClass="cdt.managedbuild.target.gnu.platform.macosx.base"/>
-							<builder arguments="-DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=1" buildPath="${workspace_loc:/lldbmi2}" command="${workspace_loc:/lldbmi2}/build.sh" id="cdt.managedbuild.target.gnu.builder.macosx.base.220567480" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="cdt.managedbuild.target.gnu.builder.macosx.base">
+							<builder arguments="${workspace_loc:/lldbmi2}/build.sh -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=1" buildPath="${workspace_loc:/lldbmi2}" command="sh" id="cdt.managedbuild.target.gnu.builder.macosx.base.220567480" keepEnvironmentInBuildfile="false" managedBuildOn="false" name="Gnu Make Builder" superClass="cdt.managedbuild.target.gnu.builder.macosx.base">
 								<outputEntries>
 									<entry flags="VALUE_WORKSPACE_PATH" kind="outputPath" name="build"/>
 								</outputEntries>
