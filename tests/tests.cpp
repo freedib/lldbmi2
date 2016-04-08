@@ -291,6 +291,8 @@ int test_CATCH_THROW()
 
 ///////////////////////////////
 
+namespace H
+{
 class A {
     public:
         int a;
@@ -310,12 +312,18 @@ class D : public C {
     public:
         int d;
         D () : d(4){};
+        void test ()
+        {
+            H::D* d = this; // breakpoint 1 LONG_INHERITANCE
+        };
 };
+}
 
 int test_LONG_INHERITANCE ()
 {
-    D* d = new D();
-    return 0;// breakpoint 1 LONG_INHERITANCE
+    H::D* d = new H::D();
+    d->test();
+    return 0;
 }
 
 ///////////////////////////////
