@@ -357,7 +357,24 @@ const char *testcommands_CATCH_THROW[] = {
     "80-gdb-exit",
     NULL
 };
-
+const char *testcommands_LONG_INHERITANCE[] = {
+    "51-environment-cd %s/tests",
+    "52-file-exec-and-symbols --thread-group i1 %s/build/tests",
+    "53-gdb-set --thread-group i1 args %s",
+    "61-inferior-tty-set --thread-group i1 %s",
+    "58-break-insert --thread-group i1 %s/tests/tests.cpp:318",
+    "62-exec-run --thread-group i1",
+    "40-stack-list-frames --thread 1",
+    "41-stack-list-arguments --thread 1 1",
+    "42-stack-list-locals --thread 1 --frame 1 1",
+    "43-var-create --thread 1 --frame 1 - * d",
+    "45-var-list-children d",
+    "45-var-list-children d.C",
+    "45-var-list-children d.C.B",
+    "45-var-list-children d.C.B.A",
+    "80-gdb-exit",
+    NULL
+};
 #endif // WITH_TESTS
 
 #ifdef WITH_LO_TESTS
@@ -414,6 +431,7 @@ getTestCommands (int test_sequence)
     case 12:    return testcommands_INPUT;
     case 13:    return testcommands_CATCH_THROW;
     case 14:    return testcommands_OTHER;
+    case 16:    return testcommands_LONG_INHERITANCE;
 #endif // WITH_TESTS
 #ifdef WITH_LO_TESTS
     case 15:    return testcommands_LO;

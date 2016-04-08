@@ -132,6 +132,27 @@ int test_POINTERS ()
 
 ///////////////////////////////
 
+class A {
+    public:
+        int a;
+        A () : a(1){};
+};
+class B : public A {
+    public:
+        int b;
+        B () : b(2){};
+};
+class C : public B {
+    public:
+        int c;
+        C () : c(3){};
+};
+class D : public C {
+    public:
+        int d;
+        D () : d(4){};
+};
+
 #include <iostream>
 using namespace std;
 
@@ -289,6 +310,15 @@ int test_CATCH_THROW()
 	return 0;
 }
 
+///////////////////////////////
+
+int test_LONG_INHERITANCE ()
+{
+    D d;
+    return 0; // breakpoint 1 LONG_INHERITANCE
+}
+
+///////////////////////////////
 
 // execute a specific test sequence
 // MUST HAVE A CORRESPONDING TEST SEQUENCE IN lldbmi2/test.cpp
@@ -311,11 +341,12 @@ main (int argc, char **argv)
 	case 7:		return test_BASE ();		// ATTACH
 	case 8:		return test_MEMBERS ();
 	case 9:		return test_STRING ();
-	case 10:	return test_ARGS ();
-	case 11:	return test_CRASH ();
-	case 12:	return test_INPUT ();
-	case 13:	return test_CATCH_THROW ();
-	case 14:	return test_BASE ();		// OTHER
+	case 10:	    return test_ARGS ();
+	case 11:	    return test_CRASH ();
+	case 12:	    return test_INPUT ();
+	case 13:	    return test_CATCH_THROW ();
+	case 14:	    return test_BASE ();		// OTHER
+    case 16:    return test_LONG_INHERITANCE ();
 	}
 	return 0;
 }
