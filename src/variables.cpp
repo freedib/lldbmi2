@@ -367,9 +367,9 @@ formatChildrenList (char *childrendesc, size_t descsize, SBValue var, char *expr
 		child.SetPreferSyntheticValue (false);
 		int childnumchildren = child.GetNumChildren();
         SBType childtype = child.GetType();
-        auto typeName = childtype.GetDisplayTypeName();
+        const char *displaytypename = childtype.GetDisplayTypeName();
 		char expressionpathdesc[NAME_MAX];					// real path
-        if (strcmp((const char *)childname,(const char *)typeName)==0) { // if extends class name
+        if (strcmp(childname,displaytypename)==0) { // if extends class name
             strlcpy (expressionpathdesc, expression, sizeof(expressionpathdesc));
             strlcat (expressionpathdesc, ".", sizeof(expressionpathdesc));
             strlcat (expressionpathdesc, childname, sizeof(expressionpathdesc));
@@ -396,7 +396,7 @@ formatChildrenList (char *childrendesc, size_t descsize, SBValue var, char *expr
 		snprintf (childrendesc+childrendesclength, descsize-childrendesclength,
 			"%schild={name=\"%s\",exp=\"%s\",numchild=\"%d\","
 			"type=\"%s\",thread-id=\"%d\"}",
-			sep,expressionpathdesc,childname,childnumchildren,typeName,threadindexid);
+			sep,expressionpathdesc,childname,childnumchildren,displaytypename,threadindexid);
 		sep = ",";
 	}
 	return childrendesc;
