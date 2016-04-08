@@ -370,7 +370,7 @@ formatChildrenList (char *childrendesc, size_t descsize, SBValue var, char *expr
         auto typeName = childtype.GetDisplayTypeName();
 		char expressionpathdesc[NAME_MAX];					// real path
         if (strcmp((const char *)childname,(const char *)typeName)==0) { // if extends class name
-            strlcpy (expressionpathdesc, expression, sizeof(*expression));
+            strlcpy (expressionpathdesc, expression, sizeof(expressionpathdesc));
             strlcat (expressionpathdesc, ".", sizeof(expressionpathdesc));
             strlcat (expressionpathdesc, childname, sizeof(expressionpathdesc));
         }
