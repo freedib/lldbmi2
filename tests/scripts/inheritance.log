@@ -52,10 +52,10 @@
 230533.865 <<=  |24^done\n(gdb)\n|
 230533.872 >>=  |25-interpreter-exec --thread-group i1 console "show endian"|
 230533.872 <<=  |~"The target endianness is set automatically (currently little endian)\n"\n25^done\n(gdb)\n|
-230533.938 >>=  |26-break-insert -f /Users/didier/Projets/git-lldbmi2/lldbmi2/tests/tests.cpp:338|
-230533.941 <<=  |26^done,bkpt={number="1",type="breakpoint",disp="keep",enabled="y",addr="0x0000000000001f7e",func="test_BIG_CLASS()",file="tests.cpp",fullname="/Users/didier/Projets/git-lldbmi2/lldbmi2/tests/tests.cpp",line="339",thread-groups=["i1"],times="0",original-location=""}\n(gdb)\n|
-230533.941 >>=  |27-break-insert -f /Users/didier/Projets/git-lldbmi2/lldbmi2/tests/tests.cpp:366|
-230533.941 <<=  |27^done,bkpt={number="2",type="breakpoint",disp="keep",enabled="y",addr="0x000000000000239c",func="H::D::test()",file="tests.cpp",fullname="/Users/didier/Projets/git-lldbmi2/lldbmi2/tests/tests.cpp",line="366",thread-groups=["i1"],times="0",original-location=""}\n(gdb)\n|
+230533.938 >>=  |26-break-insert -f /Users/didier/Projets/git-lldbmi2/lldbmi2/tests/src/tests.cpp:338|
+230533.941 <<=  |26^done,bkpt={number="1",type="breakpoint",disp="keep",enabled="y",addr="0x0000000000001f7e",func="test_BIG_CLASS()",file="tests.cpp",fullname="/Users/didier/Projets/git-lldbmi2/lldbmi2/tests/src/tests.cpp",line="339",thread-groups=["i1"],times="0",original-location=""}\n(gdb)\n|
+230533.941 >>=  |27-break-insert -f /Users/didier/Projets/git-lldbmi2/lldbmi2/tests/src/tests.cpp:366|
+230533.941 <<=  |27^done,bkpt={number="2",type="breakpoint",disp="keep",enabled="y",addr="0x000000000000239c",func="H::D::test()",file="tests.cpp",fullname="/Users/didier/Projets/git-lldbmi2/lldbmi2/tests/src/tests.cpp",line="366",thread-groups=["i1"],times="0",original-location=""}\n(gdb)\n|
 230534.003 >>=  |28-inferior-tty-set --thread-group i1 /dev/ttyp0|
 230534.003 <<=  |28^done\n(gdb)\n|
 230534.021 >>=  |29-exec-run --thread-group i1|
@@ -69,12 +69,12 @@
 230534.454 ###  eBroadcastBitSTDOUT
 230534.454 <<<  |tests 16\n|
 230534.455 ###  eStateStopped
-230534.455 <<=  |=breakpoint-modified,bkpt={number="2",type="breakpoint",disp="keep",enabled="y",addr="0x000000000000239c",func="H::D::test()",file="tests.cpp",fullname="/Users/didier/Projets/git-lldbmi2/lldbmi2/tests/tests.cpp",line="366",thread-groups=["i1"],times="0",original-location=""}\n|
+230534.455 <<=  |=breakpoint-modified,bkpt={number="2",type="breakpoint",disp="keep",enabled="y",addr="0x000000000000239c",func="H::D::test()",file="tests.cpp",fullname="/Users/didier/Projets/git-lldbmi2/lldbmi2/tests/src/tests.cpp",line="366",thread-groups=["i1"],times="0",original-location=""}\n|
 230534.460 $$$  formatVariables: var=this, type class=Pointer, basic type=Invalid 
 230534.463 $$$  formatValue: Var=this : children=2 , typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Class     , basictype=Invalid   , bytesize=16
 230534.463 $$$  formatSummary: Var=this : children=2 , typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Class     , basictype=Invalid   , bytesize=16
 230534.464 $$$  formatValue: var=0x700000ca2030, name=this, summary=(null), value=0x0000000100103520, address=0x100103520
-230534.464 <<=  |*stopped,reason="breakpoint-hit",disp="keep",bkptno="2",frame={addr="0x000000000000239c",func="H::D::test()",args=[{name="this",value="0x0000000100103520 {...}"}],file="tests.cpp",fullname="/Users/didier/Projets/git-lldbmi2/lldbmi2/tests/tests.cpp",line="366"},thread-id="1",stopped-threads="all"\n(gdb)\n|
+230534.464 <<=  |*stopped,reason="breakpoint-hit",disp="keep",bkptno="2",frame={addr="0x000000000000239c",func="H::D::test()",args=[{name="this",value="0x0000000100103520 {...}"}],file="tests.cpp",fullname="/Users/didier/Projets/git-lldbmi2/lldbmi2/tests/src/tests.cpp",line="366"},thread-id="1",stopped-threads="all"\n(gdb)\n|
 230534.597 >>=  |31-list-thread-groups|
 230534.598 <<=  |31^done,groups=[{id="i1",type="process",pid="6364",executable="/Users/didier/Projets/git-lldbmi2/lldbmi2/build/tests"}]\n(gdb)\n|
 230535.367 >>=  |32-list-thread-groups i1|
@@ -82,7 +82,7 @@
 230535.370 $$$  formatValue: Var=this : children=2 , typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Class     , basictype=Invalid   , bytesize=16
 230535.370 $$$  formatSummary: Var=this : children=2 , typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Class     , basictype=Invalid   , bytesize=16
 230535.370 $$$  formatValue: var=0x7fff555aea50, name=this, summary=(null), value=0x0000000100103520, address=0x100103520
-230535.370 <<=  |32^done,threads=[{id="1",target-id="Thread 0x1d7c1 of process 6364",frame={level="0",addr="0x000000000000239c",func="H::D::test()",args=[{name="this",value="0x0000000100103520 {...}"}],file="tests.cpp",fullname="/Users/didier/Projets/git-lldbmi2/lldbmi2/tests/tests.cpp",line="366"},state="stopped"}]\n(gdb)\n|
+230535.370 <<=  |32^done,threads=[{id="1",target-id="Thread 0x1d7c1 of process 6364",frame={level="0",addr="0x000000000000239c",func="H::D::test()",args=[{name="this",value="0x0000000100103520 {...}"}],file="tests.cpp",fullname="/Users/didier/Projets/git-lldbmi2/lldbmi2/tests/src/tests.cpp",line="366"},state="stopped"}]\n(gdb)\n|
 230535.401 >>=  |33-stack-info-depth --thread 1 11|
 230535.401 <<=  |33^done,depth="5"\n(gdb)\n|
 230536.081 >>=  |34-list-thread-groups|
@@ -141,9 +141,9 @@
 230537.825 <<=  |38^done,name="d",numchild="2",value="0x0000000000000010 {...}",type="H::D *",thread-id="1",has_more="0"\n(gdb)\n|
 230538.453 >>=  |39-stack-list-frames --thread 1|
 230538.453 <<=  |39^done,stack=[|
-230538.453 <<=  |frame={level="0",addr="0x000000000000239c",func="H::D::test()",file="tests.cpp",fullname="/Users/didier/Projets/git-lldbmi2/lldbmi2/tests/tests.cpp",line="366"}|
-230538.453 <<=  |,frame={level="1",addr="0x0000000000001fd0",func="test_LONG_INHERITANCE()",file="tests.cpp",fullname="/Users/didier/Projets/git-lldbmi2/lldbmi2/tests/tests.cpp",line="374"}|
-230538.453 <<=  |,frame={level="2",addr="0x000000000000215a",func="main",file="tests.cpp",fullname="/Users/didier/Projets/git-lldbmi2/lldbmi2/tests/tests.cpp",line="407"}|
+230538.453 <<=  |frame={level="0",addr="0x000000000000239c",func="H::D::test()",file="tests.cpp",fullname="/Users/didier/Projets/git-lldbmi2/lldbmi2/tests/src/tests.cpp",line="366"}|
+230538.453 <<=  |,frame={level="1",addr="0x0000000000001fd0",func="test_LONG_INHERITANCE()",file="tests.cpp",fullname="/Users/didier/Projets/git-lldbmi2/lldbmi2/tests/src/tests.cpp",line="374"}|
+230538.453 <<=  |,frame={level="2",addr="0x000000000000215a",func="main",file="tests.cpp",fullname="/Users/didier/Projets/git-lldbmi2/lldbmi2/tests/src/tests.cpp",line="407"}|
 230538.453 <<=  |,frame={level="3",addr="0x00000000000035ad",func="start",file="libdyld.dylib"}|
 230538.454 <<=  |,frame={level="4",addr="0x00000000000035ad",func="start",file="libdyld.dylib"}|
 230538.454 <<=  |]\n(gdb)\n|
