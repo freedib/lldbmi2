@@ -4,9 +4,13 @@ set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(BUILD_TESTS)
-	project(tests)
-	file(GLOB_RECURSE tests_sources ${CMAKE_CURRENT_SOURCE_DIR}/tests/*.cpp)
-	add_executable(${PROJECT_NAME} ${tests_sources})
+	file(GLOB_RECURSE tests_paths ${CMAKE_CURRENT_SOURCE_DIR}/tests/*.cpp)
+	foreach( test_path ${tests_paths} )
+		get_filename_component(test_source ${test_path} NAME )
+	    string( REPLACE ".cpp" "" project_name ${test_source} )		# cut off .cpp
+		project(${project_name})
+	    add_executable( ${project_name} ${test_path} )
+	endforeach( test_path ${tests_paths} )
 endif(BUILD_TESTS)
 
 project(lldbmi2)
