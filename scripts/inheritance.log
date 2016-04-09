@@ -1,0 +1,239 @@
+230532.029 @@@  /Users/didier/Projets/git-lldbmi2/lldbmi2/build/lldbmi2 --log --logmask 3FFF --interpreter mi2 --nx 
+230532.466 <<=  |(gdb)\n|
+230532.537 >>=  |1-list-features|
+230532.537 <<=  |1^done,features=["frozen-varobjs","pending-breakpoints","thread-info","data-read-memory-bytes","breakpoint-notifications","ada-task-info","python"]\n(gdb)\n|
+230532.979 >>=  |2-gdb-version|
+230532.979 <<=  |~"GNU gdb (GDB) 7.7.1\n"\n|
+230532.979 <<=  |~"lldbmi2 version 1.0.104\n"\n|
+230532.979 <<=  |2^done\n(gdb)\n|
+230533.063 >>=  |3-environment-cd /Users/didier/Projets/git-lldbmi2/lldbmi2|
+230533.063 <<=  |3^done\n(gdb)\n|
+230533.085 >>=  |4-gdb-set breakpoint pending on|
+230533.085 <<=  |4^done\n(gdb)\n|
+230533.100 >>=  |5-gdb-set detach-on-fork on|
+230533.100 <<=  |5^done\n(gdb)\n|
+230533.107 >>=  |6-enable-pretty-printing|
+230533.107 <<=  |6^done\n|
+230533.162 >>=  |7-gdb-set python print-stack none|
+230533.162 <<=  |7^done\n(gdb)\n|
+230533.177 >>=  |8-list-thread-groups|
+230533.177 <<=  |8^done,groups=[{id="",type="process"}]\n(gdb)\n|
+230533.189 >>=  |9-gdb-set print object on|
+230533.189 <<=  |9^done\n(gdb)\n|
+230533.211 >>=  |10-gdb-set print sevenbit-strings on|
+230533.211 <<=  |10^done\n(gdb)\n|
+230533.217 >>=  |11-gdb-set host-charset UTF-8|
+230533.217 <<=  |11^done\n(gdb)\n|
+230533.221 >>=  |12-gdb-set target-charset UTF-8|
+230533.221 <<=  |12^done\n(gdb)\n|
+230533.226 >>=  |13-gdb-set target-wide-charset UTF-32|
+230533.226 <<=  |13^done\n(gdb)\n|
+230533.238 >>=  |14-gdb-set dprintf-style call|
+230533.238 <<=  |14^done\n(gdb)\n|
+230533.258 >>=  |15source .gdbinit|
+230533.258 <<=  |15^done\n(gdb)\n|
+230533.270 >>=  |16-gdb-set target-async off|
+230533.270 <<=  |16^done\n(gdb)\n|
+230533.273 >>=  |17-gdb-set auto-solib-add on|
+230533.273 <<=  |17^done\n(gdb)\n|
+230533.283 >>=  |18-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/lldbmi2/build/tests|
+230533.796 <<=  |18^done\n(gdb)\n|
+230533.801 >>=  |19-gdb-set --thread-group i1 args 16|
+230533.801 <<=  |19^done\n(gdb)\n|
+230533.819 >>=  |20-gdb-show --thread-group i1 language|
+230533.820 <<=  |20^done,value="auto"\n(gdb)\n|
+230533.826 >>=  |21-gdb-set --thread-group i1 language c|
+230533.826 <<=  |21^done\n(gdb)\n|
+230533.840 >>=  |22-interpreter-exec --thread-group i1 console "p/x (char)-1"|
+230533.840 <<=  |~"$1 = 0xff\n"\n22^done\n(gdb)\n|
+230533.855 >>=  |23-data-evaluate-expression --thread-group i1 "sizeof (void*)"|
+230533.855 <<=  |23^done,value="8"\n(gdb)\n|
+230533.865 >>=  |24-gdb-set --thread-group i1 language auto|
+230533.865 <<=  |24^done\n(gdb)\n|
+230533.872 >>=  |25-interpreter-exec --thread-group i1 console "show endian"|
+230533.872 <<=  |~"The target endianness is set automatically (currently little endian)\n"\n25^done\n(gdb)\n|
+230533.938 >>=  |26-break-insert -f /Users/didier/Projets/git-lldbmi2/lldbmi2/tests/tests.cpp:338|
+230533.941 <<=  |26^done,bkpt={number="1",type="breakpoint",disp="keep",enabled="y",addr="0x0000000000001f7e",func="test_BIG_CLASS()",file="tests.cpp",fullname="/Users/didier/Projets/git-lldbmi2/lldbmi2/tests/tests.cpp",line="339",thread-groups=["i1"],times="0",original-location=""}\n(gdb)\n|
+230533.941 >>=  |27-break-insert -f /Users/didier/Projets/git-lldbmi2/lldbmi2/tests/tests.cpp:366|
+230533.941 <<=  |27^done,bkpt={number="2",type="breakpoint",disp="keep",enabled="y",addr="0x000000000000239c",func="H::D::test()",file="tests.cpp",fullname="/Users/didier/Projets/git-lldbmi2/lldbmi2/tests/tests.cpp",line="366",thread-groups=["i1"],times="0",original-location=""}\n(gdb)\n|
+230534.003 >>=  |28-inferior-tty-set --thread-group i1 /dev/ttyp0|
+230534.003 <<=  |28^done\n(gdb)\n|
+230534.021 >>=  |29-exec-run --thread-group i1|
+230534.388 ###  eStateRunning
+230534.388 <<=  |=thread-group-started,id="i1",pid="6364"\n|
+230534.389 <<=  |=thread-created,id="1",group-id="i1"\n|
+230534.389 <<=  |29^running\n|
+230534.389 <<=  |*running,thread-id="all"\n(gdb)\n|
+230534.395 >>=  |30-list-thread-groups --available|
+230534.395 <<=  |30^error,msg="Can not fetch data now."\n(gdb)\n|
+230534.454 ###  eBroadcastBitSTDOUT
+230534.454 <<<  |tests 16\n|
+230534.455 ###  eStateStopped
+230534.455 <<=  |=breakpoint-modified,bkpt={number="2",type="breakpoint",disp="keep",enabled="y",addr="0x000000000000239c",func="H::D::test()",file="tests.cpp",fullname="/Users/didier/Projets/git-lldbmi2/lldbmi2/tests/tests.cpp",line="366",thread-groups=["i1"],times="0",original-location=""}\n|
+230534.460 $$$  formatVariables: var=this, type class=Pointer, basic type=Invalid 
+230534.463 $$$  formatValue: Var=this : children=2 , typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Class     , basictype=Invalid   , bytesize=16
+230534.463 $$$  formatSummary: Var=this : children=2 , typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Class     , basictype=Invalid   , bytesize=16
+230534.464 $$$  formatValue: var=0x700000ca2030, name=this, summary=(null), value=0x0000000100103520, address=0x100103520
+230534.464 <<=  |*stopped,reason="breakpoint-hit",disp="keep",bkptno="2",frame={addr="0x000000000000239c",func="H::D::test()",args=[{name="this",value="0x0000000100103520 {...}"}],file="tests.cpp",fullname="/Users/didier/Projets/git-lldbmi2/lldbmi2/tests/tests.cpp",line="366"},thread-id="1",stopped-threads="all"\n(gdb)\n|
+230534.597 >>=  |31-list-thread-groups|
+230534.598 <<=  |31^done,groups=[{id="i1",type="process",pid="6364",executable="/Users/didier/Projets/git-lldbmi2/lldbmi2/build/tests"}]\n(gdb)\n|
+230535.367 >>=  |32-list-thread-groups i1|
+230535.370 $$$  formatVariables: var=this, type class=Pointer, basic type=Invalid 
+230535.370 $$$  formatValue: Var=this : children=2 , typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Class     , basictype=Invalid   , bytesize=16
+230535.370 $$$  formatSummary: Var=this : children=2 , typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Class     , basictype=Invalid   , bytesize=16
+230535.370 $$$  formatValue: var=0x7fff555aea50, name=this, summary=(null), value=0x0000000100103520, address=0x100103520
+230535.370 <<=  |32^done,threads=[{id="1",target-id="Thread 0x1d7c1 of process 6364",frame={level="0",addr="0x000000000000239c",func="H::D::test()",args=[{name="this",value="0x0000000100103520 {...}"}],file="tests.cpp",fullname="/Users/didier/Projets/git-lldbmi2/lldbmi2/tests/tests.cpp",line="366"},state="stopped"}]\n(gdb)\n|
+230535.401 >>=  |33-stack-info-depth --thread 1 11|
+230535.401 <<=  |33^done,depth="5"\n(gdb)\n|
+230536.081 >>=  |34-list-thread-groups|
+230536.081 <<=  |34^done,groups=[{id="i1",type="process",pid="6364",executable="/Users/didier/Projets/git-lldbmi2/lldbmi2/build/tests"}]\n(gdb)\n|
+230536.083 >>=  |35-thread-info 1|
+230536.083 <<=  |35^error,msg="Can not fetch data now."\n(gdb)\n|
+230537.324 >>=  |36-stack-list-locals --thread 1 --frame 0 1|
+230537.326 $$$  formatVariables: var=d, type class=Pointer, basic type=Invalid 
+230537.326 $$$  formatValue: Var=d    : children=2 , typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Class     , basictype=Invalid   , bytesize=16
+230537.326 $$$  formatSummary: Var=d    : children=2 , typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Class     , basictype=Invalid   , bytesize=16
+230537.326 $$$  formatValue: var=0x7fff555b7680, name=d, summary=(null), value=0x0000000000000010, address=0x10
+230537.327 <<=  |36^done,locals=[{name="d",value="0x0000000000000010 {...}"}]\n(gdb)\n|
+230537.821 >>=  |37-var-create --thread 1 --frame 0 - * this|
+230537.822 $$$  getVariable: expression=this, name=this, value=0x0000000100103520, changed=0
+230537.822 $$$  updateVarState: Var=this : children=2 , typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Class     , basictype=Invalid   , bytesize=16
+230537.822 $$$  formatExpressionPath: expressionpathdesc=this
+230537.822 $$$  updateVarState: name=this, varexpressionpath=this, varnumchildren=2, value=0x0000000100103520, summary=(null), changed=0
+230537.822 $$$  updateVarState: Var=H::C : children=2 , typeclass=Class     , basictype=Invalid   , bytesize=12, Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+230537.822 $$$  formatExpressionPath: expressionpathdesc=H::C
+230537.822 $$$  updateVarState: name=H::C, varexpressionpath=this, varnumchildren=2, value=(null), summary=(null), changed=0
+230537.822 $$$  updateVarState: Var=H::B : children=2 , typeclass=Class     , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+230537.822 $$$  formatExpressionPath: expressionpathdesc=H::B
+230537.822 $$$  updateVarState: name=H::B, varexpressionpath=this, varnumchildren=2, value=(null), summary=(null), changed=0
+230537.823 $$$  updateVarState: Var=c    : children=0 , typeclass=Builtin   , basictype=Int       , bytesize=4 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+230537.823 $$$  formatExpressionPath: expressionpathdesc=c
+230537.823 $$$  updateVarState: name=c, varexpressionpath=this->c, varnumchildren=0, value=3, summary=(null), changed=0
+230537.823 $$$  updateVarState: Var=d    : children=0 , typeclass=Builtin   , basictype=Int       , bytesize=4 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+230537.823 $$$  formatExpressionPath: expressionpathdesc=d
+230537.823 $$$  updateVarState: name=d, varexpressionpath=this->d, varnumchildren=0, value=4, summary=(null), changed=0
+230537.823 $$$  formatExpressionPath: expressionpathdesc=this
+230537.823 $$$  formatValue: Var=this : children=2 , typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Class     , basictype=Invalid   , bytesize=16
+230537.823 $$$  formatSummary: Var=this : children=2 , typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Class     , basictype=Invalid   , bytesize=16
+230537.823 $$$  formatValue: var=0x7fff555b8730, name=this, summary=(null), value=0x0000000100103520, address=0x100103520
+230537.823 <<=  |37^done,name="this",numchild="2",value="0x0000000100103520 {...}",type="H::D *",thread-id="1",has_more="0"\n(gdb)\n|
+230537.823 >>=  |38-var-create --thread 1 --frame 0 - * d|
+230537.824 $$$  getVariable: expression=d, name=d, value=0x0000000000000010, changed=0
+230537.824 $$$  updateVarState: Var=d    : children=2 , typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Class     , basictype=Invalid   , bytesize=16
+230537.824 $$$  formatExpressionPath: expressionpathdesc=d
+230537.824 $$$  updateVarState: name=d, varexpressionpath=d, varnumchildren=2, value=0x0000000000000010, summary=(null), changed=0
+230537.824 $$$  updateVarState: Var=H::C : children=2 , typeclass=Class     , basictype=Invalid   , bytesize=12, Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+230537.824 $$$  formatExpressionPath: expressionpathdesc=H::C
+230537.824 $$$  updateVarState: name=H::C, varexpressionpath=d, varnumchildren=2, value=(null), summary=(null), changed=0
+230537.824 $$$  updateVarState: Var=H::B : children=2 , typeclass=Class     , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+230537.824 $$$  formatExpressionPath: expressionpathdesc=H::B
+230537.824 $$$  updateVarState: name=H::B, varexpressionpath=d, varnumchildren=2, value=(null), summary=(null), changed=0
+230537.824 $$$  updateVarState: Var=c    : children=0 , typeclass=Builtin   , basictype=Int       , bytesize=4 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+230537.824 $$$  formatExpressionPath: expressionpathdesc=c
+230537.824 $$$  updateVarState: name=c, varexpressionpath=d->c, varnumchildren=0, value=(null), summary=(null), changed=0
+230537.824 $$$  updateVarState: Var=d    : children=0 , typeclass=Builtin   , basictype=Int       , bytesize=4 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+230537.824 $$$  formatExpressionPath: expressionpathdesc=d
+230537.824 $$$  updateVarState: name=d, varexpressionpath=d->d, varnumchildren=0, value=(null), summary=(null), changed=0
+230537.824 $$$  formatExpressionPath: expressionpathdesc=d
+230537.824 $$$  formatValue: Var=d    : children=2 , typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Class     , basictype=Invalid   , bytesize=16
+230537.825 $$$  formatSummary: Var=d    : children=2 , typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Class     , basictype=Invalid   , bytesize=16
+230537.825 $$$  formatValue: var=0x7fff555b8730, name=d, summary=(null), value=0x0000000000000010, address=0x10
+230537.825 <<=  |38^done,name="d",numchild="2",value="0x0000000000000010 {...}",type="H::D *",thread-id="1",has_more="0"\n(gdb)\n|
+230538.453 >>=  |39-stack-list-frames --thread 1|
+230538.453 <<=  |39^done,stack=[|
+230538.453 <<=  |frame={level="0",addr="0x000000000000239c",func="H::D::test()",file="tests.cpp",fullname="/Users/didier/Projets/git-lldbmi2/lldbmi2/tests/tests.cpp",line="366"}|
+230538.453 <<=  |,frame={level="1",addr="0x0000000000001fd0",func="test_LONG_INHERITANCE()",file="tests.cpp",fullname="/Users/didier/Projets/git-lldbmi2/lldbmi2/tests/tests.cpp",line="374"}|
+230538.453 <<=  |,frame={level="2",addr="0x000000000000215a",func="main",file="tests.cpp",fullname="/Users/didier/Projets/git-lldbmi2/lldbmi2/tests/tests.cpp",line="407"}|
+230538.453 <<=  |,frame={level="3",addr="0x00000000000035ad",func="start",file="libdyld.dylib"}|
+230538.454 <<=  |,frame={level="4",addr="0x00000000000035ad",func="start",file="libdyld.dylib"}|
+230538.454 <<=  |]\n(gdb)\n|
+230541.080 >>=  |40-var-list-children d|
+230541.080 $$$  getVariable: expression=d, name=d, value=0x0000000000000010, changed=0
+230541.080 $$$  formatChildrenList (expressionpathdesc=d.H::C, childchildren=2, childname=H::C)
+230541.080 $$$  formatChildrenList: error on child d: read memory from 0x1c failed (0 of 4 bytes read)
+230541.080 $$$  formatExpressionPath: expressionpathdesc=d
+230541.080 $$$  formatChildrenList (expressionpathdesc=d->d, childchildren=0, childname=d)
+230541.080 <<=  |40^done,numchild="2",children=[child={name="d.H::C",exp="H::C",numchild="2",type="H::C",thread-id="1"},child={name="d->d",exp="d",numchild="0",type="int",thread-id="1"}]",has_more="0"\n(gdb)\n|
+230541.101 >>=  |41-var-info-path-expression d.H::C|
+230541.101 <<=  |41^done,path_expr="d.H::C"\n(gdb)\n|
+230541.101 >>=  |42-var-info-path-expression d->d|
+230541.108 <<=  |42^done,path_expr="d->d"\n(gdb)\n|
+230541.114 >>=  |43-data-evaluate-expression --thread 1 --frame 0 d.H::C|
+230541.114 $$$  getDirectPathVariable: expression part: parentname=d child-searched=H::C, other-children=
+230541.114 $$$  getDirectPathVariable: scan children: parent=d, expression_parts=H::C, child=H::C
+230541.114 $$$  getVariable: expression=d.H::C, name=H::C, value=(null), changed=0
+230541.114 $$$  formatValue: Var=H::C : children=2 , typeclass=Class     , basictype=Invalid   , bytesize=12, Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+230541.114 $$$  formatSummary: Var=H::C : children=2 , typeclass=Class     , basictype=Invalid   , bytesize=12, Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+230541.114 $$$  formatSummary: descsize=16383, sizeof(vardesc)=510
+230541.114 $$$  formatSummary: descsize=16374, sizeof(vardesc)=510
+230541.114 $$$  formatValue: var=0x7fff555b85a8, name=H::C, summary={H::B=0x10,c=0x10}, value=(null), address=0x10
+230541.114 <<=  |43^done,value="0x10 \"{H::B=0x10,c=0x10}\""\n(gdb)\n|
+230541.304 >>=  |44-var-evaluate-expression d.H::C|
+230541.306 $$$  getDirectPathVariable: expression part: parentname=d child-searched=H::C, other-children=
+230541.307 $$$  getDirectPathVariable: scan children: parent=d, expression_parts=H::C, child=H::C
+230541.307 $$$  getVariable: expression=d.H::C, name=H::C, value=(null), changed=0
+230541.307 $$$  formatValue: Var=H::C : children=2 , typeclass=Class     , basictype=Invalid   , bytesize=12, Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+230541.307 $$$  formatSummary: Var=H::C : children=2 , typeclass=Class     , basictype=Invalid   , bytesize=12, Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+230541.307 $$$  formatSummary: descsize=16383, sizeof(vardesc)=510
+230541.307 $$$  formatSummary: descsize=16374, sizeof(vardesc)=510
+230541.307 $$$  formatValue: var=0x7fff555b85a8, name=H::C, summary={H::B=0x10,c=0x10}, value=(null), address=0x10
+230541.307 <<=  |44^done,value="0x10 \"{H::B=0x10,c=0x10}\""\n(gdb)\n|
+230541.307 >>=  |45-var-evaluate-expression d->d|
+230541.307 $$$  getDirectPathVariable: expression part: parentname=d child-searched=d, other-children=
+230541.308 $$$  getDirectPathVariable: scan children: parent=d, expression_parts=d, child=H::C
+230541.390 $$$  getVariable: expression=d->d, name=(anonymous), value=(null), changed=0
+230541.390 <<=  |45^done,value=""\n(gdb)\n|
+230542.541 >>=  |46-var-list-children this|
+230542.541 $$$  getVariable: expression=this, name=this, value=0x0000000100103520, changed=0
+230542.541 $$$  formatChildrenList (expressionpathdesc=this.H::C, childchildren=2, childname=H::C)
+230542.541 $$$  formatExpressionPath: expressionpathdesc=d
+230542.542 $$$  formatChildrenList (expressionpathdesc=this->d, childchildren=0, childname=d)
+230542.542 <<=  |46^done,numchild="2",children=[child={name="this.H::C",exp="H::C",numchild="2",type="H::C",thread-id="1"},child={name="this->d",exp="d",numchild="0",type="int",thread-id="1"}]",has_more="0"\n(gdb)\n|
+230542.545 >>=  |47-var-info-path-expression this.H::C|
+230542.545 <<=  |47^done,path_expr="this.H::C"\n(gdb)\n|
+230542.545 >>=  |48-var-info-path-expression this->d|
+230542.545 <<=  |48^done,path_expr="this->d"\n(gdb)\n|
+230542.552 >>=  |49-data-evaluate-expression --thread 1 --frame 0 this.H::C|
+230542.552 $$$  getDirectPathVariable: expression part: parentname=this child-searched=H::C, other-children=
+230542.552 $$$  getDirectPathVariable: scan children: parent=this, expression_parts=H::C, child=H::C
+230542.552 $$$  getVariable: expression=this.H::C, name=H::C, value=(null), changed=0
+230542.552 $$$  formatValue: Var=H::C : children=2 , typeclass=Class     , basictype=Invalid   , bytesize=12, Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+230542.552 $$$  formatSummary: Var=H::C : children=2 , typeclass=Class     , basictype=Invalid   , bytesize=12, Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+230542.552 $$$  formatSummary: descsize=16383, sizeof(vardesc)=510
+230542.552 $$$  formatSummary: descsize=16367, sizeof(vardesc)=510
+230542.552 $$$  formatValue: var=0x7fff555b85a8, name=H::C, summary={H::B=0x100103520,c=3}, value=(null), address=0x100103520
+230542.552 <<=  |49^done,value="0x100103520 \"{H::B=0x100103520,c=3}\""\n(gdb)\n|
+230542.641 >>=  |50-var-evaluate-expression this.H::C|
+230542.641 $$$  getDirectPathVariable: expression part: parentname=this child-searched=H::C, other-children=
+230542.641 $$$  getDirectPathVariable: scan children: parent=this, expression_parts=H::C, child=H::C
+230542.641 $$$  getVariable: expression=this.H::C, name=H::C, value=(null), changed=0
+230542.641 $$$  formatValue: Var=H::C : children=2 , typeclass=Class     , basictype=Invalid   , bytesize=12, Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+230542.641 $$$  formatSummary: Var=H::C : children=2 , typeclass=Class     , basictype=Invalid   , bytesize=12, Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+230542.641 $$$  formatSummary: descsize=16383, sizeof(vardesc)=510
+230542.641 $$$  formatSummary: descsize=16367, sizeof(vardesc)=510
+230542.641 $$$  formatValue: var=0x7fff555b85a8, name=H::C, summary={H::B=0x100103520,c=3}, value=(null), address=0x100103520
+230542.641 <<=  |50^done,value="0x100103520 \"{H::B=0x100103520,c=3}\""\n(gdb)\n|
+230542.641 >>=  |51-var-evaluate-expression this->d|
+230542.641 $$$  getDirectPathVariable: expression part: parentname=this child-searched=d, other-children=
+230542.641 $$$  getDirectPathVariable: scan children: parent=this, expression_parts=d, child=H::C
+230542.641 $$$  getDirectPathVariable: scan children: parent=this, expression_parts=d, child=d
+230542.641 $$$  getVariable: expression=this->d, name=d, value=4, changed=0
+230542.641 $$$  formatValue: Var=d    : children=0 , typeclass=Builtin   , basictype=Int       , bytesize=4 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+230542.642 $$$  formatSummary: Var=d    : children=0 , typeclass=Builtin   , basictype=Int       , bytesize=4 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+230542.642 $$$  formatValue: var=0x7fff555b85a8, name=d, summary=(null), value=4, address=0x10010352c
+230542.642 <<=  |51^done,value="4"\n(gdb)\n|
+230549.846 >>=  |52-exec-continue --thread 1|
+230549.846 <<=  |52^running\n|
+230549.846 <<=  |*running,thread-id="1"\n(gdb)\n|
+230549.850 ###  eStateRunning
+230549.902 ###  eBroadcastBitSTDOUT
+230549.902 <<<  ||
+230549.903 ###  eStateExited
+230549.904 <<=  |=thread-group-exited,id="i1",exit-code="0"\n|
+230549.904 <<=  |*stopped,reason="exited-normally"\n(gdb)\n|
+230549.904 ---  processlistener. eof=1
+230549.904 ###  processlistener exited. pstate->eof=1
+230549.909 ---  signal SIGINT
+230549.909 ---  signal_handler: signal SIGINT. self PID = 6361, process pid = 6364
+230549.909 ---  send signal SIGSTOP to process 6364
+230549.910 ---  main exit
