@@ -2,7 +2,7 @@
 -file-exec-and-symbols --thread-group i1 %s/build/inheritance
 -gdb-set --thread-group i1 args %s
 -inferior-tty-set --thread-group i1 %s
--break-insert --thread-group i1 %s/tests/inheritance.cpp:25
+-break-insert --thread-group i1 %s/tests/src/inheritance.cpp:25
 -exec-run --thread-group i1
 -stack-list-frames --thread 1
 -stack-list-arguments --thread 1 1
