@@ -37,6 +37,7 @@ void help (STATE *pstate)
 	fprintf (stderr, "   --log:                Create log file in project root directory.\n");
 	fprintf (stderr, "   --logmask mask:       Select log categories. 0xFFF. See source code for values.\n");
 	fprintf (stderr, "   --test n:             Execute test sequence (to debug lldmi2).\n");
+	fprintf (stderr, "   --script file_path:   Execute test script or replay logfile (to debug lldmi2).\n");
 	fprintf (stderr, "   --nx:                 Ignored.\n");
 	fprintf (stderr, "   --frames frames:      Max number of frames to display (%d).\n", FRAMES_MAX);
 	fprintf (stderr, "   --children children:  Max number of children to check for update (%d).\n", CHILDREN_MAX);
@@ -53,14 +54,12 @@ main (int argc, char **argv, char **envp)
 {
 	int narg;
 	fd_set set;
-	char line[LINE_MAX];				// data from cdt
+	char line[BIG_LINE_MAX];				// data from cdt
 	char consoleLine[LINE_MAX];			// data from eclipse's console
 	long chars;
 	struct timeval timeout;
 	int isVersion=0, isInterpreter=0;
-	const char **testCommands;
-	const char *pTestCommand=NULL;
-	int  idTestCommand=0;
+	const char *testCommand=NULL;
 	int  isLog=0;
 	int  logmask=LOG_ALL;
 
@@ -77,49 +76,52 @@ main (int argc, char **argv, char **envp)
 
 	// get args
 	for (narg=0; narg<argc; narg++) {
-		strlcat (state.logbuffer, argv[narg], sizeof(state.logbuffer));
-		strlcat (state.logbuffer, " ", sizeof(state.logbuffer));
+		logarg (argv[narg]);
 		if (strcmp (argv[narg],"--version") == 0)
 			isVersion = 1;
 		else if (strcmp (argv[narg],"--interpreter") == 0 ) {
 			isInterpreter = 1;
-			if (++narg<argc) {
-				strlcat (state.logbuffer, argv[narg], sizeof(state.logbuffer));
-				strlcat (state.logbuffer, " ", sizeof(state.logbuffer));
-			}
+			if (++narg<argc)
+				logarg(argv[narg]);
 		}
 		else if (strcmp (argv[narg],"--test") == 0 ) {
 			limits.istest = true;
 			if (++narg<argc)
-				sscanf (argv[narg], "%d", &state.test_sequence);
+				sscanf (logarg(argv[narg]), "%d", &state.test_sequence);
+			if (state.test_sequence)
+				setTestSequence (state.test_sequence);
+		}
+		else if (strcmp (argv[narg],"--script") == 0 ) {
+			limits.istest = true;
+			if (++narg<argc)
+				strcpy (state.test_script, logarg(argv[narg]));		// no spaces allowed in the name
+			if (state.test_script[0])
+				setTestScript (state.test_script);
 		}
 		else if (strcmp (argv[narg],"--log") == 0 )
 			isLog = 1;
 		else if (strcmp (argv[narg],"--logmask") == 0 ) {
 			isLog = 1;
 			if (++narg<argc)
-				sscanf (argv[narg], "%x", &logmask);
+				sscanf (logarg(argv[narg]), "%x", &logmask);
 		}
 		else if (strcmp (argv[narg],"--frames") == 0 ) {
 			if (++narg<argc)
-				sscanf (argv[narg], "%d", &limits.frames_max);
+				sscanf (logarg(argv[narg]), "%d", &limits.frames_max);
 		}
 		else if (strcmp (argv[narg],"--children") == 0 ) {
 			if (++narg<argc)
-				sscanf (argv[narg], "%d", &limits.children_max);
+				sscanf (logarg(argv[narg]), "%d", &limits.children_max);
 		}
 		else if (strcmp (argv[narg],"--walkdepth") == 0 ) {
 			if (++narg<argc)
-				sscanf (argv[narg], "%d", &limits.walk_depth_max);
+				sscanf (logarg(argv[narg]), "%d", &limits.walk_depth_max);
 		}
 		else if (strcmp (argv[narg],"--changedepth") == 0 ) {
 			if (++narg<argc)
-				sscanf (argv[narg], "%d", &limits.change_depth_max);
+				sscanf (logarg(argv[narg]), "%d", &limits.change_depth_max);
 		}
 	}
-
-	if (limits.istest)
-		testCommands = getTestCommands(state.test_sequence);
 
 	// create a log filename from program name and open log file
 	if (isLog) {
@@ -194,10 +196,9 @@ main (int argc, char **argv, char **envp)
 		}
 		if (state.ptyfd != EOF) {
 			if (FD_ISSET(state.ptyfd, &set) && !state.eof && !limits.istest) {
-				logprintf (LOG_PROG_OUT, "pty read in\n");
 				chars = read (state.ptyfd, consoleLine, sizeof(consoleLine)-1);
-				logprintf (LOG_PROG_OUT, "pty read out %d chars\n", chars);
 				if (chars>0) {
+					logprintf (LOG_PROG_OUT, "pty read %d chars\n", chars);
 					consoleLine[chars] = '\0';
 					SBProcess process = state.process;
 					if (process.IsValid()) {
@@ -208,8 +209,8 @@ main (int argc, char **argv, char **envp)
 		}
 		// execute test command if test mode
 		if (!state.lockcdt && !state.eof && limits.istest && !state.isrunning) {
-			if ((pTestCommand=getTestCommand (testCommands, &idTestCommand))!=NULL) {
-				snprintf (line, sizeof(line), "%s\n", pTestCommand);
+			if ((testCommand=getTestCommand ())!=NULL) {
+				snprintf (line, sizeof(line), "%s\n", testCommand);
 				fromCDT (&state, line, sizeof(line));
 			}
 		}
@@ -231,22 +232,14 @@ main (int argc, char **argv, char **envp)
 	return EXIT_SUCCESS;
 }
 
-const char *
-getTestCommand (const char **testCommands, int *idTestCommand)
-{
-	const char *commandLine;
-	if (testCommands[*idTestCommand]!=NULL) {
-		logprintf (LOG_NONE, "getTestCommand (0x%x)\n", idTestCommand);
-		commandLine = testCommands[*idTestCommand];
-		++*idTestCommand;
-		write(STDOUT_FILENO, commandLine, strlen(commandLine));
-		write(STDOUT_FILENO, "\n", 1);
-		return commandLine;
-	}
-	else
-		return NULL;
-}
 
+// log an argument and return the argument
+const char *
+logarg (const char *arg) {
+	strlcat (state.logbuffer, arg, sizeof(state.logbuffer));
+	strlcat (state.logbuffer, " ", sizeof(state.logbuffer));
+	return arg;
+}
 
 void
 writetocdt (const char *line)

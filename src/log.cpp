@@ -35,12 +35,12 @@ setlogfile (char *logfilename, int filenamesize, const char *progname, const cha
 	// first try with eclipse project root path
 	penv = getenv("ProjDirPath");
 	if (penv != NULL)
-		snprintf (logfilename, filenamesize, "%s/%s", penv, logname);
+		snprintf (logfilename, filenamesize, "%s/logs/%s", penv, logname);		// used for lldbmi2.log
 	else {
 	// getcwd() gives the path of eclipse, so try environment PWD instead
 		penv = getenv("CWD");
 		if (penv != NULL)
-			snprintf (logfilename, filenamesize, "%s/%s", penv, logname);
+			snprintf (logfilename, filenamesize, "%s/logs/%s", penv, logname);	// used for lldbmi2t.log
 		else {
 			// if no environment variable, use getcwd()
 			char cwd[PATH_MAX];

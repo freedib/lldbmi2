@@ -43,12 +43,13 @@ typedef struct {
 	bool eof;
 	bool isrunning;
 	int test_sequence;
+	char test_script[PATH_MAX];
 	const char *envp[ENV_ENTRIES];
 	int  envpentries;
 	char envs[BIG_LINE_MAX];
 	char *envspointer;
 	char project_loc[PATH_MAX];
-	char cdtbuffer[LINE_MAX];
+	char cdtbuffer[BIG_LINE_MAX];		// must be the same size as cdtline in fromCDT
 	char cdtptyname[NAME_MAX];
 	char logfilename[PATH_MAX];
 	char logbuffer[BIG_LINE_MAX];
@@ -62,9 +63,9 @@ typedef struct {
 } STATE;
 
 
-const char *getTestCommand (const char **testCommands, int *idTestCommand);
-void        writetocdt     (const char *line);
-void        cdtprintf      (const char *format, ... );
-void        signalHandler (int vSigno);
+const char * logarg        (const char *arg);
+void         writetocdt    (const char *line);
+void         cdtprintf     (const char *format, ... );
+void         signalHandler (int vSigno);
 
 #endif	// LLDBMIG_H

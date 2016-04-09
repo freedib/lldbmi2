@@ -286,7 +286,56 @@ int test_CATCH_THROW()
 	{
 		printf ("catch %s\n", error.what());
 	}
-	return 0;
+	return 0;									// breakpoint 1 CATCH_THROW
+}
+
+///////////////////////////////
+
+class BigClass
+{
+    public:
+		BigClass() {
+			number = 9;
+			vl = v2;
+			v010=v011=v012=v013=v014=v015=v016=v017=v018=v019=v1;
+			v030=v031=v032=v033=v034=v035=v036=v037=v038=v039=0;
+			v040=v041=v042=v043=v044=v045=v046=v047=v048=v049=0;
+			v050=v051=v052=v053=v054=v055=v056=v057=v058=v059=0;
+			v060=v061=v062=v063=v064=v065=v066=v067=v068=v069=0;
+			v070=v071=v072=v073=v074=v075=v076=v077=v078=v079=0;
+			v080=v081=v082=v083=v084=v085=v086=v087=v088=v089=0;
+			v090=v091=v092=v093=v094=v095=v096=v097=v098=v099=0;
+			v100=v101=v102=v103=v104=v105=v106=v107=v108=v109=0;
+			v110=v111=v112=v113=v114=v115=v116=v117=v118=v119=0;
+		}
+        virtual ~BigClass() {}
+
+        typedef enum {
+            v1, v2, v3, v4
+        } valueslist;
+
+        std::vector<uint8_t> data;
+        valueslist vl;
+        uint16_t number;
+
+        std::vector<uint8_t> v000, v001, v002, v003, v004, v005, v006, v007, v008, v009;
+        valueslist   v010, v011, v012, v013, v014, v015, v016, v017, v018, v019;
+        std::string  v020, v021, v022, v023, v024, v025, v026, v027, v028, v029;
+        double v030, v031, v032, v033, v034, v035, v036, v037, v038, v039;
+        int    v040, v041, v042, v043, v044, v045, v046, v047, v048, v049;
+        int    v050, v051, v052, v053, v054, v055, v056, v057, v058, v059;
+        int    v060, v061, v062, v063, v064, v065, v066, v067, v068, v069;
+        int    v070, v071, v072, v073, v074, v075, v076, v077, v078, v079;
+        int    v080, v081, v082, v083, v084, v085, v086, v087, v088, v089;
+        int    v090, v091, v092, v093, v094, v095, v096, v097, v098, v099;
+        int    v100, v101, v102, v103, v104, v105, v106, v107, v108, v109;
+        int    v110, v111, v112, v113, v114, v115, v116, v117, v118, v119;
+ };
+
+int test_BIG_CLASS()
+{
+	BigClass bg;
+	return 0;									// breakpoint 1 BIG_CLASS
 }
 
 ///////////////////////////////
@@ -314,7 +363,7 @@ class D : public C {
         D () : d(4){};
         void test ()
         {
-            H::D* d = this; // breakpoint 1 LONG_INHERITANCE
+            H::D* d = this;						// breakpoint 1 LONG_INHERITANCE
         };
 };
 }
@@ -349,11 +398,12 @@ main (int argc, char **argv)
 	case 7:		return test_BASE ();		// ATTACH
 	case 8:		return test_MEMBERS ();
 	case 9:		return test_STRING ();
-	case 10:	    return test_ARGS ();
-	case 11:	    return test_CRASH ();
-	case 12:	    return test_INPUT ();
-	case 13:	    return test_CATCH_THROW ();
-	case 14:	    return test_BASE ();		// OTHER
+	case 10:	return test_ARGS ();
+	case 11:	return test_CRASH ();
+	case 12:	return test_INPUT ();
+	case 13:	return test_CATCH_THROW ();
+	case 14:	return test_BASE ();		// OTHER
+    case 15:    return test_BIG_CLASS ();
     case 16:    return test_LONG_INHERITANCE ();
 	}
 	return 0;

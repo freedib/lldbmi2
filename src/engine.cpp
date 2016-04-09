@@ -45,7 +45,7 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 {
 	logprintf (LOG_NONE, "fromCDT (0x%x, ..., %d)\n", pstate, linesize);
 	char *endofline;
-	char cdtline[LINE_MAX];			// must be the same size as state.cdtbuffer
+	char cdtline[BIG_LINE_MAX];			// must be the same size as state.cdtbuffer
 	int dataflag;
 	char programpath[LINE_MAX];
 	int nextarg;
@@ -745,7 +745,7 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 			if (frame.IsValid()) {
 				SBValue var = getVariable (frame, expression);
 				if (var.IsValid() && var.GetError().Success()) {
-					char childrendesc[LINE_MAX];
+					char childrendesc[BIG_LINE_MAX];
 					*childrendesc = '\0';
 					int varnumchildren = 0;
 					int threadindexid = thread.GetIndexID();
