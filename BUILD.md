@@ -25,8 +25,6 @@ LLDBMI2 comes as an eclipse C++ project.
 
 A launch configuration is provided to test it. It requires the `tests` application which is provided.
 
-Note DYLD_FRAMEWORK_PATH and LLDB_DEBUGSERVER_PATH environment variables may be required in launch configuration.
-
 # Build and install with cmake (no eclipse needed)
 The default installation directory is /usr/local/bin.
 - In a shell window, create a new root directory where you want to build LLDBMI2 (e.g. `mkdir ~/git-lldbmi2`)
