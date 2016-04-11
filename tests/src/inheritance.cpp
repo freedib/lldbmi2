@@ -20,9 +20,10 @@ namespace H
 		public:
 			int d;
 			D () : d(4){};
-			void test ()
+			int test ()
 			{
 				H::D* d = this;						// breakpoint 1 LONG_INHERITANCE
+				return d->a;
 			};
 	};
 }

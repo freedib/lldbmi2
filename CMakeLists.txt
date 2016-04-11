@@ -40,4 +40,6 @@ file(GLOB_RECURSE lldbmi2_sources ${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp)
 add_executable(${PROJECT_NAME} ${lldbmi2_sources})
 target_link_libraries(${PROJECT_NAME} ${LLDB_LIBRARY})
 
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic")
+
 install(TARGETS ${PROJECT_NAME} DESTINATION bin)
