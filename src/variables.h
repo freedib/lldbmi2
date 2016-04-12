@@ -27,7 +27,12 @@ char *  formatExpressionPath (char *expressionpathdesc, size_t descsize, SBValue
 char *  formatChildrenList (char *childrendesc, size_t descsize, SBValue var, char *expression, int threadindexid, int &varnumchildren);
 char *  formatChangedList (char *changedesc, size_t descsize, SBValue var, bool &separatorvisible, int depth);
 char *  formatVariables (char *varsdesc, size_t descsize, SBValueList varslist);
-char *  formatSummary (char *summarydesc, size_t descsize, SBValue var);
 char *  formatValue (char *varsdesc, size_t descsize, SBValue var, VariableDetails details);
+
+#ifdef USE_BUFFERS
+const char *  formatSummary (Buffer &summarydesc, SBValue var);
+#else
+char *  formatSummary (char *summarydesc, size_t descsize, SBValue var);
+#endif
 
 #endif // VARIABLES_H

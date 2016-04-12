@@ -4,6 +4,7 @@
 
 #include <sys/syslimits.h>
 #include <lldb/API/LLDB.h>
+#include "buffer.h"
 using namespace lldb;
 
 // use system constants
@@ -11,6 +12,7 @@ using namespace lldb;
 // LINE_MAX = 2048
 // NAME_MAX = 255
 
+//#define USE_BUFFERS			// define this if want to use experimental buffers
 
 #define WAIT_DATA  0
 #define MORE_DATA  1

@@ -516,6 +516,7 @@ formatVariables (char *varsdesc, size_t descsize, SBValueList varslist)
 	bool &b                1      Reference    8         Builtin:Bool         1         Builtin:Bool   1
 	AB   &ab               3      Reference    8         Class               12         Class         12
 */
+#ifndef USE_BUFFERS
 char *
 formatSummary (char *summarydesc, size_t descsize, SBValue var)
 {
@@ -594,6 +595,72 @@ formatSummary (char *summarydesc, size_t descsize, SBValue var)
 	}
 	return NULL;
 }
+#else
+const char *
+formatSummary (Buffer &summarydesc, SBValue var)
+{
+	logprintf (LOG_TRACE, "formatSummary (0x%x, 0x%x)\n", &summarydesc, &var);
+	//	value = "HFG\123klj\b"
+	//	value={2,5,7,0 <repeat 5 times>, 7}
+	//	value = {{a=1,b=0x33},...{a=1,b=2}}
+	summarydesc.clear();
+	const char *varsummary;
+	SBType vartype = var.GetType();
+	logprintf (LOG_DEBUG, "formatSummary: Var=%-5s: children=%-2d, typeclass=%-10s, basictype=%-10s, bytesize=%-2d, Pointee: typeclass=%-10s, basictype=%-10s, bytesize=%-2d\n",
+				getName(var), var.GetNumChildren(), getNameForTypeClass(vartype.GetTypeClass()), getNameForBasicType(vartype.GetBasicType()), vartype.GetByteSize(),
+				getNameForTypeClass(vartype.GetPointeeType().GetTypeClass()), getNameForBasicType(vartype.GetPointeeType().GetBasicType()), vartype.GetPointeeType().GetByteSize());
+	if ((varsummary=var.GetSummary()) != NULL) {				// string
+		summarydesc.append (varsummary+1);						// copy and remove start apostrophe
+		return summarydesc.data();
+	}
+	int datasize=0;
+	TypeClass vartypeclass = vartype.GetTypeClass();
+	SBType pointeetype = vartype.GetPointeeType();
+	int numchildren = var.GetNumChildren();
+	if (vartype.IsArrayType())
+		datasize = var.GetByteSize();
+	else if (vartype.IsReferenceType())
+		datasize = pointeetype.GetByteSize();
+	else if (vartype.IsPointerType()) {
+		datasize = pointeetype.GetByteSize();
+	}
+
+	if (vartypeclass==eTypeClassClass || vartypeclass==eTypeClassStruct || vartypeclass==eTypeClassUnion || vartype.IsArrayType()) {
+		const char *separator="";
+		char vardesc[VALUE_MAX];
+		summarydesc.append("{");
+		for (int ichild=0; ichild<min(numchildren,limits.children_max); ichild++) {
+			SBValue child = var.GetChildAtIndex(ichild);
+			if (!child.IsValid() || var.GetError().Fail())
+				continue;
+			child.SetPreferSyntheticValue (false);
+			const char *childvalue = child.GetValue();
+			if (childvalue != NULL)
+				if (vartype.IsArrayType())
+					snprintf (vardesc, sizeof(vardesc), "%s%s", separator, childvalue);
+				else
+					snprintf (vardesc, sizeof(vardesc), "%s%s=%s", separator, getName(child), childvalue);
+			else {
+				SBType childtype = var.GetType();
+				lldb::addr_t childaddr;
+				if (childtype.IsPointerType() || childtype.IsReferenceType())
+					childaddr = var.GetValueAsUnsigned();
+				else
+					childaddr = var.GetLoadAddress();
+				if (vartype.IsArrayType())
+					snprintf (vardesc, sizeof(vardesc), "%s0x%llx", separator, childaddr);
+				else
+					snprintf (vardesc, sizeof(vardesc), "%s%s=0x%llx", separator, getName(child), childaddr);
+			}
+			summarydesc.append(vardesc);
+			separator = ",";
+		}
+		summarydesc.append("}");
+		return summarydesc.data();
+	}
+	return NULL;
+}
+#endif
 
 // format a variable description into a GDB string
 char *
@@ -623,8 +690,13 @@ formatValue (char *vardesc, size_t descsize, SBValue var, VariableDetails detail
 		}
 	}
 	const char *varname = getName(var);
+#ifndef USE_BUFFERS
 	char summarydesc[BIG_LINE_MAX];
 	const char *varsummary = formatSummary (summarydesc, sizeof(summarydesc), var);
+#else
+	static Buffer summarydesc(LINE_MAX);
+	const char *varsummary = formatSummary (summarydesc, var);
+#endif
 	const char *varvalue = var.GetValue();
 	lldb::addr_t varaddr;
 	if (vartype.IsPointerType() || vartype.IsReferenceType())
