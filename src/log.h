@@ -49,5 +49,7 @@ const char *getheader (unsigned scope);
 void  logprintf       (unsigned scope, const char *format, ...);
 void  logdata         (unsigned scope, const char *data, int datasize);
 void  lognumbers      (unsigned scope, const unsigned long *data, int datasize);
+void  assertStrings   (char *sa, char *sb);		// temp
+
 
 #endif // LOG_H

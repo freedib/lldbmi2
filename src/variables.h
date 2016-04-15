@@ -20,19 +20,28 @@ typedef enum
 
 #define min(a,b) ((a) < (b) ? (a) : (b))
 
+bool  getPeudoArrayVariable (SBFrame frame, const char *expression, SBValue &var);
+bool  getStandardPathVariable (SBFrame frame, const char *expression, SBValue &var);
+const char *getName ( SBValue &var);
+char *strrstr (char *string, const char *find);
+bool  getDirectPathVariable (SBFrame frame, const char *expression, SBValue *foundvar, SBValue &parent, int depth);
+char *castexpression (SBFrame frame, const char *expression, char *newexpression, size_t expressionsize);
+
 SBValue getVariable (SBFrame frame, const char *expression, bool tryDirect=true);
 int     updateVarState (SBValue var, int depth);
 
-char *  formatExpressionPath (char *expressionpathdesc, size_t descsize, SBValue var);
-char *  formatChildrenList (char *childrendesc, size_t descsize, SBValue var, char *expression, int threadindexid, int &varnumchildren);
-char *  formatChangedList (char *changedesc, size_t descsize, SBValue var, bool &separatorvisible, int depth);
-char *  formatVariables (char *varsdesc, size_t descsize, SBValueList varslist);
-char *  formatValue (char *varsdesc, size_t descsize, SBValue var, VariableDetails details);
+char * formatExpressionPath (StringB &expressionpathdescB, SBValue var);
+char * formatChildrenList (StringB &childrendescB, SBValue var, char *expression, int threadindexid, int &varnumchildren);
+char * formatChangedList (StringB &changedescB, SBValue var, bool &separatorvisible, int depth);
+char * formatVariables (StringB &varsdescB, SBValueList varslist);
+char * formatSummary (StringB &summarydescB, SBValue var);
+char * formatValue (StringB &varsdescB, SBValue var, VariableDetails details);
 
-#ifdef USE_BUFFERS
-const char *  formatSummary (Buffer &summarydesc, SBValue var);
-#else
-char *  formatSummary (char *summarydesc, size_t descsize, SBValue var);
-#endif
+char * formatExpressionPath (SBValue var);
+char * formatChildrenList (SBValue var, char *expression, int threadindexid, int &varnumchildren);
+char * formatChangedList (SBValue var, bool &separatorvisible, int depth);
+char * formatVariables (SBValueList varslist);
+char * formatSummary (SBValue var);
+char * formatValue (SBValue var, VariableDetails details);
 
 #endif // VARIABLES_H

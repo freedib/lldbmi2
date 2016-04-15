@@ -2,17 +2,17 @@
 #ifndef LLDBMIG_H
 #define LLDBMIG_H
 
-#include <sys/syslimits.h>
 #include <lldb/API/LLDB.h>
-#include "buffer.h"
 using namespace lldb;
 
 // use system constants
 // PATH_MAX = 1024
 // LINE_MAX = 2048
 // NAME_MAX = 255
+#include <sys/syslimits.h>
+#include "stringb.h"
 
-//#define USE_BUFFERS			// define this if want to use experimental buffers
+#define USE_BUFFERS			// define this if want to use experimental buffers
 
 #define WAIT_DATA  0
 #define MORE_DATA  1
@@ -38,12 +38,15 @@ typedef struct {
 	int change_depth_max;
 } LIMITS;
 
+//TODO: implement StringB for all big data arrays
+
 // dynamic context
 typedef struct {
 	int  lockcdt;
 	int  ptyfd;
 	bool eof;
 	bool isrunning;
+	bool wanttokill;
 	int test_sequence;
 	char test_script[PATH_MAX];
 	const char *envp[ENV_ENTRIES];

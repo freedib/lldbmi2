@@ -1,9 +1,9 @@
 
 #include <stdio.h>
-#include <string.h>
 #include <ctype.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <string.h>
 #include <termios.h>
 
 #include "lldbmi2.h"
@@ -221,6 +221,7 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 		// target-attach --thread-group i1 40088
 		// =thread-group-started,id="i1",pid="40123"
 		// =thread-created,id="1",group-id="i1"
+		//TODO: attach test sequence do not work
 		int pid=0;
 		SBError error;
 		char processname[PATH_MAX];
@@ -380,19 +381,23 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 			}
 			else if (strcmp(cc.argv[nextarg],"kill") == 0) {
 				if (process.IsValid()) {
-					logprintf (LOG_INFO, "console kill: send SIGINT\n");
-					if (process.IsValid()) {
-						int state = process.GetState ();
-						if (state == eStateStopped) {			// if process is stopped. restart it before kill
-							SBThread thread = process.GetSelectedThread();
-							cdtprintf ("%d^running\n", cc.sequence);
-							cdtprintf ("*running,thread-id=\"%d\"\n(gdb)\n", thread.IsValid()? thread.GetIndexID(): 0);
-							process.Continue();
-							pstate->isrunning = true;
-						}
+					int state = process.GetState ();
+					if (state == eStateStopped) {			// if process is stopped. restart it before kill
+						logprintf (LOG_INFO, "console kill: restart process\n");
+						SBThread thread = process.GetSelectedThread();
+					//	cdtprintf ("%d^running\n", cc.sequence);
+					//	cdtprintf ("*running,thread-id=\"%d\"\n(gdb)\n", thread.IsValid()? thread.GetIndexID(): 0);
+						process.Continue();
+						pstate->isrunning = true;
+						pstate->wanttokill = true;	// wait for process running to kill it
 					}
-					pstate->process.Signal(SIGINT);
 					cdtprintf (	"%d^done\n(gdb)\n",	cc.sequence);
+					if (!pstate->wanttokill) {
+					//	logprintf (LOG_INFO, "console kill: send SIGINT\n");
+					//	pstate->process.Signal(SIGINT);
+						logprintf (LOG_INFO, "console kill: terminateProcess\n");
+						terminateProcess (pstate, PRINT_GROUP|AND_EXIT);
+					}
 				}
 				else
 					cdtprintf ("%d^error,msg=\"%s\"\n(gdb)\n", cc.sequence, "The program is not being run.");
@@ -429,9 +434,8 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 		if (breakpoint.IsValid()) {
 			if (isoneshot)
 				breakpoint.SetOneShot(true);
-			char breakpointdesc[LINE_MAX];
-			cdtprintf ("%d^done,bkpt=%s\n(gdb)\n", cc.sequence,
-					formatBreakpoint (breakpointdesc, sizeof(breakpointdesc), breakpoint, pstate));
+			char *breakpointdesc = formatBreakpoint (breakpoint, pstate);
+			cdtprintf ("%d^done,bkpt=%s\n(gdb)\n", cc.sequence, breakpointdesc);
 		}
 		else
 			cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
@@ -503,8 +507,7 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 			cdtprintf ("%d^done,groups=[{%s}]\n(gdb)\n", cc.sequence, groupsdesc);
 		}
 		else if (strcmp(cc.argv[nextarg],pstate->threadgroup) == 0) {
-			char threaddesc[BIG_LINE_MAX];
-			formatThreadInfo (threaddesc, sizeof(threaddesc), process, -1);
+			char *threaddesc = formatThreadInfo (process, -1);
 			if (threaddesc[0] != '\0')
 				cdtprintf ("%d^done,threads=[%s]\n(gdb)\n", cc.sequence, threaddesc);
 			else
@@ -549,12 +552,13 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 				endframe = startframe + limits.frames_max;			// limit # frames
 			const char *separator="";
 			cdtprintf ("%d^done,stack=[", cc.sequence);
-			char framedesc[LINE_MAX];
+			static StringB framedescB(LINE_MAX);
 			for (int iframe=startframe; iframe<endframe; iframe++) {
 				SBFrame frame = thread.GetFrameAtIndex(iframe);
 				if (!frame.IsValid())
 					continue;
-				formatFrame (framedesc, sizeof(framedesc), frame, WITH_LEVEL);
+				framedescB.clear();
+				char *framedesc = formatFrame (framedescB, frame, WITH_LEVEL);
 				cdtprintf ("%s%s", separator, framedesc);
 				separator=",";
 			}
@@ -585,12 +589,13 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 				endframe = startframe + limits.frames_max;			// limit # frames
 			const char *separator="";
 			cdtprintf ("%d^done,stack-args=[", cc.sequence);
-			char argsdesc[BIG_LINE_MAX];
+			static StringB argsdescB(BIG_LINE_MAX);
 			for (int iframe=startframe; iframe<endframe; iframe++) {
 				SBFrame frame = thread.GetFrameAtIndex(iframe);
 				if (!frame.IsValid())
 					continue;
-				formatFrame (argsdesc, sizeof(argsdesc), frame, JUST_LEVEL_AND_ARGS);
+				argsdescB.clear();
+				char *argsdesc = formatFrame (argsdescB, frame, JUST_LEVEL_AND_ARGS);
 				cdtprintf ("%s%s", separator, argsdesc);
 				separator=",";
 			}
@@ -599,13 +604,29 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 		else
 			cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
 	}
+	else if (strcmp(cc.argv[0],"thread")==0) {
+		if (process.IsValid()) {
+			int pid=process.GetProcessID();
+			SBThread thread = process.GetSelectedThread();
+			if (thread.IsValid()) {
+				int tid=thread.GetThreadID();
+				int threadindexid=thread.GetIndexID();
+				cdtprintf ("~\"[Current thread is %d (Thread 0x%x of process %d)]\\n\"\n",
+						threadindexid, tid, pid);
+				cdtprintf ("%d^done\n(gdb)\n", cc.sequence);
+			}
+			else
+				cdtprintf ("%d^error,msg=\"%s\"\n(gdb)\n", cc.sequence, "Can not fetch data now.");
+		}
+		else
+			cdtprintf ("%d^error,msg=\"%s\"\n(gdb)\n", cc.sequence, "Can not fetch data now.");
+	}
 	else if (strcmp(cc.argv[0],"-thread-info")==0) {
-		char threaddesc[LINE_MAX];
 		int threadindexid = -1;
 		if (cc.argv[nextarg] != NULL)
 			if (isdigit(*cc.argv[nextarg]))
 				sscanf (cc.argv[nextarg++], "%d", &threadindexid);
-		formatThreadInfo (threaddesc, sizeof(threaddesc), process, threadindexid);
+		char *threaddesc = formatThreadInfo (process, threadindexid);
 		if (threaddesc[0] != '\0')
 			cdtprintf ("%d^done,threads=[%s]\n(gdb)\n", cc.sequence, threaddesc);
 		else
@@ -628,8 +649,7 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 					if (function.IsValid()) {
 						isValid = true;
 						SBValueList localvars = frame.GetVariables(0,1,0,0);
-						char varsdesc[BIG_LINE_MAX];			// may be very big
-						formatVariables (varsdesc,sizeof(varsdesc),localvars);
+						char *varsdesc = formatVariables (localvars);
 						cdtprintf ("%d^done,locals=[%s]\n(gdb)\n", cc.sequence, varsdesc);
 					}
 				}
@@ -665,16 +685,14 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 						updateVarState (var, limits.change_depth_max);
 						int varnumchildren = var.GetNumChildren();
 						SBType vartype = var.GetType();
-						char expressionpathdesc[NAME_MAX];
-						formatExpressionPath (expressionpathdesc, sizeof(expressionpathdesc), var);
-						char vardesc[VALUE_MAX];
-						if (var.GetError().Fail()) {
-							vardesc[0] = '\0';
-							// create a name because in this case, name=(anonymous)
-							strlcpy (expressionpathdesc, expression, sizeof(expressionpathdesc));
-						}
+						char *expressionpathdesc = formatExpressionPath (var);
+						static StringB vardescB(VALUE_MAX);
+						vardescB.clear();
+						if (var.GetError().Fail())	// create a name because in this case, name=(anonymous)
+							expressionpathdesc = expression;
 						else
-							formatValue (vardesc, sizeof(vardesc), var, NO_SUMMARY);
+							formatValue (vardescB, var, NO_SUMMARY);
+						char *vardesc = vardescB.c_str();
 						if (vartype.IsReferenceType() && varnumchildren==1)	// correct numchildren and value if reference
 							--varnumchildren;
 						cdtprintf ("%d^done,name=\"%s\",numchild=\"%d\",value=\"%s\","
@@ -710,14 +728,14 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 			SBFrame frame = thread.GetSelectedFrame();
 			if (frame.IsValid()) {
 				SBValue var = getVariable (frame, expression);			// find variable
-				char changedesc[BIG_LINE_MAX];
-				changedesc[0] = '\0';
 				if (var.IsValid() && var.GetError().Success()) {
 					bool separatorvisible = false;
 					SBFunction function = frame.GetFunction();
-					formatChangedList (changedesc, sizeof(changedesc), var, separatorvisible, limits.change_depth_max);
+					char *changedesc = formatChangedList (var, separatorvisible, limits.change_depth_max);
+					cdtprintf ("%d^done,changelist=[%s]\n(gdb)\n", cc.sequence, changedesc);
 				}
-				cdtprintf ("%d^done,changelist=[%s]\n(gdb)\n", cc.sequence, changedesc);
+				else
+					cdtprintf ("%d^done,changelist=[]\n(gdb)\n", cc.sequence);
 			}
 			else
 				cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
@@ -745,11 +763,9 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 			if (frame.IsValid()) {
 				SBValue var = getVariable (frame, expression);
 				if (var.IsValid() && var.GetError().Success()) {
-					char childrendesc[BIG_LINE_MAX];
-					*childrendesc = '\0';
 					int varnumchildren = 0;
 					int threadindexid = thread.GetIndexID();
-					formatChildrenList (childrendesc, sizeof(childrendesc), var, expression, threadindexid, varnumchildren);
+					char *childrendesc = formatChildrenList (var, expression, threadindexid, varnumchildren);
 					// 34^done,numchild="1",children=[child={name="var2.*b",exp="*b",numchild="0",type="char",thread-id="1"}],has_more="0"
 					cdtprintf ("%d^done,numchild=\"%d\",children=[%s]\",has_more=\"0\"\n(gdb)\n",
 							cc.sequence, varnumchildren, childrendesc);
@@ -783,8 +799,7 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 				if (frame.IsValid()) {
 					SBValue var = getVariable (frame, expression);
 					if (var.IsValid() && var.GetError().Success()) {
-						char expressionpathdesc[NAME_MAX];
-						formatExpressionPath (expressionpathdesc, sizeof(expressionpathdesc), var);
+						char *expressionpathdesc = formatExpressionPath (var);
 						cdtprintf ("%d^done,path_expr=\"%s\"\n(gdb)\n", cc.sequence, expressionpathdesc);
 					}
 					else
@@ -818,8 +833,7 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 				if (frame.IsValid()) {
 				SBValue var = getVariable (frame, expression);		// createVariable
 					if (var.IsValid()) {
-						char vardesc[BIG_VALUE_MAX];
-						formatValue (vardesc, sizeof(vardesc), var, FULL_SUMMARY);
+						char *vardesc = formatValue (var, FULL_SUMMARY);
 						cdtprintf ("%d^done,value=\"%s\"\n(gdb)\n", cc.sequence, vardesc);
 					}
 					else
@@ -864,8 +878,7 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 				SBValue var = getVariable (frame, expression);
 				if (var.IsValid() && var.GetError().Success()) {
 					var.SetFormat(formatcode);
-					char vardesc[VALUE_MAX];
-					formatValue (vardesc, sizeof(vardesc), var, NO_SUMMARY);
+					char *vardesc = formatValue (var, NO_SUMMARY);
 					cdtprintf ("%d^done,format=\"%s\",value=\"%s\"\n(gdb)\n", cc.sequence, format, vardesc);
 				}
 				else

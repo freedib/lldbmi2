@@ -98,6 +98,12 @@ processListener (void *arg)
 				logprintf (LOG_EVENTS|LOG_RAW, "eBroadcastBitStateChanged\n");
 				switch (processstate) {
 				case eStateRunning:
+					if (pstate->wanttokill) {
+					//	logprintf (LOG_INFO, "console kill: send SIGINT\n");
+					//	pstate->process.Signal(SIGINT);
+						logprintf (LOG_INFO, "console kill: terminateProcess\n");
+						terminateProcess (pstate, PRINT_GROUP|AND_EXIT);
+					}
 					logprintf (LOG_EVENTS, "eStateRunning\n");
 					break;
 				case eStateExited:
@@ -187,8 +193,7 @@ onStopped (STATE *pstate, SBProcess process)
 				SBBreakpoint breakpoint = target.FindBreakpointByID (bpid);
 				if (breakpoint.IsOneShot())
 					dispose = "del";
-				char breakpointdesc[LINE_MAX];
-				formatBreakpoint (breakpointdesc, sizeof(breakpointdesc), breakpoint, pstate);
+				char *breakpointdesc = formatBreakpoint (breakpoint, pstate);
 				cdtprintf ("=breakpoint-modified,bkpt=%s\n", breakpointdesc);
 				snprintf (reasondesc, sizeof(reasondesc), "reason=\"breakpoint-hit\",disp=\"%s\",bkptno=\"%d\",", dispose, bpid);
 			}
@@ -202,8 +207,7 @@ onStopped (STATE *pstate, SBProcess process)
 	    	logprintf (LOG_ERROR, "frame invalid on event eStateStopped (eStopReasonBreakpoint)\n");
 	    	return;
 		}
-		char framedesc[LINE_MAX];
-		formatFrame (framedesc, sizeof(framedesc), frame, WITH_ARGS);
+		char *framedesc = formatFrame (frame, WITH_ARGS);
 		int threadindexid=thread.GetIndexID();
 		cdtprintf ("*stopped,%s%s,thread-id=\"%d\",stopped-threads=\"all\"\n(gdb)\n",
 					reasondesc,framedesc,threadindexid);
@@ -216,22 +220,22 @@ onStopped (STATE *pstate, SBProcess process)
 	else if (stopreason==eStopReasonSignal) {
 		// raised when attaching to a process
 		// raised when program crashed
-		char reasondesc[LINE_MAX];
 		int stopreason = thread.GetStopReasonDataAtIndex(0);
 	 	SBUnixSignals unixsignals = process.GetUnixSignals();
 		const char *signalname = unixsignals.GetSignalAsCString(stopreason);
+		char reasondesc[LINE_MAX];
 		snprintf (reasondesc, sizeof(reasondesc), "reason=\"signal-received\",signal-name=\"%s\",", signalname);
+		selectValidFrame (thread);
 		SBFrame frame = thread.GetSelectedFrame();
 		if (!frame.IsValid()) {
 	    	logprintf (LOG_ERROR, "frame invalid on event eStateStopped (eStopReasonSignal)\n");
 	    	return;
 		}
-		char framedesc[LINE_MAX];
-		formatFrame (framedesc, sizeof(framedesc), frame, WITH_ARGS);
+		char *framedesc = formatFrame (frame, WITH_ARGS);
 		int threadindexid = thread.GetIndexID();
 		//signal-name="SIGSEGV",signal-meaning="Segmentation fault"
-		cdtprintf ("*stopped,%s%sthread-id=\"%d\",stopped-threads=\"all\"\n(gdb)\n",
-					reasondesc,framedesc,threadindexid);
+		cdtprintf ("*stopped,%s%s,thread-id=\"%d\",stopped-threads=\"all\"\n(gdb)\n",
+					reasondesc, framedesc, threadindexid);
 		// *stopped,reason="signal-received",signal-name="SIGSEGV",signal-meaning="Segmentation fault",frame={addr="0x0000000100000f7b",func="main",args=[],file="../Sources/tests.cpp",fullname="/project_path/test_hello_cpp/Sources/tests.cpp",line="44"},thread-id="1",stopped-threads="all"
 	}
 	else if (stopreason==eStopReasonNone) {
@@ -250,7 +254,7 @@ onStopped (STATE *pstate, SBProcess process)
 		snprintf (reasondesc, sizeof(reasondesc), "reason=\"exception-received\",exception=\"%s\",", exceptiondesc);
 		int threadindexid = thread.GetIndexID();
 		cdtprintf ("*stopped,%sthread-id=\"%d\",stopped-threads=\"all\"\n(gdb)\n",
-					reasondesc,threadindexid);
+					reasondesc, threadindexid);
 	}
 	else
 		logprintf (LOG_WARN, "unexpected stop reason %d\n", stopreason);

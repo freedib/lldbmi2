@@ -9,16 +9,85 @@
 extern LIMITS limits;
 
 
+// get the number of frames in a thread
+// adjust the number of frames if libdyld.dylib is there
+int
+getNumFrames (SBThread thread)
+{
+	logprintf (LOG_TRACE, "getNumFrames(0x%x)\n", &thread);
+	int numframes=thread.GetNumFrames();
+	logprintf (LOG_DEBUG, "getNumFrames(0x%x) = %d\n", &thread, numframes);
+#ifndef SHOW_STARTUP
+	for (int iframe=min(numframes-1,limits.frames_max); iframe>=0; iframe--) {
+		SBFrame frame = thread.GetFrameAtIndex(iframe);
+		if (!frame.IsValid())
+			continue;
+		SBModule module = frame.GetModule();
+		if (!module.IsValid())
+			break;
+		SBFileSpec modulefilespec = module.GetPlatformFileSpec();
+		const char *modulefilename = modulefilespec.GetFilename();
+		logprintf (LOG_DEBUG, "getNumFrames(0x%x:%d): modulefilename=%s\n", &thread, iframe, modulefilename);
+		SBFunction function = frame.GetFunction();
+		if (!function.IsValid())
+			break;
+		const char *func_name = function.GetName();
+		logprintf (LOG_DEBUG, "getNumFrames(0x%x:%d): func_name=%s\n", &thread, iframe, func_name);
+		if (strcmp(modulefilename,"libdyld.dylib")!=0 || strcmp(func_name,"start")!=0)
+			break;
+		numframes = numframes-1;
+	}
+#endif
+	return numframes;
+}
+
+
+void
+selectValidFrame (SBThread thread)
+{
+	logprintf (LOG_TRACE, "selectValidFrame (0x%x)\n", &thread);
+	int numframes=thread.GetNumFrames();
+	logprintf (LOG_DEBUG, "selectValidFrame(0x%x): frames = %d\n", &thread, numframes);
+	for (int iframe=0; iframe<numframes; iframe++) {
+		SBFrame frame = thread.GetFrameAtIndex(iframe);
+		if (!frame.IsValid())
+			continue;
+		SBModule module = frame.GetModule();
+		if (!module.IsValid())
+			continue;
+		SBFileSpec modulefilespec = module.GetPlatformFileSpec();
+		const char *modulefilename = modulefilespec.GetFilename();
+		logprintf (LOG_DEBUG, "selectValidFrame(0x%x:%d): modulefilename=%s\n", &thread, iframe, modulefilename);
+		SBFunction function = frame.GetFunction();
+		if (!function.IsValid())
+			continue;
+		const char *func_name = function.GetName();
+		logprintf (LOG_DEBUG, "getNumFrames(0x%x:%d): func_name=%s\n", &thread, iframe, func_name);
+		frame = thread.SetSelectedFrame(iframe);
+		logprintf (LOG_DEBUG, "getNumFrames(0x%x:%d): frame=0x%x\n", &thread, iframe, &frame);
+		break;
+	}
+}
+
+
 // Should make breakpoint pending if invalid
-// 017,435 29^done,bkpt={number="5",type="breakpoint",disp="keep",enabled="y",addr="<PENDING>",pending=\
-// "/project_path/test_hello_c/Sources/tests.cpp:33",times="0",original-location=\
-// "/project_path/test_hello_c/Sources/tests.cpp:33"}
+// 017,435 29^done,bkpt={number="5",type="breakpoint",disp="keep",enabled="y",addr="<PENDING>",pending=
+//     "/project_path/test_hello_c/Sources/tests.cpp:33",times="0",original-location=
+//     "/project_path/test_hello_c/Sources/tests.cpp:33"}
 
 // format a breakpoint description into a GDB string
 char *
-formatBreakpoint (char *breakpointdesc, size_t descsize, SBBreakpoint breakpoint, STATE *pstate)
+formatBreakpoint (SBBreakpoint breakpoint, STATE *pstate)
 {
-	logprintf (LOG_TRACE, "formatBreakpoint (..., %d, 0x%x, 0x%x)\n", descsize, &breakpoint, pstate);
+	static StringB breakpointdescB(LINE_MAX);
+	breakpointdescB.clear();
+	return formatBreakpoint (breakpointdescB, breakpoint, pstate);
+}
+
+char *
+formatBreakpoint (StringB &breakpointdescB, SBBreakpoint breakpoint, STATE *pstate)
+{
+	logprintf (LOG_TRACE, "formatBreakpoint (0x%x, 0x%x, 0x%x)\n", &breakpointdescB, &breakpoint, pstate);
 	// 18^done,bkpt={number="1",type="breakpoint",disp="keep",enabled="y",addr="0x00000001000/00f58",
 	//  func="main",file="../Sources/tests.cpp",fullname="/pro/runtime-EclipseApplication/tests/Sources/tests.cpp",
 	//  line="17",thread-groups=["i1"],times="0",original-location="/pro/runtime-EclipseApplication/tests/Sources/tests.cpp:17"}
@@ -37,51 +106,30 @@ formatBreakpoint (char *breakpointdesc, size_t descsize, SBBreakpoint breakpoint
 	const char *dispose = (breakpoint.IsOneShot())? "del": "keep";
 	const char *originallocation = "";
 	//	originallocation,dispose = breakpoints[bpid]
-	snprintf (breakpointdesc, descsize,
+	breakpointdescB.catsprintf (
 			"{number=\"%d\",type=\"breakpoint\",disp=\"%s\",enabled=\"y\",addr=\"0x%016x\","
 			"func=\"%s\",file=\"%s\",fullname=\"%s\",line=\"%d\","
 			"thread-groups=[\"%s\"],times=\"0\",original-location=\"%s\"}",
 			bpid,dispose,file_addr,func_name,filename,
 			filepath,line,pstate->threadgroup,originallocation);
-	if (strlen(breakpointdesc) >= descsize-1)
-		logprintf (LOG_ERROR, "formatBreakpoint: breakpointdesc size (%d) too small\n", descsize);
-	return breakpointdesc;
+	return breakpointdescB.c_str();
 }
 
-// get the number of frames in a thread
-// adjust the number of frames if libdyld.dylib is there
-int
-getNumFrames (SBThread thread)
-{
-	logprintf (LOG_TRACE, "getNumFrames (0x%x)\n", &thread);
-	int numframes=thread.GetNumFrames();
-#ifndef SHOW_STARTUP
-	for (int iframe=min(numframes-1,limits.frames_max); iframe>=0; iframe--) {
-		SBFrame frame = thread.GetFrameAtIndex(iframe);
-		if (!frame.IsValid())
-			continue;
-		SBModule module = frame.GetModule();
-		if (!module.IsValid())
-			break;
-		SBFileSpec modulefilespec = module.GetPlatformFileSpec();
-		const char *modulefilename = modulefilespec.GetFilename();
-		SBFunction function = frame.GetFunction();
-		if (!function.IsValid())
-			break;
-		const char *func_name = function.GetName();
-		if (strcmp(modulefilename,"libdyld.dylib")!=0 || strcmp(func_name,"start")!=0)
-			break;
-		numframes = numframes-1;
-	}
-#endif
-	return numframes;
-}
 
 // format a frame description into a GDB string
+// format a frame description into a GDB string
 char *
-formatFrame (char *framedesc, size_t descsize, SBFrame frame, FrameDetails framedetails)
+formatFrame (SBFrame frame, FrameDetails framedetails)
 {
-	logprintf (LOG_TRACE, "formatFrame (..., %d, 0x%x, 0x%x)\n", descsize, &frame, framedetails);
+	static StringB framedescB(LINE_MAX);
+	framedescB.clear();
+	return formatFrame (framedescB, frame, framedetails);
+}
+
+char *
+formatFrame (StringB &framedescB, SBFrame frame, FrameDetails framedetails)
+{
+	logprintf (LOG_TRACE, "formatFrame (0x%x, 0x%x, 0x%x)\n", &framedescB, &frame, framedetails);
 	int frameid = frame.GetFrameID();
 	SBAddress addr = frame.GetPCAddress();
 	uint32_t file_addr = addr.GetFileAddress();
@@ -99,9 +147,9 @@ formatFrame (char *framedesc, size_t descsize, SBFrame frame, FrameDetails frame
 		modulefilename = modulefilespec.GetFilename();
 	}
 
-	*framedesc = '\0';
 	const char *func_name="??";
-	char argsstring[BIG_LINE_MAX];
+	static StringB argsstringB(LINE_MAX);
+	argsstringB.clear();
 	if (function.IsValid()) {
 		const char *filename, *filedir;
 		int line = 0;
@@ -113,48 +161,50 @@ formatFrame (char *framedesc, size_t descsize, SBFrame frame, FrameDetails frame
 		line = line_entry.GetLine();
 		if (framedetails&WITH_ARGS) {
 			SBValueList args = frame.GetVariables(1,0,0,0);
-			char argsdesc[BIG_LINE_MAX];
+			static StringB argsdescB(LINE_MAX);
+			argsdescB.clear();
 			SBFunction function = frame.GetFunction();
-			formatVariables (argsdesc, sizeof(argsdesc), args);
-			snprintf (argsstring, sizeof(argsstring), "%sargs=[%s]", (framedetails==JUST_LEVEL_AND_ARGS)?"":",", argsdesc);
+			formatVariables (argsdescB, args);
+			argsstringB.catsprintf ("%sargs=[%s]", (framedetails==JUST_LEVEL_AND_ARGS)?"":",", argsdescB.c_str());
 		}
-		else
-			argsstring[0] = '\0';
 		if (framedetails==JUST_LEVEL_AND_ARGS)
-			snprintf (framedesc, descsize, "frame={%s%s}",
-								levelstring,argsstring);
+			framedescB.catsprintf ("frame={%s%s}", levelstring, argsstringB.c_str());
 		else
-			snprintf (framedesc, descsize, "frame={%saddr=\"0x%016x\",func=\"%s\"%s,file=\"%s\","
+			framedescB.catsprintf ("frame={%saddr=\"0x%016x\",func=\"%s\"%s,file=\"%s\","
 								"fullname=\"%s/%s\",line=\"%d\"}",
-								levelstring,file_addr,func_name,argsstring,filename,filedir,filename,line);
+								levelstring,file_addr,func_name,argsstringB.c_str(),filename,filedir,filename,line);
 	}
 	else {
 		if (framedetails&WITH_ARGS)
-			snprintf (argsstring, sizeof(argsstring), "%sargs=[]", (framedetails==JUST_LEVEL_AND_ARGS)?"":",");
-		else
-			argsstring[0] = '\0';
+			argsstringB.catsprintf ("%sargs=[]", (framedetails==JUST_LEVEL_AND_ARGS)?"":",");
 		if (framedetails==JUST_LEVEL_AND_ARGS)
-			snprintf (framedesc, descsize, "frame={%s%s}",
-					levelstring,argsstring);
+			framedescB.catsprintf ("frame={%s%s}", levelstring, argsstringB.c_str());
 		else {
 			func_name = frame.GetFunctionName();
-			snprintf (framedesc, descsize, "frame={%saddr=\"0x%016x\",func=\"%s\"%s,file=\"%s\"}",
-					levelstring,file_addr,func_name, argsstring, modulefilename);
+			framedescB.catsprintf ("frame={%saddr=\"0x%016x\",func=\"%s\"%s,file=\"%s\"}",
+					levelstring, file_addr, func_name, argsstringB.c_str(), modulefilename);
 		}
 	}
-	if (strlen(framedesc) >= descsize-1)
-		logprintf (LOG_ERROR, "formatFrame: framedesc size (%d) too small\n", descsize);
-	return framedesc;
+	return framedescB.c_str();
 }
+
 
 // format a thread description into a GDB string
 char *
-formatThreadInfo (char *threaddesc, size_t descsize, SBProcess process, int threadindexid)
+formatThreadInfo (SBProcess process, int threadindexid)
 {
-	logprintf (LOG_TRACE, "formatThreadInfo (..., %d, 0x%x, %d)\n", descsize, &process, threadindexid);
-	*threaddesc = '\0';
+	static StringB threaddescB(LINE_MAX);
+	threaddescB.clear();
+	return formatThreadInfo (threaddescB, process, threadindexid);
+}
+
+char *
+formatThreadInfo (StringB &threaddescB, SBProcess process, int threadindexid)
+{
+	logprintf (LOG_TRACE, "formatThreadInfo (0x%x, 0x%x, %d)\n", &threaddescB, &process, threadindexid);
+	threaddescB.clear();
 	if (!process.IsValid())
-		return threaddesc;
+		return threaddescB.c_str();
 	int pid=process.GetProcessID();
 	int state = process.GetState ();
 	if (state == eStateStopped) {
@@ -185,19 +235,14 @@ formatThreadInfo (char *threaddesc, size_t descsize, SBProcess process, int thre
 			if (frames > 0) {
 				SBFrame frame = thread.GetFrameAtIndex(0);
 				if (frame.IsValid()) {
-					char framedesc[LINE_MAX];
-					formatFrame (framedesc, sizeof(framedesc), frame, WITH_LEVEL_AND_ARGS);
-					int desclength = strlen(threaddesc);
-					snprintf (threaddesc+desclength, descsize-desclength,
+					char * framedescstr = formatFrame (frame, WITH_LEVEL_AND_ARGS);
+					threaddescB.catsprintf (
 						"%s{id=\"%d\",target-id=\"Thread 0x%x of process %d\",%s,state=\"stopped\"}",
-						separator, threadindexid, tid, pid, framedesc);
+						separator, threadindexid, tid, pid, framedescstr);
 				}
 			}
 			separator=",";
 		}
 	}
-	if (strlen(threaddesc) >= descsize-1)
-		logprintf (LOG_ERROR, "formatThreadInfo: threaddesc size (%d) too small\n", descsize);
-	return threaddesc;
+	return threaddescB.c_str();
 }
-

@@ -1,7 +1,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/time.h>
@@ -10,6 +9,7 @@
 #include <sys/stat.h>
 #include <sys/timeb.h>
 #include <stdarg.h>
+#include <string.h>
 #include <sys/param.h>
 
 #include "log.h"
@@ -20,6 +20,7 @@ static char *log_buffer;
 static int   buffer_size = 0;
 static int   log_mask  = LOG_ALL;
 
+// TODO: implement StringB for logs
 
 // a log message is written in the log file
 // each log message have a scope which is filtered by the scope mask
@@ -249,4 +250,11 @@ lognumbers ( unsigned scope, const unsigned long *data, int datasize )
 		if (toosmall)
 			logprintf (LOG_ERROR, "log buffer too small (%d)\n", buffer_size);
 	}
+}
+
+void
+assertStrings (char *sa, char *sb)			// temp
+{
+	if (strcmp (sa, sb) != 0)
+		logprintf (LOG_ERROR, "Assert error:\n%s\n%s\n", sa, sb);
 }

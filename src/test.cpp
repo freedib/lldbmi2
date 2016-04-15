@@ -1,8 +1,8 @@
 
 #include <stdio.h>
 #include <unistd.h>
-#include <string.h>
 #include <ctype.h>
+#include <string.h>
 #include <sys/syslimits.h>
 #include "log.h"
 #include "test.h"
@@ -50,6 +50,10 @@ const char *testcommands_THREAD[] = {
 	"79-exec-continue --thread-group i1",
 	"67-stack-list-locals --thread 2 --frame 0 1",
 	"68-stack-list-arguments --thread 2 --frame 0 1",
+	"79-exec-continue --thread-group i1",
+	"55-interpreter-exec --thread-group i1 console kill",
+	"56thread",
+	"79-exec-continue --thread-group i1",
 	"80-gdb-exit",
 	NULL
 };

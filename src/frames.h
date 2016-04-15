@@ -11,9 +11,15 @@ typedef enum
 } FrameDetails;
 
 
-char *  formatBreakpoint (char *breakpointdesc, size_t descsize, SBBreakpoint breakpoint, STATE *pstate);
-int     getNumFrames     (SBThread thread);
-char *  formatFrame      (char *framedesc, size_t descsize, SBFrame frame, FrameDetails details);
-char *  formatThreadInfo (char *threaddesc, size_t descsize, SBProcess process, int threadindexid);
+int    getNumFrames     (SBThread thread);
+void   selectValidFrame (SBThread thread);
+
+char * formatBreakpoint (StringB &breakpointdesc, SBBreakpoint breakpoint, STATE *pstate);
+char * formatFrame      (StringB &framedesc, SBFrame frame, FrameDetails details);
+char * formatThreadInfo (StringB &threaddesc, SBProcess process, int threadindexid);
+
+char * formatBreakpoint (SBBreakpoint breakpoint, STATE *pstate);
+char * formatFrame      (SBFrame frame, FrameDetails details);
+char * formatThreadInfo (SBProcess process, int threadindexid);
 
 #endif // FORMFRAMES_HAT_H

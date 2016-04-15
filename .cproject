@@ -209,18 +209,6 @@
 		</configuration>
 	</storageModule>
 	<storageModule moduleId="org.eclipse.cdt.internal.ui.text.commentOwnerProjectMappings"/>
-	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets">
-		<buildTargets>
-			<target name="install" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
-				<buildCommand>sh</buildCommand>
-				<buildArguments>/Users/didier/Projets/git-lldbmi2/lldbmi2/build.sh -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=1</buildArguments>
-				<buildTarget>install</buildTarget>
-				<stopOnError>true</stopOnError>
-				<useDefaultCommand>true</useDefaultCommand>
-				<runAllBuilders>true</runAllBuilders>
-			</target>
-		</buildTargets>
-	</storageModule>
 	<storageModule moduleId="scannerConfiguration">
 		<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.macosx.base.12405704;cdt.managedbuild.toolchain.gnu.macosx.base.12405704.401081395;cdt.managedbuild.tool.gnu.c.compiler.macosx.base.1874008147;cdt.managedbuild.tool.gnu.c.compiler.input.1060386699">
@@ -247,5 +235,25 @@
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.macosx.base.12405704.1646202430;cdt.managedbuild.toolchain.gnu.macosx.base.12405704.1646202430.;cdt.managedbuild.tool.gnu.c.compiler.macosx.base.1849274944;cdt.managedbuild.tool.gnu.c.compiler.input.2054439620">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
+	</storageModule>
+	<storageModule moduleId="org.eclipse.cdt.make.core.buildtargets">
+		<buildTargets>
+			<target name="install" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
+				<buildCommand>sh</buildCommand>
+				<buildArguments>/Users/didier/Projets/git-lldbmi2/lldbmi2/build.sh -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=1</buildArguments>
+				<buildTarget>install</buildTarget>
+				<stopOnError>true</stopOnError>
+				<useDefaultCommand>true</useDefaultCommand>
+				<runAllBuilders>true</runAllBuilders>
+			</target>
+			<target name="all" path="" targetID="org.eclipse.cdt.build.MakeTargetBuilder">
+				<buildCommand>/Users/didier/Projets/git-lldbmi2/lldbmi2/build.sh</buildCommand>
+				<buildArguments>-DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=1</buildArguments>
+				<buildTarget>all</buildTarget>
+				<stopOnError>true</stopOnError>
+				<useDefaultCommand>true</useDefaultCommand>
+				<runAllBuilders>true</runAllBuilders>
+			</target>
+		</buildTargets>
 	</storageModule>
 </cproject>
