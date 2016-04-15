@@ -6,9 +6,6 @@
 #include "names.h"
 
 
-extern LIMITS limits;
-
-
 // get the number of frames in a thread
 // adjust the number of frames if libdyld.dylib is there
 int

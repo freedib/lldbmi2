@@ -219,7 +219,6 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 		// target-attach --thread-group i1 40088
 		// =thread-group-started,id="i1",pid="40123"
 		// =thread-created,id="1",group-id="i1"
-		//TODO: attach test sequence do not work
 		int pid=0;
 		SBError error;
 		char processname[PATH_MAX];

@@ -69,17 +69,37 @@ StringB::clear (int bytes, int start) {
 	return buffer_array;
 }
 
+char *
+StringB::copy (const char *string) {
+	return copyat (0, string);
+}
+
 
 // append string to the end of the buffer
 char *
 StringB::append (const char *string) {
+	return copyat (buffer_size, string);
+}
+
+// copy at offset of the buffer. usually 0 (copy) or buffer size (append)
+char *
+StringB::copyat (int offset, const char *string) {
 	int string_length = strlen (string);
-	if (buffer_size+string_length >= buffer_capacity)
+	if (offset+string_length >= buffer_capacity)
 		if (grow (string_length+1) == NULL)
 			return NULL;
-	::strcat (buffer_array+buffer_size, string);
-	buffer_size += string_length;
+	::strcpy (buffer_array+offset, string);
+	buffer_size = offset+string_length;
 	return buffer_array;
+}
+
+// sprintf at start of the buffer
+int
+StringB::sprintf (const char *format, ...)
+{
+    va_list args;
+    va_start (args, format);
+    return vosprintf (0, format, args);
 }
 
 // sprintf at the end of the buffer
@@ -88,35 +108,23 @@ StringB::catsprintf (const char *format, ...)
 {
     va_list args;
     va_start (args, format);
-    int length = vsnprintf (buffer_array+buffer_size, buffer_capacity-buffer_size, format, args);
-    va_end(args);
-    if (length > buffer_capacity-buffer_size-1) {
-    	if (grow (length)==NULL)			// no room
-    		length = buffer_capacity-buffer_size-1;
-    	else {
-    	    va_start (args, format);
-    		length = vsnprintf (buffer_array+buffer_size, buffer_capacity-buffer_size, format, args);
-    	    va_end(args);
-    	}
-    }
-	buffer_size += length;
-    return length;
+    return vosprintf (buffer_size, format, args);
 }
 
-// sprintf at the end of the buffer
+// vsprintf at offset of the buffer. usually 0 (copy) or buffer size (append)
 int
-StringB::catvsprintf (const char *format, va_list args)
+StringB::vosprintf (int offset, const char *format, va_list args)
 {
-	va_list args_back;
-	va_copy(args_back, args);
-    int length = vsnprintf (buffer_array+buffer_size, buffer_capacity-buffer_size, format, args);
-    if (length > buffer_capacity-buffer_size-1) {
-    	if (grow (length)==NULL)			// no room
-    		length = buffer_capacity-buffer_size-1;
+	va_list args_start;
+	va_copy(args_start, args);
+    int string_length = vsnprintf (buffer_array+offset, buffer_capacity-offset, format, args);
+    if (string_length > buffer_capacity-offset-1) {
+    	if (grow (string_length)==NULL)			// no room
+    		string_length = buffer_capacity-offset-1;
     	else {
-    		length = vsnprintf (buffer_array+buffer_size, buffer_capacity-buffer_size, format, args_back);
+    		string_length = vsnprintf (buffer_array+offset, buffer_capacity-offset, format, args_start);
     	}
     }
-	buffer_size += length;
-    return length;
+	buffer_size = offset+string_length;
+    return string_length;
 }

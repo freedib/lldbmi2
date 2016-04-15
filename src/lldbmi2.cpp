@@ -68,7 +68,6 @@ main (int argc, char **argv, char **envp)
 	state.gdbPrompt = "GNU gdb (GDB) 7.7.1\n";
 	sprintf (state.lldbmi2Prompt, "lldbmi2 version %s\n", LLDBMI2_VERSION);
 
-	state.logbuffer[0] = '\0';
 	limits.frames_max = FRAMES_MAX;
 	limits.children_max = CHILDREN_MAX;
 	limits.walk_depth_max = WALK_DEPTH_MAX;
@@ -129,12 +128,13 @@ main (int argc, char **argv, char **envp)
 			setlogfile (state.logfilename, sizeof(state.logfilename), argv[0], "lldbmi2t.log");
 		else
 			setlogfile (state.logfilename, sizeof(state.logfilename), argv[0], "lldbmi2.log");
-		openlog (state.logbuffer, sizeof(state.logbuffer), state.logfilename);
+		openlog (state.logfilename);
 		setlogmask (logmask);
 	}
 
 	// log program args
-	logprintf (LOG_ARGS, "%s\n", state.logbuffer);
+	addlog("\n");
+	logprintf (LOG_ARGS, NULL);
 
 	state.envp[0] = NULL;
 	state.envpentries = 0;
@@ -234,12 +234,11 @@ main (int argc, char **argv, char **envp)
 	return EXIT_SUCCESS;
 }
 
-
 // log an argument and return the argument
 const char *
 logarg (const char *arg) {
-	strlcat (state.logbuffer, arg, sizeof(state.logbuffer));
-	strlcat (state.logbuffer, " ", sizeof(state.logbuffer));
+	addlog (arg);
+	addlog (" ");
 	return arg;
 }
 
@@ -259,9 +258,8 @@ cdtprintf ( const char *format, ... )
 	va_list args;
 
 	if (format!=NULL) {
-		buffer.clear();
 		va_start (args, format);
-		buffer.catvsprintf (format, args);
+		buffer.vosprintf (0, format, args);
 		va_end (args);
 		writetocdt (buffer.c_str());
 	}

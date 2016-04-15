@@ -24,9 +24,12 @@ public:
 	int size ();
 	char *c_str();
 	char *clear (int bytes=BIG_LIMIT, int start=0);
+	char *copy (const char *string);
 	char *append (const char *string);
-	int   catsprintf  (const char *format, ...);
-	int   catvsprintf (const char *format, va_list args);
+	char *copyat (int offset, const char *string);
+	int   sprintf  (const char *format, ...);
+	int   catsprintf (const char *format, ...);
+	int   vosprintf (int offset, const char *format, va_list args);
 };
 
 #endif // BUFFER_H

@@ -41,7 +41,7 @@ typedef enum
 // If parent directory is Debug, set the path to the parent directory
 // Else sets the path to program directory
 void  setlogfile      (char *logfilename, int filenamesize, const char *progname, const char *logname);
-int   openlog         (char *logbuffer, int buffersize, const char *logfilename);
+int   openlog         (const char *logbuffer);
 void  closelog        ();
 void  setlogmask      (unsigned mask);
 char *gettimestamp    ();
@@ -49,6 +49,7 @@ const char *getheader (unsigned scope);
 void  logprintf       (unsigned scope, const char *format, ...);
 void  logdata         (unsigned scope, const char *data, int datasize);
 void  lognumbers      (unsigned scope, const unsigned long *data, int datasize);
+void  addlog          (const char *string);
 void  assertStrings   (char *sa, char *sb);		// temp
 
 

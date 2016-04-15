@@ -56,7 +56,6 @@ typedef struct {
 	char cdtbuffer[BIG_LINE_MAX];		// must be the same size as cdtline in fromCDT
 	char cdtptyname[NAME_MAX];
 	char logfilename[PATH_MAX];
-	char logbuffer[BIG_LINE_MAX];
 	const char *gdbPrompt;
 	char lldbmi2Prompt[NAME_MAX];
 	char threadgroup[NAME_MAX];
@@ -66,8 +65,7 @@ typedef struct {
 	int threadids[THREADS_MAX];
 } STATE;
 
-
-const char * logarg        (const char *arg);
+const char * logarg (const char *arg);
 void         writetocdt    (const char *line);
 void         cdtprintf     (const char *format, ... );
 void         signalHandler (int vSigno);

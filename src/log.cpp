@@ -11,16 +11,14 @@
 #include <stdarg.h>
 #include <string.h>
 #include <sys/param.h>
+#include <sys/syslimits.h>
 
 #include "log.h"
+#include "stringb.h"
 
-
-static int   log_fd=-1;
-static char *log_buffer;
-static int   buffer_size = 0;
-static int   log_mask  = LOG_ALL;
-
-// TODO: implement StringB for logs
+static int     log_fd=-1;
+static StringB logbuffer;
+static int     log_mask  = LOG_ALL;
 
 // a log message is written in the log file
 // each log message have a scope which is filtered by the scope mask
@@ -59,12 +57,10 @@ setlogfile (char *logfilename, int filenamesize, const char *progname, const cha
 
 // open and truncate the log file
 int
-openlog (char *logbuffer, int buffersize, const char *logfilename)
+openlog (const char *logfilename)
 {
 	umask (S_IWGRP | S_IWOTH);
 	log_fd = open (logfilename, O_WRONLY|O_CREAT|O_TRUNC, 0664);
-	log_buffer = logbuffer;
-	buffer_size = buffersize;
 	return log_fd;
 }
 
@@ -144,6 +140,7 @@ getheader ( unsigned scope )
 }
 
 // log a message for the given scope
+// if format is NULL, print log_buffer
 void
 logprintf ( unsigned scope, const char *format, ... )
 {
@@ -161,12 +158,12 @@ logprintf ( unsigned scope, const char *format, ... )
 		write(log_fd, "  ", 2);
 		if (format!=NULL) {
 			va_start (args, format);
-			vsnprintf (log_buffer, buffer_size, format, args);
+			logbuffer.vosprintf (0, format, args);
 			va_end (args);
-			write(log_fd, log_buffer, strlen(log_buffer));
-			if (scope==LOG_ERROR || scope==LOG_STDERR)
-				fprintf (stderr, "%s", log_buffer);
 		}
+		write(log_fd, logbuffer.c_str(), logbuffer.size());
+		if (scope==LOG_ERROR || scope==LOG_STDERR)
+			fprintf (stderr, "%s", logbuffer.c_str());
 	}
 }
 
@@ -178,48 +175,30 @@ logdata ( unsigned scope, const char *data, int datasize )
 {
 	if (data == NULL)
 		return;
-	bool toosmall = false;
 	if (log_fd >= 0 && (scope&log_mask)==scope) {
-		log_buffer[0] = '|';
-		int ii, jj;
-		for (ii=0, jj=1; ii<datasize; ii++) {
-			if (jj>buffer_size-2) {
-				toosmall = true;
-				break;
-			}
+		logbuffer.clear();
+		logbuffer.append("|");
+		for (int ii=0; ii<datasize; ii++) {
 			if( ((unsigned char)data[ii])>=0x20 && ((unsigned char)data[ii])<127)
-				log_buffer[jj++] = data[ii];
+				logbuffer.catsprintf("%c",data[ii]);
 			else {
-				if (jj>buffer_size-3) {
-					toosmall = true;
-					break;
-				}
 				switch (data[ii]) {
 				case '\n':
-					log_buffer[jj++]='\\'; log_buffer[jj++]='n'; break;
+					logbuffer.append("\\n"); break;
 				case '\r':
-					log_buffer[jj++]='\\'; log_buffer[jj++]='r'; break;
+					logbuffer.append("\\r"); break;
 				case '\t':
-					log_buffer[jj++]='\\'; log_buffer[jj++]='t'; break;
+					logbuffer.append("\\t"); break;
 				default:
-					if (jj>buffer_size-5) {
-						toosmall = true;
-						break;
-					}
-					sprintf( &log_buffer[jj], "{%02X}", data[ii] );
-					jj += 4;
+					logbuffer.catsprintf("{%02X}", data[ii]);
 					break;
 				}
 			}
 		}
-		log_buffer[jj++] = '|';
-		log_buffer[jj] = '\0';
-
+		logbuffer.append("|");
 		logprintf (scope, NULL);
-		write (log_fd, log_buffer, strlen(log_buffer));
+		write (log_fd, logbuffer.c_str(), logbuffer.size());
 		write (log_fd, "\n", 1);
-		if (toosmall)
-			logprintf (LOG_ERROR, "log buffer too small (%d)\n", buffer_size);
 	}
 }
 
@@ -229,27 +208,21 @@ lognumbers ( unsigned scope, const unsigned long *data, int datasize )
 {
 	if (data == NULL)
 		return;
-	bool toosmall = false;
 	if (log_fd >= 0 && (scope&log_mask)==scope) {
-		int ii, jj;
-		sprintf( log_buffer, "%016lx: ", (unsigned long)data);		// pointer size = unsigned long size = 8 bytes = 16 chars
-		log_buffer[18] = '\0';
-		for (ii=0, jj=18; ii<datasize; ii++) {
-			if (jj>buffer_size-18) {
-				toosmall = true;
-				break;
-			}
-			sprintf( &log_buffer[jj], "%016lx ", data[ii]);
-			jj += 17;
-		}
-		log_buffer[jj] = '\0';
+		logbuffer.catsprintf("%016lx: ", (unsigned long)data);		// pointer size = unsigned long size = 8 bytes = 16 chars
+		for (int ii=0; ii<datasize; ii++)
+			logbuffer.catsprintf("%016lx ", data[ii]);
 
 		logprintf (scope, NULL);
-		write (log_fd, log_buffer, strlen(log_buffer));
+		write (log_fd, logbuffer.c_str(), logbuffer.size());
 		write (log_fd, "\n", 1);
-		if (toosmall)
-			logprintf (LOG_ERROR, "log buffer too small (%d)\n", buffer_size);
 	}
+}
+
+// log an argument and return the argument
+void
+addlog (const char *string) {
+	logbuffer.append (string);
 }
 
 void
