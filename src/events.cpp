@@ -225,7 +225,6 @@ onStopped (STATE *pstate, SBProcess process)
 		const char *signalname = unixsignals.GetSignalAsCString(stopreason);
 		char reasondesc[LINE_MAX];
 		snprintf (reasondesc, sizeof(reasondesc), "reason=\"signal-received\",signal-name=\"%s\",", signalname);
-		selectValidFrame (thread);
 		SBFrame frame = thread.GetSelectedFrame();
 		if (!frame.IsValid()) {
 	    	logprintf (LOG_ERROR, "frame invalid on event eStateStopped (eStopReasonSignal)\n");

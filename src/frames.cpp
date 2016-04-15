@@ -17,56 +17,7 @@ getNumFrames (SBThread thread)
 	logprintf (LOG_TRACE, "getNumFrames(0x%x)\n", &thread);
 	int numframes=thread.GetNumFrames();
 	logprintf (LOG_DEBUG, "getNumFrames(0x%x) = %d\n", &thread, numframes);
-#ifndef SHOW_STARTUP
-	for (int iframe=min(numframes-1,limits.frames_max); iframe>=0; iframe--) {
-		SBFrame frame = thread.GetFrameAtIndex(iframe);
-		if (!frame.IsValid())
-			continue;
-		SBModule module = frame.GetModule();
-		if (!module.IsValid())
-			break;
-		SBFileSpec modulefilespec = module.GetPlatformFileSpec();
-		const char *modulefilename = modulefilespec.GetFilename();
-		logprintf (LOG_DEBUG, "getNumFrames(0x%x:%d): modulefilename=%s\n", &thread, iframe, modulefilename);
-		SBFunction function = frame.GetFunction();
-		if (!function.IsValid())
-			break;
-		const char *func_name = function.GetName();
-		logprintf (LOG_DEBUG, "getNumFrames(0x%x:%d): func_name=%s\n", &thread, iframe, func_name);
-		if (strcmp(modulefilename,"libdyld.dylib")!=0 || strcmp(func_name,"start")!=0)
-			break;
-		numframes = numframes-1;
-	}
-#endif
 	return numframes;
-}
-
-
-void
-selectValidFrame (SBThread thread)
-{
-	logprintf (LOG_TRACE, "selectValidFrame (0x%x)\n", &thread);
-	int numframes=thread.GetNumFrames();
-	logprintf (LOG_DEBUG, "selectValidFrame(0x%x): frames = %d\n", &thread, numframes);
-	for (int iframe=0; iframe<numframes; iframe++) {
-		SBFrame frame = thread.GetFrameAtIndex(iframe);
-		if (!frame.IsValid())
-			continue;
-		SBModule module = frame.GetModule();
-		if (!module.IsValid())
-			continue;
-		SBFileSpec modulefilespec = module.GetPlatformFileSpec();
-		const char *modulefilename = modulefilespec.GetFilename();
-		logprintf (LOG_DEBUG, "selectValidFrame(0x%x:%d): modulefilename=%s\n", &thread, iframe, modulefilename);
-		SBFunction function = frame.GetFunction();
-		if (!function.IsValid())
-			continue;
-		const char *func_name = function.GetName();
-		logprintf (LOG_DEBUG, "getNumFrames(0x%x:%d): func_name=%s\n", &thread, iframe, func_name);
-		frame = thread.SetSelectedFrame(iframe);
-		logprintf (LOG_DEBUG, "getNumFrames(0x%x:%d): frame=0x%x\n", &thread, iframe, &frame);
-		break;
-	}
 }
 
 

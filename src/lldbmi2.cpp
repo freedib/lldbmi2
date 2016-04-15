@@ -195,28 +195,29 @@ main (int argc, char **argv, char **envp)
 			else
 				state.eof = true;
 		}
-		if (state.ptyfd != EOF) {
+		if (state.ptyfd!=EOF && state.isrunning) {			// input from user to program
 			if (FD_ISSET(state.ptyfd, &set) && !state.eof && !limits.istest) {
+				logprintf (LOG_NONE, "pty read in\n");
 				chars = read (state.ptyfd, consoleLine, sizeof(consoleLine)-1);
+				logprintf (LOG_NONE, "pty read out %d chars\n", chars);
 				if (chars>0) {
 					logprintf (LOG_PROG_OUT, "pty read %d chars\n", chars);
 					consoleLine[chars] = '\0';
 					SBProcess process = state.process;
-					if (process.IsValid()) {
+					if (process.IsValid())
 						process.PutSTDIN (consoleLine, chars);
-					}
 				}
 			}
 		}
 		// execute test command if test mode
-		if (!state.lockcdt && !state.eof && limits.istest && !state.isrunning) {
+		if (!state.eof && limits.istest && !state.isrunning) {
 			if ((testCommand=getTestCommand ())!=NULL) {
 				snprintf (line, sizeof(line), "%s\n", testCommand);
 				fromCDT (&state, line, sizeof(line));
 			}
 		}
 		// execute stacked commands if many command arrived once
-		if (!state.lockcdt && !state.eof && state.cdtbuffer[0]!='\0') {
+		if (!state.eof && state.cdtbuffer[0]!='\0') {
 			line[0] = '\0';
 			while (fromCDT (&state, line, sizeof(line)) == MORE_DATA)
 				;

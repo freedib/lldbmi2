@@ -58,8 +58,6 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 	dataflag = MORE_DATA;
 	logdata (LOG_CDT_IN|LOG_RAW, line, strlen(line));
 	strlcat (pstate->cdtbuffer, line, sizeof(pstate->cdtbuffer));
-	if (pstate->lockcdt)
-		return WAIT_DATA;
 	if ((endofline=strstr(pstate->cdtbuffer, "\n")) != NULL) {
 		// multiple command in cdtbuffer. take the first one and shify the buffer
 		strncpy (cdtline, pstate->cdtbuffer, endofline+1-pstate->cdtbuffer);

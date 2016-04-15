@@ -42,7 +42,6 @@ typedef struct {
 
 // dynamic context
 typedef struct {
-	int  lockcdt;
 	int  ptyfd;
 	bool eof;
 	bool isrunning;
