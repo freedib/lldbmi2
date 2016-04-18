@@ -447,7 +447,7 @@ formatChangedList (StringB &changedescB, SBValue var, bool &separatorvisible, in
 		const char *varinscope = var.IsInScope()? "true": "false";
 		static StringB vardescB(VALUE_MAX);
 		vardescB.clear();						// clear previous buffer content
-		formatValue(vardescB,var,NO_SUMMARY);
+		formatValue(vardescB,var,FULL_SUMMARY);
 		changedescB.catsprintf ("%s{name=\"%s\",value=\"%s\",in_scope=\"%s\",type_changed=\"false\",has_more=\"0\"}",
 			separator, expressionpathdescB.c_str(), vardescB.c_str(), varinscope);
 		separatorvisible = true;
