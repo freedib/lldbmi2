@@ -41,11 +41,11 @@ void terminateSB ()
 //   execute the command
 //   respond on stdout
 int
-fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
+fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 {
 	logprintf (LOG_NONE, "fromCDT (0x%x, ..., %d)\n", pstate, linesize);
 	char *endofline;
-	char cdtline[BIG_LINE_MAX];			// must be the same size as state.cdtbuffer
+	StringB cdtcommandB(BIG_LINE_MAX);
 	int dataflag;
 	char programpath[LINE_MAX];
 	int nextarg;
@@ -56,27 +56,28 @@ fromCDT (STATE *pstate, const char *line, int linesize)			// from cdt
 	static SBProcess process;
 
 	dataflag = MORE_DATA;
-	logdata (LOG_CDT_IN|LOG_RAW, line, strlen(line));
-	strlcat (pstate->cdtbuffer, line, sizeof(pstate->cdtbuffer));
-	if ((endofline=strstr(pstate->cdtbuffer, "\n")) != NULL) {
-		// multiple command in cdtbuffer. take the first one and shify the buffer
-		strncpy (cdtline, pstate->cdtbuffer, endofline+1-pstate->cdtbuffer);
-		cdtline[endofline+1-pstate->cdtbuffer] = '\0';
-		memmove (pstate->cdtbuffer, endofline+1, strlen(endofline));	// shift buffered data
-		if (pstate->cdtbuffer[0]=='\0')
+	logdata (LOG_CDT_IN|LOG_RAW, commandLine, strlen(commandLine));
+	// put CDT input in the big CDT buffer
+	pstate->cdtbufferB.append(commandLine);
+	endofline = strstr(pstate->cdtbufferB.c_str(), "\n");
+	if (endofline != NULL) {
+		// multiple command in cdtbuffer. take the first one and shift the buffer
+		int commandsize = endofline+1-pstate->cdtbufferB.c_str();
+		cdtcommandB.copy (pstate->cdtbufferB.c_str(), commandsize);
+		pstate->cdtbufferB.clear (commandsize);		// shift buffered data
+		if (pstate->cdtbufferB.size()==0)
 			dataflag = WAIT_DATA;
 		// remove trailing \r and \n
-		endofline=strstr(cdtline, "\n");
-		while (endofline>cdtline && (*(endofline-1)=='\n' || *(endofline-1)=='\r'))
+		endofline=strstr(cdtcommandB.c_str(), "\n");
+		while (endofline>cdtcommandB.c_str() && (*(endofline-1)=='\n' || *(endofline-1)=='\r'))
 			--endofline;
-		*endofline = '\0';
-		logdata (LOG_CDT_IN, cdtline, strlen(cdtline));
+		cdtcommandB.clear(BIG_LIMIT,endofline-cdtcommandB.c_str());
+		logdata (LOG_CDT_IN, cdtcommandB.c_str(), cdtcommandB.size());
 	}
 	else
 		return WAIT_DATA;
 
-	nextarg = evalCDTLine (pstate, cdtline, &cc);
-
+	nextarg = evalCDTCommand (pstate, cdtcommandB.c_str(), &cc);
 	if (nextarg==0) {
 	}
 	// MISCELLANOUS COMMANDS
@@ -989,18 +990,18 @@ addEnvironment (STATE *pstate, const char *entrystring)
 //   convert arguments line in a argv vector
 //   decode optional (--option) arguments
 int
-evalCDTLine (STATE *pstate, const char *cdtline, CDT_COMMAND *cc)
+evalCDTCommand (STATE *pstate, const char *cdtcommand, CDT_COMMAND *cc)
 {
-	logprintf (LOG_NONE, "evalCDTLine (0x%x, %s, 0x%x)\n", pstate, cdtline, cc);
+	logprintf (LOG_NONE, "evalCDTLine (0x%x, %s, 0x%x)\n", pstate, cdtcommand, cc);
 	cc->sequence = 0;
 	cc->argc = 0;
 	cc->arguments[0] = '\0';
-	if (cdtline[0] == '\0')	// just ENTER
+	if (cdtcommand[0] == '\0')	// just ENTER
 		return 0;
-	int fields = sscanf (cdtline, "%d%[^\0]", &cc->sequence, cc->arguments);
+	int fields = sscanf (cdtcommand, "%d%[^\0]", &cc->sequence, cc->arguments);
 	if (fields < 2) {
 		logprintf (LOG_WARN, "invalid command format: ");
-		logdata (LOG_NOHEADER, cdtline, strlen(cdtline));
+		logdata (LOG_NOHEADER, cdtcommand, strlen(cdtcommand));
 		cdtprintf ("%d^error,msg=\"%s\"\n(gdb)\n", cc->sequence, "invalid command format.");
 		return 0;
 	}

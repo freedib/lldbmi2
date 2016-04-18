@@ -53,7 +53,7 @@ StringB::c_str () {
 	return buffer_array;
 }
 
-// shift remove n first characters from buffer. capacity remains unchanged
+// shift remove bytes first characters from buffer. capacity remains unchanged
 char *
 StringB::clear (int bytes, int start) {
 	if (buffer_array == NULL)
@@ -69,26 +69,35 @@ StringB::clear (int bytes, int start) {
 	return buffer_array;
 }
 
+// copy string at the start of the buffer
+// if bytes specified, copy at most bytes bytes and terminate string
 char *
-StringB::copy (const char *string) {
-	return copyat (0, string);
+StringB::copy (const char *string, int bytes) {
+	return copyat (0, string, bytes);
 }
 
 
 // append string to the end of the buffer
+// if bytes specified, append at most bytes bytes and terminate string
 char *
-StringB::append (const char *string) {
-	return copyat (buffer_size, string);
+StringB::append (const char *string, int bytes) {
+	return copyat (buffer_size, string, bytes);
 }
 
 // copy at offset of the buffer. usually 0 (copy) or buffer size (append)
+// if bytes specified, copy at most bytes bytes and terminate string
 char *
-StringB::copyat (int offset, const char *string) {
+StringB::copyat (int offset, const char *string, int bytes) {
 	int string_length = strlen (string);
+	if (bytes<string_length)
+		string_length = bytes;
 	if (offset+string_length >= buffer_capacity)
 		if (grow (string_length+1) == NULL)
 			return NULL;
-	::strcpy (buffer_array+offset, string);
+	if (bytes<=string_length)
+		::strlcpy (buffer_array+offset, string, string_length+1);
+	else
+		::strcpy (buffer_array+offset, string);
 	buffer_size = offset+string_length;
 	return buffer_array;
 }

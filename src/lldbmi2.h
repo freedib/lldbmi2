@@ -12,8 +12,6 @@ using namespace lldb;
 #include <sys/syslimits.h>
 #include "stringb.h"
 
-#define USE_BUFFERS			// define this if want to use experimental buffers
-
 #define WAIT_DATA  0
 #define MORE_DATA  1
 
@@ -38,7 +36,6 @@ typedef struct {
 	int change_depth_max;
 } LIMITS;
 
-//TODO: implement StringB for all big data arrays
 
 // dynamic context
 typedef struct {
@@ -53,7 +50,7 @@ typedef struct {
 	char envs[BIG_LINE_MAX];
 	char *envspointer;
 	char project_loc[PATH_MAX];
-	char cdtbuffer[BIG_LINE_MAX];		// must be the same size as cdtline in fromCDT
+	StringB cdtbufferB;
 	char cdtptyname[NAME_MAX];
 	char logfilename[PATH_MAX];
 	const char *gdbPrompt;

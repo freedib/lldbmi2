@@ -54,7 +54,7 @@ main (int argc, char **argv, char **envp)
 {
 	int narg;
 	fd_set set;
-	char line[BIG_LINE_MAX];				// data from cdt
+	char commandLine[BIG_LINE_MAX];		// data from cdt
 	char consoleLine[LINE_MAX];			// data from eclipse's console
 	long chars;
 	struct timeval timeout;
@@ -63,10 +63,10 @@ main (int argc, char **argv, char **envp)
 	int  isLog=0;
 	int  logmask=LOG_ALL;
 
-	memset (&state, '\0', sizeof(state));
 	state.ptyfd = EOF;
 	state.gdbPrompt = "GNU gdb (GDB) 7.7.1\n";
 	sprintf (state.lldbmi2Prompt, "lldbmi2 version %s\n", LLDBMI2_VERSION);
+	state.cdtbufferB.grow(BIG_LINE_MAX);
 
 	limits.frames_max = FRAMES_MAX;
 	limits.children_max = CHILDREN_MAX;
@@ -185,12 +185,12 @@ main (int argc, char **argv, char **envp)
 			select(STDIN_FILENO+1, &set, NULL, NULL, &timeout);
 		if (FD_ISSET(STDIN_FILENO, &set) && !state.eof && !limits.istest) {
 			logprintf (LOG_NONE, "read in\n");
-			chars = read (STDIN_FILENO, line, sizeof(line)-1);
+			chars = read (STDIN_FILENO, commandLine, sizeof(commandLine)-1);
 			logprintf (LOG_NONE, "read out %d chars\n", chars);
 			if (chars>0) {
-				line[chars] = '\0';
-				while (fromCDT (&state,line,sizeof(line)) == MORE_DATA)
-					line[0] = '\0';
+				commandLine[chars] = '\0';
+				while (fromCDT (&state,commandLine,sizeof(commandLine)) == MORE_DATA)
+					commandLine[0] = '\0';
 			}
 			else
 				state.eof = true;
@@ -212,14 +212,14 @@ main (int argc, char **argv, char **envp)
 		// execute test command if test mode
 		if (!state.eof && limits.istest && !state.isrunning) {
 			if ((testCommand=getTestCommand ())!=NULL) {
-				snprintf (line, sizeof(line), "%s\n", testCommand);
-				fromCDT (&state, line, sizeof(line));
+				snprintf (commandLine, sizeof(commandLine), "%s\n", testCommand);
+				fromCDT (&state, commandLine, sizeof(commandLine));
 			}
 		}
 		// execute stacked commands if many command arrived once
-		if (!state.eof && state.cdtbuffer[0]!='\0') {
-			line[0] = '\0';
-			while (fromCDT (&state, line, sizeof(line)) == MORE_DATA)
+		if (!state.eof && state.cdtbufferB.size()>0) {
+			commandLine[0] = '\0';
+			while (fromCDT (&state, commandLine, sizeof(commandLine)) == MORE_DATA)
 				;
 		}
 	}

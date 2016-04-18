@@ -195,10 +195,8 @@ logdata ( unsigned scope, const char *data, int datasize )
 				}
 			}
 		}
-		logbuffer.append("|");
+		logbuffer.append("|\n");
 		logprintf (scope, NULL);
-		write (log_fd, logbuffer.c_str(), logbuffer.size());
-		write (log_fd, "\n", 1);
 	}
 }
 
