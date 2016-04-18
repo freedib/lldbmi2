@@ -689,7 +689,7 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 						if (var.GetError().Fail())	// create a name because in this case, name=(anonymous)
 							expressionpathdesc = expression;
 						else
-							formatValue (vardescB, var, NO_SUMMARY);
+							formatValue (vardescB, var, FULL_SUMMARY);		// was NO_SUMMARY
 						char *vardesc = vardescB.c_str();
 						if (vartype.IsReferenceType() && varnumchildren==1)	// correct numchildren and value if reference
 							--varnumchildren;
@@ -876,7 +876,7 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 				SBValue var = getVariable (frame, expression);
 				if (var.IsValid() && var.GetError().Success()) {
 					var.SetFormat(formatcode);
-					char *vardesc = formatValue (var, NO_SUMMARY);
+					char *vardesc = formatValue (var, FULL_SUMMARY);		// was NO_SUMMARY
 					cdtprintf ("%d^done,format=\"%s\",value=\"%s\"\n(gdb)\n", cc.sequence, format, vardesc);
 				}
 				else
