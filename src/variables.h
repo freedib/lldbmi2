@@ -23,7 +23,7 @@ typedef enum
 bool  getPeudoArrayVariable (SBFrame frame, const char *expression, SBValue &var);
 bool  getStandardPathVariable (SBFrame frame, const char *expression, SBValue &var);
 const char *getName ( SBValue &var);
-char *strrstr (char *string, const char *find);
+char *strfind (char *string, const char *find, int way=1, const char *except=NULL);
 bool  getDirectPathVariable (SBFrame frame, const char *expression, SBValue *foundvar, SBValue &parent, int depth);
 char *castexpression (SBFrame frame, const char *expression, char *newexpression, size_t expressionsize);
 

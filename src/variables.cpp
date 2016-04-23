@@ -9,11 +9,6 @@
 extern LIMITS limits;
 
 
-// TODO: check why walk/changed is slow
-// TODO: error on evaluating...
-// XMLTableImportContext::CreateChildContext() at XMLTableImport.cxx:495 0x46f759 ...
-// mxTableModel	sdr::table::TableModelRef	Error: Multiple errors reported.\ Failed to execute MI command: -var-evaluate-expression this->mxRows._pInterface->mxTableModel \ Failed to execute MI command: -data-evaluate-expression this->mxRows._pInterface->mxTableModel \ Failed to execute MI command: -var-set-format this->mxRows._pInterface->mxTableModel octal \ Failed to execute MI command: -var-set-format this->mxRows._pInterface->mxTableModel decimal \ Failed to execute MI command: -var-set-format this->mxRows._pInterface->mxTableModel binary \ Failed to execute MI command: -var-set-format this->mxRows._pInterface->mxTableModel hexadecimal
-
 
 // bug struct CD (*cdp)[2]
 // gdb:     -var-create --thread 1 --frame 0 - * cdp		->    name="var4",numchild="1",type="CD (*)[2]"
@@ -120,18 +115,27 @@ const char *getName ( SBValue &var)
 }
 
 
+// return first or last occurrence of find. If except not null and find first, return NULL
+// if way==1, like strstr, if way=-1, like strrstr
 char *
-strrstr (char *string, const char *find)
+strfind (char *string, const char *find, int way, const char *except)
 {
-	size_t stringlen, findlen;
+	size_t stringlen, findlen, exceptlen=0;
 	char *cp;
-	findlen = strlen(find);
 	stringlen = strlen(string);
+	findlen = strlen(find);
+	if (except!=NULL)
+		exceptlen = strlen(except);
 	if (findlen > stringlen)
 		return NULL;
-	for (cp = string + stringlen - findlen; cp >= string; cp--)
+	for (cp=way>0? string: string+stringlen-findlen; cp>=string && cp<=string+stringlen-findlen; cp+=way) {
+		if (except!=NULL && cp<string+stringlen-exceptlen) {
+			if (strncmp(cp, except, findlen) == 0)
+				return NULL;
+		}
 		if (strncmp(cp, find, findlen) == 0)
 			return cp;
+	}
 	return NULL;
 }
 
@@ -146,13 +150,13 @@ getDirectPathVariable (SBFrame frame, const char *expression, SBValue *foundvar,
 	if (!parent.IsValid() || parent.GetError().Fail()) {
 		// if root, search root variable. start from the bottom up to a valid variable
 		do {
-			if ((pchildren = strrchr (expression_parts, '.')) != NULL)
+			if ((pchildren = strfind (expression_parts, ".", -1, "->")) != NULL)
 				*pchildren++ = '\0';
-			else if ((pchildren = strrstr (expression_parts, "->")) != NULL) {
+			else if ((pchildren = strfind (expression_parts, "->", -1)) != NULL) {
 				*pchildren++ = '\0';
 				*pchildren++ = '\0';
 			}
-			else if ((pchildren = strrchr (expression_parts, '[')) != NULL)
+			else if ((pchildren = strfind (expression_parts, "[", -1)) != NULL)
 				*pchildren = '\0';
 			else
 				return false;					// no more parent/children form
@@ -163,9 +167,9 @@ getDirectPathVariable (SBFrame frame, const char *expression, SBValue *foundvar,
 		return getDirectPathVariable (frame, pchildren, foundvar, parent, depth-1);
 	}
 	// split expression between parent and children
-	if ((pchildren = strchr (expression_parts, '.')) != NULL)
+	if ((pchildren = strfind (expression_parts, ".", 1, "->")) != NULL)
 		*pchildren++ = '\0';
-	else if ((pchildren = strstr (expression_parts, "->")) != NULL) {
+	else if ((pchildren = strfind (expression_parts, "->")) != NULL) {
 		*pchildren++ = '\0';
 		*pchildren++ = '\0';
 	}
