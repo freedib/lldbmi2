@@ -132,7 +132,15 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 				if (strstr(cc.argv[nextarg],"%s")!=NULL)
 					logprintf (LOG_VARS, "%%s -> %s\n", cc.argv[nextarg]);
 			}
-			launchInfo.SetArguments (&cc.argv[nextarg], false);
+			int firstarg = nextarg;
+			for (; nextarg<cc.argc; nextarg++)
+				if (cc.argv[nextarg][0] == '\'') {
+					size_t copyarg=0; size_t length=strlen(cc.argv[nextarg])-2;
+					for (; copyarg<length; ++copyarg)
+						((char*)(cc.argv[nextarg]))[copyarg] = cc.argv[nextarg][copyarg+1];
+					((char*)(cc.argv[nextarg]))[copyarg] = '\0';
+				}
+			launchInfo.SetArguments (&cc.argv[firstarg], false);
 		}
 		else if (strcmp(cc.argv[nextarg],"env") == 0) {
 			// eclipse put a space around the equal in VAR = value. we have to combine all 3 part to form env entry
