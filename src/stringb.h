@@ -25,8 +25,9 @@ public:
 	char *c_str();
 	char *clear (int bytes=BIG_LIMIT, int start=0);
 	char *copy (const char *string, int bytes=BIG_LIMIT);
-	char *append (const char *string, int bytes=BIG_LIMIT);
-	char *copyat (int offset, const char *string, int bytes=BIG_LIMIT);
+	char *append (const char *string, int extraBytes=0);
+	char *append (const char c);
+	char *copyat (int offset, const char *string, int maxBytes=BIG_LIMIT, int extraBytes=0);
 	int   sprintf  (const char *format, ...);
 	int   catsprintf (const char *format, ...);
 	int   vosprintf (int offset, const char *format, va_list args);

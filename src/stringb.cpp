@@ -72,29 +72,41 @@ StringB::clear (int bytes, int start) {
 // copy string at the start of the buffer
 // if bytes specified, copy at most bytes bytes and terminate string
 char *
-StringB::copy (const char *string, int bytes) {
-	return copyat (0, string, bytes);
+StringB::copy (const char *string, int maxBytes) {
+	return copyat (0, string, maxBytes);
 }
 
 
 // append string to the end of the buffer
 // if bytes specified, append at most bytes bytes and terminate string
 char *
-StringB::append (const char *string, int bytes) {
-	return copyat (buffer_size, string, bytes);
+StringB::append (const char *string, int extraBytes) {
+	return copyat (buffer_size, string, BIG_LIMIT, extraBytes);
+}
+
+// append string to the end of the buffer
+// if bytes specified, append at most bytes bytes and terminate string
+char *
+StringB::append (const char c) {
+	if (buffer_size+1 >= buffer_capacity)
+		if (grow (1) == NULL)
+			return NULL;
+	buffer_array[buffer_size++] = c;
+	buffer_array[buffer_size] = '\0';
+	return buffer_array;
 }
 
 // copy at offset of the buffer. usually 0 (copy) or buffer size (append)
 // if bytes specified, copy at most bytes bytes and terminate string
 char *
-StringB::copyat (int offset, const char *string, int bytes) {
-	int string_length = strlen (string);
-	if (bytes<string_length)
-		string_length = bytes;
+StringB::copyat (int offset, const char *string, int maxBytes, int extraBytes) {
+	int string_length = strlen(string) + extraBytes;
+	if (maxBytes<string_length)
+		string_length = maxBytes;
 	if (offset+string_length >= buffer_capacity)
 		if (grow (string_length+1) == NULL)
 			return NULL;
-	if (bytes<=string_length)
+	if (maxBytes<=string_length)
 		::strlcpy (buffer_array+offset, string, string_length+1);
 	else
 		::strcpy (buffer_array+offset, string);

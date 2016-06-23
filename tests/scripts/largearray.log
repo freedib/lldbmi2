@@ -1,0 +1,1256 @@
+083743.275 @@@  /usr/local/bin/lldbmi2 --log --logmask 3FFF --interpreter mi2 --nx 
+083743.961 <<=  |(gdb)\n|
+083744.077 >>=  |1-list-features|
+083744.077 <<=  |1^done,features=["frozen-varobjs","pending-breakpoints","thread-info","data-read-memory-bytes","breakpoint-notifications","ada-task-info","python"]\n(gdb)\n|
+083744.545 >>=  |2-gdb-version|
+083744.546 <<=  |~"GNU gdb (GDB) 7.7.1\n"\n|
+083744.548 <<=  |~"lldbmi2 version 1.0.123\n"\n|
+083744.548 <<=  |2^done\n(gdb)\n|
+083744.585 >>=  |3-environment-cd /Users/didier/Projets/git-lldbmi2/lldbmi2|
+083744.585 <<=  |3^done\n(gdb)\n|
+083744.595 >>=  |4-gdb-set breakpoint pending on|
+083744.595 <<=  |4^done\n(gdb)\n|
+083744.610 >>=  |5-gdb-set detach-on-fork on|
+083744.610 <<=  |5^done\n(gdb)\n|
+083744.614 >>=  |6-enable-pretty-printing|
+083744.614 <<=  |6^done\n|
+083744.628 >>=  |7-gdb-set python print-stack none|
+083744.628 <<=  |7^done\n(gdb)\n|
+083744.638 >>=  |8-gdb-set print object on|
+083744.638 <<=  |8^done\n(gdb)\n|
+083744.641 >>=  |9-gdb-set print sevenbit-strings on|
+083744.641 <<=  |9^done\n(gdb)\n|
+083744.644 >>=  |10-gdb-set host-charset UTF-8|
+083744.644 <<=  |10^done\n(gdb)\n|
+083744.647 >>=  |11-gdb-set target-charset UTF-8|
+083744.647 <<=  |11^done\n(gdb)\n|
+083744.650 >>=  |12-gdb-set target-wide-charset UTF-32|
+083744.650 <<=  |12^done\n(gdb)\n|
+083744.652 >>=  |13-gdb-set dprintf-style call|
+083744.652 <<=  |13^done\n(gdb)\n|
+083744.658 >>=  |14source .gdbinit|
+083744.658 <<=  |14^done\n(gdb)\n|
+083744.674 >>=  |15-gdb-set target-async off|
+083744.674 <<=  |15^done\n(gdb)\n|
+083744.677 >>=  |16-gdb-set auto-solib-add on|
+083744.677 <<=  |16^done\n(gdb)\n|
+083744.704 >>=  |17-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/lldbmi2/build/tests|
+083745.401 <<=  |17^done\n(gdb)\n|
+083745.402 >>=  |18-list-thread-groups|
+083745.405 <<=  |18^done,groups=[{id="i1",type="process",executable="/Users/didier/Projets/git-lldbmi2/lldbmi2/build/tests"}]\n(gdb)\n|
+083745.429 >>=  |19-gdb-set --thread-group i1 args 4|
+083745.429 <<=  |19^done\n(gdb)\n|
+083745.447 >>=  |20-gdb-show --thread-group i1 language|
+083745.447 <<=  |20^done,value="auto"\n(gdb)\n|
+083745.453 >>=  |21-gdb-set --thread-group i1 language c|
+083745.453 <<=  |21^done\n(gdb)\n|
+083745.463 >>=  |22-interpreter-exec --thread-group i1 console "p/x (char)-1"|
+083745.463 <<=  |~"$1 = 0xff\n"\n22^done\n(gdb)\n|
+083745.469 >>=  |23-data-evaluate-expression --thread-group i1 "sizeof (void*)"|
+083745.469 <<=  |23^done,value="8"\n(gdb)\n|
+083745.478 >>=  |24-gdb-set --thread-group i1 language auto|
+083745.478 <<=  |24^done\n(gdb)\n|
+083745.484 >>=  |25-interpreter-exec --thread-group i1 console "show endian"|
+083745.484 <<=  |~"The target endianness is set automatically (currently little endian)\n"\n25^done\n(gdb)\n|
+083745.553 >>=  |26-break-insert -f /Users/didier/Projets/git-lldbmi2/lldbmi2/src/variables.cpp:446|
+083745.554 <<=  |26^done,bkpt={number="1",type="breakpoint",disp="keep",enabled="y",addr="0x00000000ffffffff",func="(null)",file="(null)",fullname="(null)/(null)",line="0",thread-groups=["i1"],times="0",original-location=""}\n(gdb)\n|
+083745.554 >>=  |27-break-insert -f /Users/didier/Projets/git-lldbmi2/lldbmi2/tests/src/tests.cpp:125|
+083745.562 <<=  |27^done,bkpt={number="2",type="breakpoint",disp="keep",enabled="y",addr="0x00000000000014eb",func="test_POINTERS()",file="tests.cpp",fullname="/Users/didier/Projets/git-lldbmi2/lldbmi2/tests/src/tests.cpp",line="125",thread-groups=["i1"],times="0",original-location=""}\n(gdb)\n|
+083745.571 >>=  |28-break-insert -f /Users/didier/Projets/git-lldbmi2/lldbmi2/tests/src/tests.cpp:338|
+083745.583 <<=  |28^done,bkpt={number="3",type="breakpoint",disp="keep",enabled="y",addr="0x0000000000001f7e",func="test_BIG_CLASS()",file="tests.cpp",fullname="/Users/didier/Projets/git-lldbmi2/lldbmi2/tests/src/tests.cpp",line="339",thread-groups=["i1"],times="0",original-location=""}\n(gdb)\n|
+083745.583 >>=  |29-break-insert -f /Users/didier/Projets/git-lldbmi2/lldbmi2/tests/src/tests.cpp:175|
+083745.583 <<=  |29^done,bkpt={number="4",type="breakpoint",disp="keep",enabled="y",addr="0x000000000000162c",func="AB::sumab()",file="tests.cpp",fullname="/Users/didier/Projets/git-lldbmi2/lldbmi2/tests/src/tests.cpp",line="175",thread-groups=["i1"],times="0",original-location=""}\n(gdb)\n|
+083745.583 >>=  |30-break-insert -f /Users/didier/Projets/git-lldbmi2/lldbmi2/tests/src/tests.cpp:92|
+083745.584 <<=  |30^done,bkpt={number="5",type="breakpoint",disp="keep",enabled="y",addr="0x0000000000001434",func="test_LARGE_CHAR_ARRAY()",file="tests.cpp",fullname="/Users/didier/Projets/git-lldbmi2/lldbmi2/tests/src/tests.cpp",line="92",thread-groups=["i1"],times="0",original-location=""}\n(gdb)\n|
+083745.584 >>=  |31-break-insert -f /Users/didier/Projets/git-lldbmi2/lldbmi2/tests/src/tests.cpp:376|
+083745.584 <<=  |31^done,bkpt={number="6",type="breakpoint",disp="keep",enabled="y",addr="0x0000000000001fd2",func="test_LONG_INHERITANCE()",file="tests.cpp",fullname="/Users/didier/Projets/git-lldbmi2/lldbmi2/tests/src/tests.cpp",line="376",thread-groups=["i1"],times="0",original-location=""}\n(gdb)\n|
+083745.616 >>=  |32-inferior-tty-set --thread-group i1 /dev/ttyp0|
+083745.616 <<=  |32^done\n(gdb)\n|
+083745.642 >>=  |33-exec-run --thread-group i1|
+083746.044 ###  eStateRunning
+083746.044 <<=  |=thread-group-started,id="i1",pid="8196"\n|
+083746.051 <<=  |=thread-created,id="1",group-id="i1"\n|
+083746.051 <<=  |33^running\n|
+083746.051 <<=  |*running,thread-id="all"\n(gdb)\n|
+083746.051 >>=  |34-list-thread-groups --available|
+083746.051 <<=  |34^error,msg="Can not fetch data now."\n(gdb)\n|
+083746.103 ###  eBroadcastBitSTDOUT
+083746.103 <<<  |tests 4\n|
+083746.107 ###  eStateStopped
+083746.107 <<=  |=breakpoint-modified,bkpt={number="5",type="breakpoint",disp="keep",enabled="y",addr="0x0000000000001434",func="test_LARGE_CHAR_ARRAY()",file="tests.cpp",fullname="/Users/didier/Projets/git-lldbmi2/lldbmi2/tests/src/tests.cpp",line="92",thread-groups=["i1"],times="0",original-location=""}\n|
+083746.107 <<=  |*stopped,reason="breakpoint-hit",disp="keep",bkptno="5",frame={addr="0x0000000000001434",func="test_LARGE_CHAR_ARRAY()",args=[],file="tests.cpp",fullname="/Users/didier/Projets/git-lldbmi2/lldbmi2/tests/src/tests.cpp",line="92"},thread-id="1",stopped-threads="all"\n(gdb)\n|
+083746.262 >>=  |35-list-thread-groups|
+083746.262 <<=  |35^done,groups=[{id="i1",type="process",pid="8196",executable="/Users/didier/Projets/git-lldbmi2/lldbmi2/build/tests"}]\n(gdb)\n|
+083746.485 >>=  |36-list-thread-groups|
+083746.485 <<=  |36^done,groups=[{id="i1",type="process",pid="8196",executable="/Users/didier/Projets/git-lldbmi2/lldbmi2/build/tests"}]\n(gdb)\n|
+083747.867 >>=  |37-list-thread-groups i1|
+083747.868 $$$  getNumFrames(0x55884298) = 4
+083747.868 <<=  |37^done,threads=[{id="1",target-id="Thread 0x165a0 of process 8196",frame={level="0",addr="0x0000000000001434",func="test_LARGE_CHAR_ARRAY()",args=[],file="tests.cpp",fullname="/Users/didier/Projets/git-lldbmi2/lldbmi2/tests/src/tests.cpp",line="92"},state="stopped"}]\n(gdb)\n|
+083747.880 >>=  |38-stack-info-depth --thread 1 11|
+083747.880 $$$  getNumFrames(0x55884f48) = 4
+083747.880 <<=  |38^done,depth="4"\n(gdb)\n|
+083748.133 >>=  |39-thread-info 1|
+083748.134 <<=  |39^error,msg="Can not fetch data now."\n(gdb)\n|
+083748.134 >>=  |40-var-create --thread-group i1 - * ccc+0|
+083748.172 $$$  getVariable: expression=ccc+0, name=$0, value=0x00007fff5fbff520, changed=0
+083748.172 $$$  updateVarState: Var=$0   : children=1 , typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Builtin   , basictype=SignedChar, bytesize=1 
+083748.172 $$$  formatExpressionPath: expressionpathdesc=$0
+083748.172 $$$  updateVarState: name=$0, varexpressionpath=$0, varnumchildren=1, value=0x00007fff5fbff520, summary=, changed=0
+083748.173 $$$  updateVarState: Var=*$0  : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.173 $$$  formatExpressionPath: expressionpathdesc=*$0
+083748.173 $$$  updateVarState: name=*$0, varexpressionpath=*($0), varnumchildren=0, value='H', summary=(null), changed=0
+083748.173 $$$  formatExpressionPath: expressionpathdesc=$0
+083748.173 $$$  formatValue: Var=$0   : children=1 , typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Builtin   , basictype=SignedChar, bytesize=1 
+083748.173 $$$  formatSummary: Var=$0   : children=1 , typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Builtin   , basictype=SignedChar, bytesize=1 
+083748.173 $$$  formatValue: var=0x7fff55884d48, name=$0, summary=HI"abc"JK, value=0x00007fff5fbff520, address=0x7fff5fbff520
+083748.173 <<=  |40^done,name="$0",numchild="1",value="0x00007fff5fbff520 \"HI"abc"JK\"",type="char *",thread-id="1",has_more="0"\n(gdb)\n|
+083748.173 >>=  |41-var-create --thread-group i1 - * ccc|
+083748.173 $$$  getVariable: expression=ccc, name=ccc, value=(null), changed=0
+083748.173 $$$  updateVarState: Var=ccc  : children=102, typeclass=Array     , basictype=Invalid   , bytesize=102, Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.173 $$$  formatExpressionPath: expressionpathdesc=ccc
+083748.173 $$$  updateVarState: name=ccc, varexpressionpath=ccc, varnumchildren=102, value=(null), summary="HI\"abc\"JK", changed=0
+083748.173 $$$  formatExpressionPath: expressionpathdesc=ccc
+083748.173 $$$  formatValue: Var=ccc  : children=102, typeclass=Array     , basictype=Invalid   , bytesize=102, Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.173 $$$  formatSummary: Var=ccc  : children=102, typeclass=Array     , basictype=Invalid   , bytesize=102, Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.174 $$$  formatValue: var=0x7fff55884d48, name=ccc, summary=HI\"abc\"JK, value=(null), address=0x7fff5fbff520
+083748.174 <<=  |41^done,name="ccc",numchild="102",value="0x7fff5fbff520 \"HI\"abc\"JK\"",type="char [102]",thread-id="1",has_more="0"\n(gdb)\n|
+083748.440 >>=  |42-var-create --thread-group i1 - * &(ccc)|
+083748.444 $$$  getVariable: expression=&(ccc), name=$1, value=0x00007fff5fbff520, changed=0
+083748.444 $$$  updateVarState: Var=$1   : children=102, typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Array     , basictype=Invalid   , bytesize=102
+083748.444 $$$  formatExpressionPath: expressionpathdesc=$1
+083748.444 $$$  updateVarState: name=$1, varexpressionpath=$1, varnumchildren=102, value=0x00007fff5fbff520, summary=(null), changed=0
+083748.444 $$$  updateVarState: Var=[0]  : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.444 $$$  formatExpressionPath: expressionpathdesc=[0]
+083748.444 $$$  updateVarState: name=[0], varexpressionpath=$1[0], varnumchildren=0, value='H', summary=(null), changed=0
+083748.444 $$$  updateVarState: Var=[1]  : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.444 $$$  formatExpressionPath: expressionpathdesc=[1]
+083748.444 $$$  updateVarState: name=[1], varexpressionpath=$1[1], varnumchildren=0, value='I', summary=(null), changed=0
+083748.444 $$$  updateVarState: Var=[2]  : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.444 $$$  formatExpressionPath: expressionpathdesc=[2]
+083748.444 $$$  updateVarState: name=[2], varexpressionpath=$1[2], varnumchildren=0, value='"', summary=(null), changed=0
+083748.444 $$$  updateVarState: Var=[3]  : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.444 $$$  formatExpressionPath: expressionpathdesc=[3]
+083748.444 $$$  updateVarState: name=[3], varexpressionpath=$1[3], varnumchildren=0, value='a', summary=(null), changed=0
+083748.444 $$$  updateVarState: Var=[4]  : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.445 $$$  formatExpressionPath: expressionpathdesc=[4]
+083748.445 $$$  updateVarState: name=[4], varexpressionpath=$1[4], varnumchildren=0, value='b', summary=(null), changed=0
+083748.445 $$$  updateVarState: Var=[5]  : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.445 $$$  formatExpressionPath: expressionpathdesc=[5]
+083748.445 $$$  updateVarState: name=[5], varexpressionpath=$1[5], varnumchildren=0, value='c', summary=(null), changed=0
+083748.445 $$$  updateVarState: Var=[6]  : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.445 $$$  formatExpressionPath: expressionpathdesc=[6]
+083748.445 $$$  updateVarState: name=[6], varexpressionpath=$1[6], varnumchildren=0, value='"', summary=(null), changed=0
+083748.445 $$$  updateVarState: Var=[7]  : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.445 $$$  formatExpressionPath: expressionpathdesc=[7]
+083748.445 $$$  updateVarState: name=[7], varexpressionpath=$1[7], varnumchildren=0, value='J', summary=(null), changed=0
+083748.445 $$$  updateVarState: Var=[8]  : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.445 $$$  formatExpressionPath: expressionpathdesc=[8]
+083748.445 $$$  updateVarState: name=[8], varexpressionpath=$1[8], varnumchildren=0, value='K', summary=(null), changed=0
+083748.445 $$$  updateVarState: Var=[9]  : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.445 $$$  formatExpressionPath: expressionpathdesc=[9]
+083748.445 $$$  updateVarState: name=[9], varexpressionpath=$1[9], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.445 $$$  updateVarState: Var=[10] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.445 $$$  formatExpressionPath: expressionpathdesc=[10]
+083748.445 $$$  updateVarState: name=[10], varexpressionpath=$1[10], varnumchildren=0, value='\xbf', summary=(null), changed=0
+083748.445 $$$  updateVarState: Var=[11] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.445 $$$  formatExpressionPath: expressionpathdesc=[11]
+083748.446 $$$  updateVarState: name=[11], varexpressionpath=$1[11], varnumchildren=0, value='_', summary=(null), changed=0
+083748.446 $$$  updateVarState: Var=[12] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.446 $$$  formatExpressionPath: expressionpathdesc=[12]
+083748.446 $$$  updateVarState: name=[12], varexpressionpath=$1[12], varnumchildren=0, value='\xff', summary=(null), changed=0
+083748.446 $$$  updateVarState: Var=[13] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.446 $$$  formatExpressionPath: expressionpathdesc=[13]
+083748.446 $$$  updateVarState: name=[13], varexpressionpath=$1[13], varnumchildren=0, value='\x7f', summary=(null), changed=0
+083748.446 $$$  updateVarState: Var=[14] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.446 $$$  formatExpressionPath: expressionpathdesc=[14]
+083748.446 $$$  updateVarState: name=[14], varexpressionpath=$1[14], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.446 $$$  updateVarState: Var=[15] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.446 $$$  formatExpressionPath: expressionpathdesc=[15]
+083748.446 $$$  updateVarState: name=[15], varexpressionpath=$1[15], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.446 $$$  updateVarState: Var=[16] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.446 $$$  formatExpressionPath: expressionpathdesc=[16]
+083748.446 $$$  updateVarState: name=[16], varexpressionpath=$1[16], varnumchildren=0, value='\x10', summary=(null), changed=0
+083748.446 $$$  updateVarState: Var=[17] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.446 $$$  formatExpressionPath: expressionpathdesc=[17]
+083748.446 $$$  updateVarState: name=[17], varexpressionpath=$1[17], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.446 $$$  updateVarState: Var=[18] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.446 $$$  formatExpressionPath: expressionpathdesc=[18]
+083748.446 $$$  updateVarState: name=[18], varexpressionpath=$1[18], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.447 $$$  updateVarState: Var=[19] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.447 $$$  formatExpressionPath: expressionpathdesc=[19]
+083748.447 $$$  updateVarState: name=[19], varexpressionpath=$1[19], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.447 $$$  updateVarState: Var=[20] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.447 $$$  formatExpressionPath: expressionpathdesc=[20]
+083748.447 $$$  updateVarState: name=[20], varexpressionpath=$1[20], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.447 $$$  updateVarState: Var=[21] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.447 $$$  formatExpressionPath: expressionpathdesc=[21]
+083748.447 $$$  updateVarState: name=[21], varexpressionpath=$1[21], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.447 $$$  updateVarState: Var=[22] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.447 $$$  formatExpressionPath: expressionpathdesc=[22]
+083748.447 $$$  updateVarState: name=[22], varexpressionpath=$1[22], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.447 $$$  updateVarState: Var=[23] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.447 $$$  formatExpressionPath: expressionpathdesc=[23]
+083748.447 $$$  updateVarState: name=[23], varexpressionpath=$1[23], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.447 $$$  updateVarState: Var=[24] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.447 $$$  formatExpressionPath: expressionpathdesc=[24]
+083748.447 $$$  updateVarState: name=[24], varexpressionpath=$1[24], varnumchildren=0, value='\x01', summary=(null), changed=0
+083748.447 $$$  updateVarState: Var=[25] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.447 $$$  formatExpressionPath: expressionpathdesc=[25]
+083748.447 $$$  updateVarState: name=[25], varexpressionpath=$1[25], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.447 $$$  updateVarState: Var=[26] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.447 $$$  formatExpressionPath: expressionpathdesc=[26]
+083748.447 $$$  updateVarState: name=[26], varexpressionpath=$1[26], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.448 $$$  updateVarState: Var=[27] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.448 $$$  formatExpressionPath: expressionpathdesc=[27]
+083748.448 $$$  updateVarState: name=[27], varexpressionpath=$1[27], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.448 $$$  updateVarState: Var=[28] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.448 $$$  formatExpressionPath: expressionpathdesc=[28]
+083748.448 $$$  updateVarState: name=[28], varexpressionpath=$1[28], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.448 $$$  updateVarState: Var=[29] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.448 $$$  formatExpressionPath: expressionpathdesc=[29]
+083748.448 $$$  updateVarState: name=[29], varexpressionpath=$1[29], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.448 $$$  updateVarState: Var=[30] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.448 $$$  formatExpressionPath: expressionpathdesc=[30]
+083748.448 $$$  updateVarState: name=[30], varexpressionpath=$1[30], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.448 $$$  updateVarState: Var=[31] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.448 $$$  formatExpressionPath: expressionpathdesc=[31]
+083748.448 $$$  updateVarState: name=[31], varexpressionpath=$1[31], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.448 $$$  updateVarState: Var=[32] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.448 $$$  formatExpressionPath: expressionpathdesc=[32]
+083748.448 $$$  updateVarState: name=[32], varexpressionpath=$1[32], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.448 $$$  updateVarState: Var=[33] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.448 $$$  formatExpressionPath: expressionpathdesc=[33]
+083748.448 $$$  updateVarState: name=[33], varexpressionpath=$1[33], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.448 $$$  updateVarState: Var=[34] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.449 $$$  formatExpressionPath: expressionpathdesc=[34]
+083748.449 $$$  updateVarState: name=[34], varexpressionpath=$1[34], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.449 $$$  updateVarState: Var=[35] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.449 $$$  formatExpressionPath: expressionpathdesc=[35]
+083748.449 $$$  updateVarState: name=[35], varexpressionpath=$1[35], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.449 $$$  updateVarState: Var=[36] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.449 $$$  formatExpressionPath: expressionpathdesc=[36]
+083748.449 $$$  updateVarState: name=[36], varexpressionpath=$1[36], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.449 $$$  updateVarState: Var=[37] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.449 $$$  formatExpressionPath: expressionpathdesc=[37]
+083748.449 $$$  updateVarState: name=[37], varexpressionpath=$1[37], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.449 $$$  updateVarState: Var=[38] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.449 $$$  formatExpressionPath: expressionpathdesc=[38]
+083748.449 $$$  updateVarState: name=[38], varexpressionpath=$1[38], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.449 $$$  updateVarState: Var=[39] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.449 $$$  formatExpressionPath: expressionpathdesc=[39]
+083748.449 $$$  updateVarState: name=[39], varexpressionpath=$1[39], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.449 $$$  updateVarState: Var=[40] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.449 $$$  formatExpressionPath: expressionpathdesc=[40]
+083748.449 $$$  updateVarState: name=[40], varexpressionpath=$1[40], varnumchildren=0, value='\n', summary=(null), changed=0
+083748.449 $$$  updateVarState: Var=[41] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.449 $$$  formatExpressionPath: expressionpathdesc=[41]
+083748.450 $$$  updateVarState: name=[41], varexpressionpath=$1[41], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.450 $$$  updateVarState: Var=[42] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.450 $$$  formatExpressionPath: expressionpathdesc=[42]
+083748.450 $$$  updateVarState: name=[42], varexpressionpath=$1[42], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.450 $$$  updateVarState: Var=[43] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.450 $$$  formatExpressionPath: expressionpathdesc=[43]
+083748.450 $$$  updateVarState: name=[43], varexpressionpath=$1[43], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.450 $$$  updateVarState: Var=[44] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.450 $$$  formatExpressionPath: expressionpathdesc=[44]
+083748.450 $$$  updateVarState: name=[44], varexpressionpath=$1[44], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.450 $$$  updateVarState: Var=[45] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.450 $$$  formatExpressionPath: expressionpathdesc=[45]
+083748.450 $$$  updateVarState: name=[45], varexpressionpath=$1[45], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.450 $$$  updateVarState: Var=[46] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.450 $$$  formatExpressionPath: expressionpathdesc=[46]
+083748.450 $$$  updateVarState: name=[46], varexpressionpath=$1[46], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.450 $$$  updateVarState: Var=[47] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.450 $$$  formatExpressionPath: expressionpathdesc=[47]
+083748.450 $$$  updateVarState: name=[47], varexpressionpath=$1[47], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.450 $$$  updateVarState: Var=[48] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.450 $$$  formatExpressionPath: expressionpathdesc=[48]
+083748.450 $$$  updateVarState: name=[48], varexpressionpath=$1[48], varnumchildren=0, value='\x10', summary=(null), changed=0
+083748.450 $$$  updateVarState: Var=[49] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.451 $$$  formatExpressionPath: expressionpathdesc=[49]
+083748.451 $$$  updateVarState: name=[49], varexpressionpath=$1[49], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.451 $$$  updateVarState: Var=[50] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.451 $$$  formatExpressionPath: expressionpathdesc=[50]
+083748.451 $$$  updateVarState: name=[50], varexpressionpath=$1[50], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.451 $$$  updateVarState: Var=[51] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.451 $$$  formatExpressionPath: expressionpathdesc=[51]
+083748.451 $$$  updateVarState: name=[51], varexpressionpath=$1[51], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.451 $$$  updateVarState: Var=[52] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.451 $$$  formatExpressionPath: expressionpathdesc=[52]
+083748.451 $$$  updateVarState: name=[52], varexpressionpath=$1[52], varnumchildren=0, value='0', summary=(null), changed=0
+083748.451 $$$  updateVarState: Var=[53] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.451 $$$  formatExpressionPath: expressionpathdesc=[53]
+083748.451 $$$  updateVarState: name=[53], varexpressionpath=$1[53], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.451 $$$  updateVarState: Var=[54] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.451 $$$  formatExpressionPath: expressionpathdesc=[54]
+083748.451 $$$  updateVarState: name=[54], varexpressionpath=$1[54], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.451 $$$  updateVarState: Var=[55] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.451 $$$  formatExpressionPath: expressionpathdesc=[55]
+083748.451 $$$  updateVarState: name=[55], varexpressionpath=$1[55], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.451 $$$  updateVarState: Var=[56] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.451 $$$  formatExpressionPath: expressionpathdesc=[56]
+083748.451 $$$  updateVarState: name=[56], varexpressionpath=$1[56], varnumchildren=0, value='\xa0', summary=(null), changed=0
+083748.452 $$$  updateVarState: Var=[57] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.452 $$$  formatExpressionPath: expressionpathdesc=[57]
+083748.452 $$$  updateVarState: name=[57], varexpressionpath=$1[57], varnumchildren=0, value='\xf5', summary=(null), changed=0
+083748.452 $$$  updateVarState: Var=[58] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.452 $$$  formatExpressionPath: expressionpathdesc=[58]
+083748.452 $$$  updateVarState: name=[58], varexpressionpath=$1[58], varnumchildren=0, value='\xbf', summary=(null), changed=0
+083748.452 $$$  updateVarState: Var=[59] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.452 $$$  formatExpressionPath: expressionpathdesc=[59]
+083748.452 $$$  updateVarState: name=[59], varexpressionpath=$1[59], varnumchildren=0, value='_', summary=(null), changed=0
+083748.452 $$$  updateVarState: Var=[60] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.452 $$$  formatExpressionPath: expressionpathdesc=[60]
+083748.452 $$$  updateVarState: name=[60], varexpressionpath=$1[60], varnumchildren=0, value='\xff', summary=(null), changed=0
+083748.452 $$$  updateVarState: Var=[61] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.452 $$$  formatExpressionPath: expressionpathdesc=[61]
+083748.452 $$$  updateVarState: name=[61], varexpressionpath=$1[61], varnumchildren=0, value='\x7f', summary=(null), changed=0
+083748.452 $$$  updateVarState: Var=[62] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.452 $$$  formatExpressionPath: expressionpathdesc=[62]
+083748.452 $$$  updateVarState: name=[62], varexpressionpath=$1[62], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.452 $$$  updateVarState: Var=[63] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.452 $$$  formatExpressionPath: expressionpathdesc=[63]
+083748.452 $$$  updateVarState: name=[63], varexpressionpath=$1[63], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.453 $$$  updateVarState: Var=[64] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.453 $$$  formatExpressionPath: expressionpathdesc=[64]
+083748.453 $$$  updateVarState: name=[64], varexpressionpath=$1[64], varnumchildren=0, value='\xa0', summary=(null), changed=0
+083748.453 $$$  updateVarState: Var=[65] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.453 $$$  formatExpressionPath: expressionpathdesc=[65]
+083748.453 $$$  updateVarState: name=[65], varexpressionpath=$1[65], varnumchildren=0, value='\xf4', summary=(null), changed=0
+083748.453 $$$  updateVarState: Var=[66] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.453 $$$  formatExpressionPath: expressionpathdesc=[66]
+083748.453 $$$  updateVarState: name=[66], varexpressionpath=$1[66], varnumchildren=0, value='\xbf', summary=(null), changed=0
+083748.453 $$$  updateVarState: Var=[67] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.453 $$$  formatExpressionPath: expressionpathdesc=[67]
+083748.453 $$$  updateVarState: name=[67], varexpressionpath=$1[67], varnumchildren=0, value='_', summary=(null), changed=0
+083748.453 $$$  updateVarState: Var=[68] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.453 $$$  formatExpressionPath: expressionpathdesc=[68]
+083748.453 $$$  updateVarState: name=[68], varexpressionpath=$1[68], varnumchildren=0, value='\xff', summary=(null), changed=0
+083748.453 $$$  updateVarState: Var=[69] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.453 $$$  formatExpressionPath: expressionpathdesc=[69]
+083748.453 $$$  updateVarState: name=[69], varexpressionpath=$1[69], varnumchildren=0, value='\x7f', summary=(null), changed=0
+083748.453 $$$  updateVarState: Var=[70] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.453 $$$  formatExpressionPath: expressionpathdesc=[70]
+083748.453 $$$  updateVarState: name=[70], varexpressionpath=$1[70], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.453 $$$  updateVarState: Var=[71] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.453 $$$  formatExpressionPath: expressionpathdesc=[71]
+083748.454 $$$  updateVarState: name=[71], varexpressionpath=$1[71], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.454 $$$  updateVarState: Var=[72] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.454 $$$  formatExpressionPath: expressionpathdesc=[72]
+083748.454 $$$  updateVarState: name=[72], varexpressionpath=$1[72], varnumchildren=0, value='\x18', summary=(null), changed=0
+083748.454 $$$  updateVarState: Var=[73] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.454 $$$  formatExpressionPath: expressionpathdesc=[73]
+083748.454 $$$  updateVarState: name=[73], varexpressionpath=$1[73], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.454 $$$  updateVarState: Var=[74] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.454 $$$  formatExpressionPath: expressionpathdesc=[74]
+083748.454 $$$  updateVarState: name=[74], varexpressionpath=$1[74], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.454 $$$  updateVarState: Var=[75] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.454 $$$  formatExpressionPath: expressionpathdesc=[75]
+083748.454 $$$  updateVarState: name=[75], varexpressionpath=$1[75], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.454 $$$  updateVarState: Var=[76] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.454 $$$  formatExpressionPath: expressionpathdesc=[76]
+083748.454 $$$  updateVarState: name=[76], varexpressionpath=$1[76], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.454 $$$  updateVarState: Var=[77] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.454 $$$  formatExpressionPath: expressionpathdesc=[77]
+083748.454 $$$  updateVarState: name=[77], varexpressionpath=$1[77], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.454 $$$  updateVarState: Var=[78] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.454 $$$  formatExpressionPath: expressionpathdesc=[78]
+083748.454 $$$  updateVarState: name=[78], varexpressionpath=$1[78], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.455 $$$  updateVarState: Var=[79] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.455 $$$  formatExpressionPath: expressionpathdesc=[79]
+083748.455 $$$  updateVarState: name=[79], varexpressionpath=$1[79], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.455 $$$  updateVarState: Var=[80] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.455 $$$  formatExpressionPath: expressionpathdesc=[80]
+083748.455 $$$  updateVarState: name=[80], varexpressionpath=$1[80], varnumchildren=0, value='u', summary=(null), changed=0
+083748.455 $$$  updateVarState: Var=[81] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.455 $$$  formatExpressionPath: expressionpathdesc=[81]
+083748.455 $$$  updateVarState: name=[81], varexpressionpath=$1[81], varnumchildren=0, value='\xce', summary=(null), changed=0
+083748.455 $$$  updateVarState: Var=[82] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.455 $$$  formatExpressionPath: expressionpathdesc=[82]
+083748.455 $$$  updateVarState: name=[82], varexpressionpath=$1[82], varnumchildren=0, value='\xe9', summary=(null), changed=0
+083748.455 $$$  updateVarState: Var=[83] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.455 $$$  formatExpressionPath: expressionpathdesc=[83]
+083748.455 $$$  updateVarState: name=[83], varexpressionpath=$1[83], varnumchildren=0, value='\x84', summary=(null), changed=0
+083748.455 $$$  updateVarState: Var=[84] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.455 $$$  formatExpressionPath: expressionpathdesc=[84]
+083748.455 $$$  updateVarState: name=[84], varexpressionpath=$1[84], varnumchildren=0, value='\x11', summary=(null), changed=0
+083748.455 $$$  updateVarState: Var=[85] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.455 $$$  formatExpressionPath: expressionpathdesc=[85]
+083748.455 $$$  updateVarState: name=[85], varexpressionpath=$1[85], varnumchildren=0, value='z', summary=(null), changed=0
+083748.455 $$$  updateVarState: Var=[86] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.455 $$$  formatExpressionPath: expressionpathdesc=[86]
+083748.456 $$$  updateVarState: name=[86], varexpressionpath=$1[86], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.456 $$$  updateVarState: Var=[87] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.456 $$$  formatExpressionPath: expressionpathdesc=[87]
+083748.456 $$$  updateVarState: name=[87], varexpressionpath=$1[87], varnumchildren=0, value='\xdb', summary=(null), changed=0
+083748.456 $$$  updateVarState: Var=[88] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.456 $$$  formatExpressionPath: expressionpathdesc=[88]
+083748.456 $$$  updateVarState: name=[88], varexpressionpath=$1[88], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.456 $$$  updateVarState: Var=[89] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.456 $$$  formatExpressionPath: expressionpathdesc=[89]
+083748.456 $$$  updateVarState: name=[89], varexpressionpath=$1[89], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.456 $$$  updateVarState: Var=[90] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.456 $$$  formatExpressionPath: expressionpathdesc=[90]
+083748.456 $$$  updateVarState: name=[90], varexpressionpath=$1[90], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.456 $$$  updateVarState: Var=[91] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.456 $$$  formatExpressionPath: expressionpathdesc=[91]
+083748.456 $$$  updateVarState: name=[91], varexpressionpath=$1[91], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.456 $$$  updateVarState: Var=[92] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.456 $$$  formatExpressionPath: expressionpathdesc=[92]
+083748.456 $$$  updateVarState: name=[92], varexpressionpath=$1[92], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.456 $$$  updateVarState: Var=[93] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.456 $$$  formatExpressionPath: expressionpathdesc=[93]
+083748.456 $$$  updateVarState: name=[93], varexpressionpath=$1[93], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.456 $$$  updateVarState: Var=[94] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.457 $$$  formatExpressionPath: expressionpathdesc=[94]
+083748.457 $$$  updateVarState: name=[94], varexpressionpath=$1[94], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.457 $$$  updateVarState: Var=[95] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.457 $$$  formatExpressionPath: expressionpathdesc=[95]
+083748.457 $$$  updateVarState: name=[95], varexpressionpath=$1[95], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.457 $$$  updateVarState: Var=[96] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.457 $$$  formatExpressionPath: expressionpathdesc=[96]
+083748.457 $$$  updateVarState: name=[96], varexpressionpath=$1[96], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.457 $$$  updateVarState: Var=[97] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.457 $$$  formatExpressionPath: expressionpathdesc=[97]
+083748.457 $$$  updateVarState: name=[97], varexpressionpath=$1[97], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.457 $$$  updateVarState: Var=[98] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.457 $$$  formatExpressionPath: expressionpathdesc=[98]
+083748.457 $$$  updateVarState: name=[98], varexpressionpath=$1[98], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.457 $$$  updateVarState: Var=[99] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.457 $$$  formatExpressionPath: expressionpathdesc=[99]
+083748.457 $$$  updateVarState: name=[99], varexpressionpath=$1[99], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.457 $$$  updateVarState: Var=[100]: children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.457 $$$  formatExpressionPath: expressionpathdesc=[100]
+083748.457 $$$  updateVarState: name=[100], varexpressionpath=$1[100], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.457 $$$  updateVarState: Var=[101]: children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083748.457 $$$  formatExpressionPath: expressionpathdesc=[101]
+083748.457 $$$  updateVarState: name=[101], varexpressionpath=$1[101], varnumchildren=0, value='\0', summary=(null), changed=0
+083748.458 $$$  formatExpressionPath: expressionpathdesc=$1
+083748.458 $$$  formatValue: Var=$1   : children=102, typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Array     , basictype=Invalid   , bytesize=102
+083748.458 $$$  formatSummary: Var=$1   : children=102, typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Array     , basictype=Invalid   , bytesize=102
+083748.458 $$$  formatValue: var=0x7fff55884d48, name=$1, summary=, value=0x00007fff5fbff520, address=0x7fff5fbff520
+083748.458 <<=  |42^done,name="$1",numchild="102",value="0x00007fff5fbff520 {...}",type="char (*)[102]",thread-id="1",has_more="0"\n(gdb)\n|
+083749.303 >>=  |43-var-create --thread 1 --frame 0 - * ccc+0|
+083749.307 $$$  getVariable: expression=ccc+0, name=$2, value=0x00007fff5fbff520, changed=0
+083749.307 $$$  updateVarState: Var=$2   : children=1 , typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Builtin   , basictype=SignedChar, bytesize=1 
+083749.307 $$$  formatExpressionPath: expressionpathdesc=$2
+083749.307 $$$  updateVarState: name=$2, varexpressionpath=$2, varnumchildren=1, value=0x00007fff5fbff520, summary=, changed=0
+083749.307 $$$  updateVarState: Var=*$2  : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.307 $$$  formatExpressionPath: expressionpathdesc=*$2
+083749.307 $$$  updateVarState: name=*$2, varexpressionpath=*($2), varnumchildren=0, value='H', summary=(null), changed=0
+083749.307 $$$  formatExpressionPath: expressionpathdesc=$2
+083749.307 $$$  formatValue: Var=$2   : children=1 , typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Builtin   , basictype=SignedChar, bytesize=1 
+083749.307 $$$  formatSummary: Var=$2   : children=1 , typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Builtin   , basictype=SignedChar, bytesize=1 
+083749.307 $$$  formatValue: var=0x7fff55884d48, name=$2, summary=HI"abc"JK, value=0x00007fff5fbff520, address=0x7fff5fbff520
+083749.307 <<=  |43^done,name="$2",numchild="1",value="0x00007fff5fbff520 \"HI"abc"JK\"",type="char *",thread-id="1",has_more="0"\n(gdb)\n|
+083749.307 >>=  |44-var-create --thread 1 --frame 0 - * ccc|
+083749.307 $$$  getVariable: expression=ccc, name=ccc, value=(null), changed=0
+083749.308 $$$  updateVarState: Var=ccc  : children=102, typeclass=Array     , basictype=Invalid   , bytesize=102, Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.308 $$$  formatExpressionPath: expressionpathdesc=ccc
+083749.308 $$$  updateVarState: name=ccc, varexpressionpath=ccc, varnumchildren=102, value=(null), summary="HI\"abc\"JK", changed=0
+083749.308 $$$  formatExpressionPath: expressionpathdesc=ccc
+083749.308 $$$  formatValue: Var=ccc  : children=102, typeclass=Array     , basictype=Invalid   , bytesize=102, Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.308 $$$  formatSummary: Var=ccc  : children=102, typeclass=Array     , basictype=Invalid   , bytesize=102, Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.308 $$$  formatValue: var=0x7fff55884d48, name=ccc, summary=HI\"abc\"JK, value=(null), address=0x7fff5fbff520
+083749.308 <<=  |44^done,name="ccc",numchild="102",value="0x7fff5fbff520 \"HI\"abc\"JK\"",type="char [102]",thread-id="1",has_more="0"\n(gdb)\n|
+083749.334 >>=  |45-var-create --thread 1 --frame 0 - * &(ccc)|
+083749.337 $$$  getVariable: expression=&(ccc), name=$3, value=0x00007fff5fbff520, changed=0
+083749.337 $$$  updateVarState: Var=$3   : children=102, typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Array     , basictype=Invalid   , bytesize=102
+083749.337 $$$  formatExpressionPath: expressionpathdesc=$3
+083749.337 $$$  updateVarState: name=$3, varexpressionpath=$3, varnumchildren=102, value=0x00007fff5fbff520, summary=(null), changed=0
+083749.338 $$$  updateVarState: Var=[0]  : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.338 $$$  formatExpressionPath: expressionpathdesc=[0]
+083749.338 $$$  updateVarState: name=[0], varexpressionpath=$3[0], varnumchildren=0, value='H', summary=(null), changed=0
+083749.338 $$$  updateVarState: Var=[1]  : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.338 $$$  formatExpressionPath: expressionpathdesc=[1]
+083749.338 $$$  updateVarState: name=[1], varexpressionpath=$3[1], varnumchildren=0, value='I', summary=(null), changed=0
+083749.338 $$$  updateVarState: Var=[2]  : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.338 $$$  formatExpressionPath: expressionpathdesc=[2]
+083749.338 $$$  updateVarState: name=[2], varexpressionpath=$3[2], varnumchildren=0, value='"', summary=(null), changed=0
+083749.338 $$$  updateVarState: Var=[3]  : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.338 $$$  formatExpressionPath: expressionpathdesc=[3]
+083749.338 $$$  updateVarState: name=[3], varexpressionpath=$3[3], varnumchildren=0, value='a', summary=(null), changed=0
+083749.338 $$$  updateVarState: Var=[4]  : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.338 $$$  formatExpressionPath: expressionpathdesc=[4]
+083749.338 $$$  updateVarState: name=[4], varexpressionpath=$3[4], varnumchildren=0, value='b', summary=(null), changed=0
+083749.338 $$$  updateVarState: Var=[5]  : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.338 $$$  formatExpressionPath: expressionpathdesc=[5]
+083749.338 $$$  updateVarState: name=[5], varexpressionpath=$3[5], varnumchildren=0, value='c', summary=(null), changed=0
+083749.338 $$$  updateVarState: Var=[6]  : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.338 $$$  formatExpressionPath: expressionpathdesc=[6]
+083749.338 $$$  updateVarState: name=[6], varexpressionpath=$3[6], varnumchildren=0, value='"', summary=(null), changed=0
+083749.339 $$$  updateVarState: Var=[7]  : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.339 $$$  formatExpressionPath: expressionpathdesc=[7]
+083749.339 $$$  updateVarState: name=[7], varexpressionpath=$3[7], varnumchildren=0, value='J', summary=(null), changed=0
+083749.339 $$$  updateVarState: Var=[8]  : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.339 $$$  formatExpressionPath: expressionpathdesc=[8]
+083749.339 $$$  updateVarState: name=[8], varexpressionpath=$3[8], varnumchildren=0, value='K', summary=(null), changed=0
+083749.339 $$$  updateVarState: Var=[9]  : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.339 $$$  formatExpressionPath: expressionpathdesc=[9]
+083749.339 $$$  updateVarState: name=[9], varexpressionpath=$3[9], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.339 $$$  updateVarState: Var=[10] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.339 $$$  formatExpressionPath: expressionpathdesc=[10]
+083749.339 $$$  updateVarState: name=[10], varexpressionpath=$3[10], varnumchildren=0, value='\xbf', summary=(null), changed=0
+083749.339 $$$  updateVarState: Var=[11] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.339 $$$  formatExpressionPath: expressionpathdesc=[11]
+083749.339 $$$  updateVarState: name=[11], varexpressionpath=$3[11], varnumchildren=0, value='_', summary=(null), changed=0
+083749.339 $$$  updateVarState: Var=[12] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.339 $$$  formatExpressionPath: expressionpathdesc=[12]
+083749.339 $$$  updateVarState: name=[12], varexpressionpath=$3[12], varnumchildren=0, value='\xff', summary=(null), changed=0
+083749.339 $$$  updateVarState: Var=[13] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.339 $$$  formatExpressionPath: expressionpathdesc=[13]
+083749.339 $$$  updateVarState: name=[13], varexpressionpath=$3[13], varnumchildren=0, value='\x7f', summary=(null), changed=0
+083749.339 $$$  updateVarState: Var=[14] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.339 $$$  formatExpressionPath: expressionpathdesc=[14]
+083749.340 $$$  updateVarState: name=[14], varexpressionpath=$3[14], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.340 $$$  updateVarState: Var=[15] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.340 $$$  formatExpressionPath: expressionpathdesc=[15]
+083749.340 $$$  updateVarState: name=[15], varexpressionpath=$3[15], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.340 $$$  updateVarState: Var=[16] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.340 $$$  formatExpressionPath: expressionpathdesc=[16]
+083749.340 $$$  updateVarState: name=[16], varexpressionpath=$3[16], varnumchildren=0, value='\x10', summary=(null), changed=0
+083749.340 $$$  updateVarState: Var=[17] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.340 $$$  formatExpressionPath: expressionpathdesc=[17]
+083749.340 $$$  updateVarState: name=[17], varexpressionpath=$3[17], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.340 $$$  updateVarState: Var=[18] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.340 $$$  formatExpressionPath: expressionpathdesc=[18]
+083749.340 $$$  updateVarState: name=[18], varexpressionpath=$3[18], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.340 $$$  updateVarState: Var=[19] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.340 $$$  formatExpressionPath: expressionpathdesc=[19]
+083749.340 $$$  updateVarState: name=[19], varexpressionpath=$3[19], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.340 $$$  updateVarState: Var=[20] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.340 $$$  formatExpressionPath: expressionpathdesc=[20]
+083749.340 $$$  updateVarState: name=[20], varexpressionpath=$3[20], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.340 $$$  updateVarState: Var=[21] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.340 $$$  formatExpressionPath: expressionpathdesc=[21]
+083749.340 $$$  updateVarState: name=[21], varexpressionpath=$3[21], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.341 $$$  updateVarState: Var=[22] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.341 $$$  formatExpressionPath: expressionpathdesc=[22]
+083749.341 $$$  updateVarState: name=[22], varexpressionpath=$3[22], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.341 $$$  updateVarState: Var=[23] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.341 $$$  formatExpressionPath: expressionpathdesc=[23]
+083749.341 $$$  updateVarState: name=[23], varexpressionpath=$3[23], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.341 $$$  updateVarState: Var=[24] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.341 $$$  formatExpressionPath: expressionpathdesc=[24]
+083749.341 $$$  updateVarState: name=[24], varexpressionpath=$3[24], varnumchildren=0, value='\x01', summary=(null), changed=0
+083749.341 $$$  updateVarState: Var=[25] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.341 $$$  formatExpressionPath: expressionpathdesc=[25]
+083749.341 $$$  updateVarState: name=[25], varexpressionpath=$3[25], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.341 $$$  updateVarState: Var=[26] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.341 $$$  formatExpressionPath: expressionpathdesc=[26]
+083749.341 $$$  updateVarState: name=[26], varexpressionpath=$3[26], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.341 $$$  updateVarState: Var=[27] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.341 $$$  formatExpressionPath: expressionpathdesc=[27]
+083749.341 $$$  updateVarState: name=[27], varexpressionpath=$3[27], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.341 $$$  updateVarState: Var=[28] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.341 $$$  formatExpressionPath: expressionpathdesc=[28]
+083749.341 $$$  updateVarState: name=[28], varexpressionpath=$3[28], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.341 $$$  updateVarState: Var=[29] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.341 $$$  formatExpressionPath: expressionpathdesc=[29]
+083749.342 $$$  updateVarState: name=[29], varexpressionpath=$3[29], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.342 $$$  updateVarState: Var=[30] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.342 $$$  formatExpressionPath: expressionpathdesc=[30]
+083749.342 $$$  updateVarState: name=[30], varexpressionpath=$3[30], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.342 $$$  updateVarState: Var=[31] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.342 $$$  formatExpressionPath: expressionpathdesc=[31]
+083749.342 $$$  updateVarState: name=[31], varexpressionpath=$3[31], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.342 $$$  updateVarState: Var=[32] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.342 $$$  formatExpressionPath: expressionpathdesc=[32]
+083749.342 $$$  updateVarState: name=[32], varexpressionpath=$3[32], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.342 $$$  updateVarState: Var=[33] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.342 $$$  formatExpressionPath: expressionpathdesc=[33]
+083749.342 $$$  updateVarState: name=[33], varexpressionpath=$3[33], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.342 $$$  updateVarState: Var=[34] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.342 $$$  formatExpressionPath: expressionpathdesc=[34]
+083749.342 $$$  updateVarState: name=[34], varexpressionpath=$3[34], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.342 $$$  updateVarState: Var=[35] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.342 $$$  formatExpressionPath: expressionpathdesc=[35]
+083749.342 $$$  updateVarState: name=[35], varexpressionpath=$3[35], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.342 $$$  updateVarState: Var=[36] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.342 $$$  formatExpressionPath: expressionpathdesc=[36]
+083749.342 $$$  updateVarState: name=[36], varexpressionpath=$3[36], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.342 $$$  updateVarState: Var=[37] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.343 $$$  formatExpressionPath: expressionpathdesc=[37]
+083749.343 $$$  updateVarState: name=[37], varexpressionpath=$3[37], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.343 $$$  updateVarState: Var=[38] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.343 $$$  formatExpressionPath: expressionpathdesc=[38]
+083749.343 $$$  updateVarState: name=[38], varexpressionpath=$3[38], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.343 $$$  updateVarState: Var=[39] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.343 $$$  formatExpressionPath: expressionpathdesc=[39]
+083749.343 $$$  updateVarState: name=[39], varexpressionpath=$3[39], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.343 $$$  updateVarState: Var=[40] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.343 $$$  formatExpressionPath: expressionpathdesc=[40]
+083749.343 $$$  updateVarState: name=[40], varexpressionpath=$3[40], varnumchildren=0, value='\n', summary=(null), changed=0
+083749.343 $$$  updateVarState: Var=[41] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.343 $$$  formatExpressionPath: expressionpathdesc=[41]
+083749.343 $$$  updateVarState: name=[41], varexpressionpath=$3[41], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.343 $$$  updateVarState: Var=[42] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.343 $$$  formatExpressionPath: expressionpathdesc=[42]
+083749.343 $$$  updateVarState: name=[42], varexpressionpath=$3[42], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.343 $$$  updateVarState: Var=[43] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.343 $$$  formatExpressionPath: expressionpathdesc=[43]
+083749.343 $$$  updateVarState: name=[43], varexpressionpath=$3[43], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.343 $$$  updateVarState: Var=[44] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.343 $$$  formatExpressionPath: expressionpathdesc=[44]
+083749.343 $$$  updateVarState: name=[44], varexpressionpath=$3[44], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.344 $$$  updateVarState: Var=[45] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.344 $$$  formatExpressionPath: expressionpathdesc=[45]
+083749.344 $$$  updateVarState: name=[45], varexpressionpath=$3[45], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.344 $$$  updateVarState: Var=[46] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.344 $$$  formatExpressionPath: expressionpathdesc=[46]
+083749.344 $$$  updateVarState: name=[46], varexpressionpath=$3[46], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.344 $$$  updateVarState: Var=[47] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.344 $$$  formatExpressionPath: expressionpathdesc=[47]
+083749.344 $$$  updateVarState: name=[47], varexpressionpath=$3[47], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.344 $$$  updateVarState: Var=[48] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.344 $$$  formatExpressionPath: expressionpathdesc=[48]
+083749.344 $$$  updateVarState: name=[48], varexpressionpath=$3[48], varnumchildren=0, value='\x10', summary=(null), changed=0
+083749.344 $$$  updateVarState: Var=[49] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.344 $$$  formatExpressionPath: expressionpathdesc=[49]
+083749.344 $$$  updateVarState: name=[49], varexpressionpath=$3[49], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.344 $$$  updateVarState: Var=[50] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.344 $$$  formatExpressionPath: expressionpathdesc=[50]
+083749.344 $$$  updateVarState: name=[50], varexpressionpath=$3[50], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.344 $$$  updateVarState: Var=[51] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.344 $$$  formatExpressionPath: expressionpathdesc=[51]
+083749.344 $$$  updateVarState: name=[51], varexpressionpath=$3[51], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.344 $$$  updateVarState: Var=[52] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.345 $$$  formatExpressionPath: expressionpathdesc=[52]
+083749.345 $$$  updateVarState: name=[52], varexpressionpath=$3[52], varnumchildren=0, value='0', summary=(null), changed=0
+083749.345 $$$  updateVarState: Var=[53] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.345 $$$  formatExpressionPath: expressionpathdesc=[53]
+083749.345 $$$  updateVarState: name=[53], varexpressionpath=$3[53], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.345 $$$  updateVarState: Var=[54] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.345 $$$  formatExpressionPath: expressionpathdesc=[54]
+083749.345 $$$  updateVarState: name=[54], varexpressionpath=$3[54], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.345 $$$  updateVarState: Var=[55] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.345 $$$  formatExpressionPath: expressionpathdesc=[55]
+083749.345 $$$  updateVarState: name=[55], varexpressionpath=$3[55], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.345 $$$  updateVarState: Var=[56] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.345 $$$  formatExpressionPath: expressionpathdesc=[56]
+083749.345 $$$  updateVarState: name=[56], varexpressionpath=$3[56], varnumchildren=0, value='\xa0', summary=(null), changed=0
+083749.345 $$$  updateVarState: Var=[57] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.345 $$$  formatExpressionPath: expressionpathdesc=[57]
+083749.345 $$$  updateVarState: name=[57], varexpressionpath=$3[57], varnumchildren=0, value='\xf5', summary=(null), changed=0
+083749.345 $$$  updateVarState: Var=[58] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.345 $$$  formatExpressionPath: expressionpathdesc=[58]
+083749.345 $$$  updateVarState: name=[58], varexpressionpath=$3[58], varnumchildren=0, value='\xbf', summary=(null), changed=0
+083749.345 $$$  updateVarState: Var=[59] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.345 $$$  formatExpressionPath: expressionpathdesc=[59]
+083749.345 $$$  updateVarState: name=[59], varexpressionpath=$3[59], varnumchildren=0, value='_', summary=(null), changed=0
+083749.346 $$$  updateVarState: Var=[60] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.346 $$$  formatExpressionPath: expressionpathdesc=[60]
+083749.346 $$$  updateVarState: name=[60], varexpressionpath=$3[60], varnumchildren=0, value='\xff', summary=(null), changed=0
+083749.346 $$$  updateVarState: Var=[61] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.346 $$$  formatExpressionPath: expressionpathdesc=[61]
+083749.346 $$$  updateVarState: name=[61], varexpressionpath=$3[61], varnumchildren=0, value='\x7f', summary=(null), changed=0
+083749.346 $$$  updateVarState: Var=[62] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.346 $$$  formatExpressionPath: expressionpathdesc=[62]
+083749.346 $$$  updateVarState: name=[62], varexpressionpath=$3[62], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.346 $$$  updateVarState: Var=[63] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.346 $$$  formatExpressionPath: expressionpathdesc=[63]
+083749.346 $$$  updateVarState: name=[63], varexpressionpath=$3[63], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.346 $$$  updateVarState: Var=[64] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.346 $$$  formatExpressionPath: expressionpathdesc=[64]
+083749.346 $$$  updateVarState: name=[64], varexpressionpath=$3[64], varnumchildren=0, value='\xa0', summary=(null), changed=0
+083749.346 $$$  updateVarState: Var=[65] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.346 $$$  formatExpressionPath: expressionpathdesc=[65]
+083749.346 $$$  updateVarState: name=[65], varexpressionpath=$3[65], varnumchildren=0, value='\xf4', summary=(null), changed=0
+083749.346 $$$  updateVarState: Var=[66] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.346 $$$  formatExpressionPath: expressionpathdesc=[66]
+083749.346 $$$  updateVarState: name=[66], varexpressionpath=$3[66], varnumchildren=0, value='\xbf', summary=(null), changed=0
+083749.346 $$$  updateVarState: Var=[67] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.346 $$$  formatExpressionPath: expressionpathdesc=[67]
+083749.347 $$$  updateVarState: name=[67], varexpressionpath=$3[67], varnumchildren=0, value='_', summary=(null), changed=0
+083749.347 $$$  updateVarState: Var=[68] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.347 $$$  formatExpressionPath: expressionpathdesc=[68]
+083749.347 $$$  updateVarState: name=[68], varexpressionpath=$3[68], varnumchildren=0, value='\xff', summary=(null), changed=0
+083749.347 $$$  updateVarState: Var=[69] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.347 $$$  formatExpressionPath: expressionpathdesc=[69]
+083749.347 $$$  updateVarState: name=[69], varexpressionpath=$3[69], varnumchildren=0, value='\x7f', summary=(null), changed=0
+083749.347 $$$  updateVarState: Var=[70] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.347 $$$  formatExpressionPath: expressionpathdesc=[70]
+083749.347 $$$  updateVarState: name=[70], varexpressionpath=$3[70], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.347 $$$  updateVarState: Var=[71] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.347 $$$  formatExpressionPath: expressionpathdesc=[71]
+083749.347 $$$  updateVarState: name=[71], varexpressionpath=$3[71], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.347 $$$  updateVarState: Var=[72] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.347 $$$  formatExpressionPath: expressionpathdesc=[72]
+083749.347 $$$  updateVarState: name=[72], varexpressionpath=$3[72], varnumchildren=0, value='\x18', summary=(null), changed=0
+083749.347 $$$  updateVarState: Var=[73] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.347 $$$  formatExpressionPath: expressionpathdesc=[73]
+083749.347 $$$  updateVarState: name=[73], varexpressionpath=$3[73], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.347 $$$  updateVarState: Var=[74] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.347 $$$  formatExpressionPath: expressionpathdesc=[74]
+083749.348 $$$  updateVarState: name=[74], varexpressionpath=$3[74], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.348 $$$  updateVarState: Var=[75] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.348 $$$  formatExpressionPath: expressionpathdesc=[75]
+083749.348 $$$  updateVarState: name=[75], varexpressionpath=$3[75], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.348 $$$  updateVarState: Var=[76] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.348 $$$  formatExpressionPath: expressionpathdesc=[76]
+083749.348 $$$  updateVarState: name=[76], varexpressionpath=$3[76], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.348 $$$  updateVarState: Var=[77] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.348 $$$  formatExpressionPath: expressionpathdesc=[77]
+083749.348 $$$  updateVarState: name=[77], varexpressionpath=$3[77], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.348 $$$  updateVarState: Var=[78] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.348 $$$  formatExpressionPath: expressionpathdesc=[78]
+083749.348 $$$  updateVarState: name=[78], varexpressionpath=$3[78], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.348 $$$  updateVarState: Var=[79] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.348 $$$  formatExpressionPath: expressionpathdesc=[79]
+083749.348 $$$  updateVarState: name=[79], varexpressionpath=$3[79], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.348 $$$  updateVarState: Var=[80] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.348 $$$  formatExpressionPath: expressionpathdesc=[80]
+083749.348 $$$  updateVarState: name=[80], varexpressionpath=$3[80], varnumchildren=0, value='u', summary=(null), changed=0
+083749.348 $$$  updateVarState: Var=[81] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.348 $$$  formatExpressionPath: expressionpathdesc=[81]
+083749.348 $$$  updateVarState: name=[81], varexpressionpath=$3[81], varnumchildren=0, value='\xce', summary=(null), changed=0
+083749.348 $$$  updateVarState: Var=[82] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.349 $$$  formatExpressionPath: expressionpathdesc=[82]
+083749.349 $$$  updateVarState: name=[82], varexpressionpath=$3[82], varnumchildren=0, value='\xe9', summary=(null), changed=0
+083749.349 $$$  updateVarState: Var=[83] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.349 $$$  formatExpressionPath: expressionpathdesc=[83]
+083749.349 $$$  updateVarState: name=[83], varexpressionpath=$3[83], varnumchildren=0, value='\x84', summary=(null), changed=0
+083749.349 $$$  updateVarState: Var=[84] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.349 $$$  formatExpressionPath: expressionpathdesc=[84]
+083749.349 $$$  updateVarState: name=[84], varexpressionpath=$3[84], varnumchildren=0, value='\x11', summary=(null), changed=0
+083749.349 $$$  updateVarState: Var=[85] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.349 $$$  formatExpressionPath: expressionpathdesc=[85]
+083749.349 $$$  updateVarState: name=[85], varexpressionpath=$3[85], varnumchildren=0, value='z', summary=(null), changed=0
+083749.349 $$$  updateVarState: Var=[86] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.349 $$$  formatExpressionPath: expressionpathdesc=[86]
+083749.349 $$$  updateVarState: name=[86], varexpressionpath=$3[86], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.349 $$$  updateVarState: Var=[87] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.349 $$$  formatExpressionPath: expressionpathdesc=[87]
+083749.349 $$$  updateVarState: name=[87], varexpressionpath=$3[87], varnumchildren=0, value='\xdb', summary=(null), changed=0
+083749.349 $$$  updateVarState: Var=[88] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.349 $$$  formatExpressionPath: expressionpathdesc=[88]
+083749.349 $$$  updateVarState: name=[88], varexpressionpath=$3[88], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.349 $$$  updateVarState: Var=[89] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.349 $$$  formatExpressionPath: expressionpathdesc=[89]
+083749.349 $$$  updateVarState: name=[89], varexpressionpath=$3[89], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.350 $$$  updateVarState: Var=[90] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.350 $$$  formatExpressionPath: expressionpathdesc=[90]
+083749.350 $$$  updateVarState: name=[90], varexpressionpath=$3[90], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.350 $$$  updateVarState: Var=[91] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.350 $$$  formatExpressionPath: expressionpathdesc=[91]
+083749.350 $$$  updateVarState: name=[91], varexpressionpath=$3[91], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.350 $$$  updateVarState: Var=[92] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.350 $$$  formatExpressionPath: expressionpathdesc=[92]
+083749.350 $$$  updateVarState: name=[92], varexpressionpath=$3[92], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.350 $$$  updateVarState: Var=[93] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.350 $$$  formatExpressionPath: expressionpathdesc=[93]
+083749.350 $$$  updateVarState: name=[93], varexpressionpath=$3[93], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.350 $$$  updateVarState: Var=[94] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.350 $$$  formatExpressionPath: expressionpathdesc=[94]
+083749.350 $$$  updateVarState: name=[94], varexpressionpath=$3[94], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.350 $$$  updateVarState: Var=[95] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.350 $$$  formatExpressionPath: expressionpathdesc=[95]
+083749.350 $$$  updateVarState: name=[95], varexpressionpath=$3[95], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.350 $$$  updateVarState: Var=[96] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.350 $$$  formatExpressionPath: expressionpathdesc=[96]
+083749.350 $$$  updateVarState: name=[96], varexpressionpath=$3[96], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.351 $$$  updateVarState: Var=[97] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.351 $$$  formatExpressionPath: expressionpathdesc=[97]
+083749.351 $$$  updateVarState: name=[97], varexpressionpath=$3[97], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.351 $$$  updateVarState: Var=[98] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.351 $$$  formatExpressionPath: expressionpathdesc=[98]
+083749.351 $$$  updateVarState: name=[98], varexpressionpath=$3[98], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.351 $$$  updateVarState: Var=[99] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.351 $$$  formatExpressionPath: expressionpathdesc=[99]
+083749.351 $$$  updateVarState: name=[99], varexpressionpath=$3[99], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.351 $$$  updateVarState: Var=[100]: children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.351 $$$  formatExpressionPath: expressionpathdesc=[100]
+083749.351 $$$  updateVarState: name=[100], varexpressionpath=$3[100], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.351 $$$  updateVarState: Var=[101]: children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083749.351 $$$  formatExpressionPath: expressionpathdesc=[101]
+083749.351 $$$  updateVarState: name=[101], varexpressionpath=$3[101], varnumchildren=0, value='\0', summary=(null), changed=0
+083749.351 $$$  formatExpressionPath: expressionpathdesc=$3
+083749.351 $$$  formatValue: Var=$3   : children=102, typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Array     , basictype=Invalid   , bytesize=102
+083749.351 $$$  formatSummary: Var=$3   : children=102, typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Array     , basictype=Invalid   , bytesize=102
+083749.351 $$$  formatValue: var=0x7fff55884d48, name=$3, summary=, value=0x00007fff5fbff520, address=0x7fff5fbff520
+083749.351 <<=  |45^done,name="$3",numchild="102",value="0x00007fff5fbff520 {...}",type="char (*)[102]",thread-id="1",has_more="0"\n(gdb)\n|
+083750.213 >>=  |46-stack-list-frames --thread 1|
+083750.213 $$$  getNumFrames(0x55884f20) = 4
+083750.213 <<=  |46^done,stack=[|
+083750.213 <<=  |frame={level="0",addr="0x0000000000001434",func="test_LARGE_CHAR_ARRAY()",file="tests.cpp",fullname="/Users/didier/Projets/git-lldbmi2/lldbmi2/tests/src/tests.cpp",line="92"}|
+083750.213 <<=  |,frame={level="1",addr="0x00000000000020be",func="main",file="tests.cpp",fullname="/Users/didier/Projets/git-lldbmi2/lldbmi2/tests/src/tests.cpp",line="396"}|
+083750.213 <<=  |,frame={level="2",addr="0x00000000000035ad",func="start",file="libdyld.dylib"}|
+083750.213 <<=  |,frame={level="3",addr="0x00000000000035ad",func="start",file="libdyld.dylib"}|
+083750.213 <<=  |]\n(gdb)\n|
+083800.839 >>=  |47-data-evaluate-expression --thread 1 --frame 0 ccc+0|
+083800.847 $$$  getVariable: expression=ccc+0, name=$4, value=0x00007fff5fbff520, changed=0
+083800.847 $$$  formatValue: Var=$4   : children=1 , typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Builtin   , basictype=SignedChar, bytesize=1 
+083800.847 $$$  formatSummary: Var=$4   : children=1 , typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Builtin   , basictype=SignedChar, bytesize=1 
+083800.847 $$$  formatValue: var=0x7fff55884378, name=$4, summary=HI"abc"JK, value=0x00007fff5fbff520, address=0x7fff5fbff520
+083800.847 <<=  |47^done,value="0x00007fff5fbff520 \"HI"abc"JK\""\n(gdb)\n|
+083800.847 >>=  |48-var-set-format $2 octal|
+083800.847 $$$  getVariable: expression=$2, name=$2, value=0x00007fff5fbff520, changed=0
+083800.847 $$$  formatValue: Var=$2   : children=1 , typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Builtin   , basictype=SignedChar, bytesize=1 
+083800.847 $$$  formatSummary: Var=$2   : children=1 , typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Builtin   , basictype=SignedChar, bytesize=1 
+083800.848 $$$  formatValue: var=0x7fff55884378, name=$2, summary=HI"abc"JK, value=0x00007fff5fbff520, address=0x7fff5fbff520
+083800.848 <<=  |48^done,format="octal",value="0x00007fff5fbff520 \"HI"abc"JK\""\n(gdb)\n|
+083800.856 >>=  |49-var-set-format $2 natural|
+083800.856 $$$  getVariable: expression=$2, name=$2, value=0x00007fff5fbff520, changed=0
+083800.856 $$$  formatValue: Var=$2   : children=1 , typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Builtin   , basictype=SignedChar, bytesize=1 
+083800.856 $$$  formatSummary: Var=$2   : children=1 , typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Builtin   , basictype=SignedChar, bytesize=1 
+083800.856 $$$  formatValue: var=0x7fff55884378, name=$2, summary=HI"abc"JK, value=0x00007fff5fbff520, address=0x7fff5fbff520
+083800.856 <<=  |49^done,format="natural",value="0x00007fff5fbff520 \"HI"abc"JK\""\n(gdb)\n|
+083800.860 >>=  |50-var-set-format $2 decimal|
+083800.860 $$$  getVariable: expression=$2, name=$2, value=0x00007fff5fbff520, changed=0
+083800.860 $$$  formatValue: Var=$2   : children=1 , typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Builtin   , basictype=SignedChar, bytesize=1 
+083800.860 $$$  formatSummary: Var=$2   : children=1 , typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Builtin   , basictype=SignedChar, bytesize=1 
+083800.860 $$$  formatValue: var=0x7fff55884378, name=$2, summary=HI"abc"JK, value=0x00007fff5fbff520, address=0x7fff5fbff520
+083800.860 <<=  |50^done,format="decimal",value="0x00007fff5fbff520 \"HI"abc"JK\""\n(gdb)\n|
+083800.866 >>=  |51-var-set-format $2 natural|
+083800.866 $$$  getVariable: expression=$2, name=$2, value=0x00007fff5fbff520, changed=0
+083800.867 $$$  formatValue: Var=$2   : children=1 , typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Builtin   , basictype=SignedChar, bytesize=1 
+083800.867 $$$  formatSummary: Var=$2   : children=1 , typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Builtin   , basictype=SignedChar, bytesize=1 
+083800.867 $$$  formatValue: var=0x7fff55884378, name=$2, summary=HI"abc"JK, value=0x00007fff5fbff520, address=0x7fff5fbff520
+083800.867 <<=  |51^done,format="natural",value="0x00007fff5fbff520 \"HI"abc"JK\""\n(gdb)\n|
+083800.873 >>=  |52-var-set-format $2 binary|
+083800.874 $$$  getVariable: expression=$2, name=$2, value=0x00007fff5fbff520, changed=0
+083800.874 $$$  formatValue: Var=$2   : children=1 , typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Builtin   , basictype=SignedChar, bytesize=1 
+083800.874 $$$  formatSummary: Var=$2   : children=1 , typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Builtin   , basictype=SignedChar, bytesize=1 
+083800.874 $$$  formatValue: var=0x7fff55884378, name=$2, summary=HI"abc"JK, value=0x00007fff5fbff520, address=0x7fff5fbff520
+083800.874 <<=  |52^done,format="binary",value="0x00007fff5fbff520 \"HI"abc"JK\""\n(gdb)\n|
+083800.877 >>=  |53-var-set-format $2 natural|
+083800.877 $$$  getVariable: expression=$2, name=$2, value=0x00007fff5fbff520, changed=0
+083800.877 $$$  formatValue: Var=$2   : children=1 , typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Builtin   , basictype=SignedChar, bytesize=1 
+083800.877 $$$  formatSummary: Var=$2   : children=1 , typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Builtin   , basictype=SignedChar, bytesize=1 
+083800.878 $$$  formatValue: var=0x7fff55884378, name=$2, summary=HI"abc"JK, value=0x00007fff5fbff520, address=0x7fff5fbff520
+083800.878 <<=  |53^done,format="natural",value="0x00007fff5fbff520 \"HI"abc"JK\""\n(gdb)\n|
+083800.881 >>=  |54-var-set-format $2 hexadecimal|
+083800.881 $$$  getVariable: expression=$2, name=$2, value=0x00007fff5fbff520, changed=0
+083800.881 $$$  formatValue: Var=$2   : children=1 , typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Builtin   , basictype=SignedChar, bytesize=1 
+083800.882 $$$  formatSummary: Var=$2   : children=1 , typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Builtin   , basictype=SignedChar, bytesize=1 
+083800.882 $$$  formatValue: var=0x7fff55884378, name=$2, summary=HI"abc"JK, value=0x00007fff5fbff520, address=0x7fff5fbff520
+083800.882 <<=  |54^done,format="hexadecimal",value="0x00007fff5fbff520 \"HI"abc"JK\""\n(gdb)\n|
+083800.884 >>=  |55-var-set-format $2 natural|
+083800.885 $$$  getVariable: expression=$2, name=$2, value=0x00007fff5fbff520, changed=0
+083800.885 $$$  formatValue: Var=$2   : children=1 , typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Builtin   , basictype=SignedChar, bytesize=1 
+083800.885 $$$  formatSummary: Var=$2   : children=1 , typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Builtin   , basictype=SignedChar, bytesize=1 
+083800.885 $$$  formatValue: var=0x7fff55884378, name=$2, summary=HI"abc"JK, value=0x00007fff5fbff520, address=0x7fff5fbff520
+083800.885 <<=  |55^done,format="natural",value="0x00007fff5fbff520 \"HI"abc"JK\""\n(gdb)\n|
+083803.174 >>=  |56-var-create --thread 1 --frame 0 - * *((ccc)+0)@100|
+083803.174 $$$  getVariable: expression=&ccc, name=&ccc, value=0x00007fff5fbff520, changed=0
+083803.177 $$$  getVariable: expression=*(char (*)[100])&ccc[0], name=$5, value=(null), changed=0
+083803.177 $$$  getPeudoArrayVariable: expression *((ccc)+0)@100 -> *(char (*)[100])&ccc[0]
+083803.177 $$$  getVariable: expression=*((ccc)+0)@100, name=$5, value=(null), changed=0
+083803.177 $$$  updateVarState: Var=$5   : children=100, typeclass=Array     , basictype=Invalid   , bytesize=100, Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.177 $$$  formatExpressionPath: expressionpathdesc=$5
+083803.177 $$$  updateVarState: name=$5, varexpressionpath=$5, varnumchildren=100, value=(null), summary=, changed=0
+083803.177 $$$  formatExpressionPath: expressionpathdesc=$5
+083803.178 $$$  formatValue: Var=$5   : children=100, typeclass=Array     , basictype=Invalid   , bytesize=100, Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.178 $$$  formatSummary: Var=$5   : children=100, typeclass=Array     , basictype=Invalid   , bytesize=100, Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.178 $$$  formatValue: var=0x7fff55884d48, name=$5, summary=HI\"abc\"JK, value=(null), address=0x7fff5fbff520
+083803.178 <<=  |56^done,name="$5",numchild="100",value="0x7fff5fbff520 \"HI\"abc\"JK\"",type="char [100]",thread-id="1",has_more="0"\n(gdb)\n|
+083803.178 >>=  |57-var-create --thread 1 --frame 0 - * *((ccc)+100)@2|
+083803.178 $$$  getVariable: expression=&ccc, name=&ccc, value=0x00007fff5fbff520, changed=0
+083803.181 $$$  getVariable: expression=*(char (*)[2])&ccc[100], name=$6, value=(null), changed=0
+083803.181 $$$  getPeudoArrayVariable: expression *((ccc)+100)@2 -> *(char (*)[2])&ccc[100]
+083803.181 $$$  getVariable: expression=*((ccc)+100)@2, name=$6, value=(null), changed=0
+083803.181 $$$  updateVarState: Var=$6   : children=2 , typeclass=Array     , basictype=Invalid   , bytesize=2 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.181 $$$  formatExpressionPath: expressionpathdesc=$6
+083803.181 $$$  updateVarState: name=$6, varexpressionpath=$6, varnumchildren=2, value=(null), summary=, changed=0
+083803.181 $$$  formatExpressionPath: expressionpathdesc=$6
+083803.181 $$$  formatValue: Var=$6   : children=2 , typeclass=Array     , basictype=Invalid   , bytesize=2 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.181 $$$  formatSummary: Var=$6   : children=2 , typeclass=Array     , basictype=Invalid   , bytesize=2 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.181 $$$  formatValue: var=0x7fff55884d48, name=$6, summary=, value=(null), address=0x7fff5fbff584
+083803.182 <<=  |57^done,name="$6",numchild="2",value="0x7fff5fbff584 {...}",type="char [2]",thread-id="1",has_more="0"\n(gdb)\n|
+083803.192 >>=  |58-var-create --thread 1 --frame 0 - * &(*((ccc)+0)@100)|
+083803.192 $$$  getVariable: expression=&ccc, name=&ccc, value=0x00007fff5fbff520, changed=0
+083803.205 $$$  getVariable: expression=&(*(char (*)[100])&ccc[0]), name=$7, value=0x00007fff5fbff520, changed=0
+083803.205 $$$  getPeudoArrayVariable: expression &(*((ccc)+0)@100) -> &(*(char (*)[100])&ccc[0])
+083803.205 $$$  getVariable: expression=&(*((ccc)+0)@100), name=$7, value=0x00007fff5fbff520, changed=0
+083803.205 $$$  updateVarState: Var=$7   : children=100, typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Array     , basictype=Invalid   , bytesize=100
+083803.205 $$$  formatExpressionPath: expressionpathdesc=$7
+083803.205 $$$  updateVarState: name=$7, varexpressionpath=$7, varnumchildren=100, value=0x00007fff5fbff520, summary=(null), changed=0
+083803.205 $$$  updateVarState: Var=[0]  : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.205 $$$  formatExpressionPath: expressionpathdesc=[0]
+083803.205 $$$  updateVarState: name=[0], varexpressionpath=$7[0], varnumchildren=0, value='H', summary=(null), changed=0
+083803.205 $$$  updateVarState: Var=[1]  : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.205 $$$  formatExpressionPath: expressionpathdesc=[1]
+083803.206 $$$  updateVarState: name=[1], varexpressionpath=$7[1], varnumchildren=0, value='I', summary=(null), changed=0
+083803.206 $$$  updateVarState: Var=[2]  : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.206 $$$  formatExpressionPath: expressionpathdesc=[2]
+083803.206 $$$  updateVarState: name=[2], varexpressionpath=$7[2], varnumchildren=0, value='"', summary=(null), changed=0
+083803.206 $$$  updateVarState: Var=[3]  : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.206 $$$  formatExpressionPath: expressionpathdesc=[3]
+083803.206 $$$  updateVarState: name=[3], varexpressionpath=$7[3], varnumchildren=0, value='a', summary=(null), changed=0
+083803.206 $$$  updateVarState: Var=[4]  : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.206 $$$  formatExpressionPath: expressionpathdesc=[4]
+083803.206 $$$  updateVarState: name=[4], varexpressionpath=$7[4], varnumchildren=0, value='b', summary=(null), changed=0
+083803.206 $$$  updateVarState: Var=[5]  : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.206 $$$  formatExpressionPath: expressionpathdesc=[5]
+083803.206 $$$  updateVarState: name=[5], varexpressionpath=$7[5], varnumchildren=0, value='c', summary=(null), changed=0
+083803.206 $$$  updateVarState: Var=[6]  : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.206 $$$  formatExpressionPath: expressionpathdesc=[6]
+083803.206 $$$  updateVarState: name=[6], varexpressionpath=$7[6], varnumchildren=0, value='"', summary=(null), changed=0
+083803.206 $$$  updateVarState: Var=[7]  : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.206 $$$  formatExpressionPath: expressionpathdesc=[7]
+083803.206 $$$  updateVarState: name=[7], varexpressionpath=$7[7], varnumchildren=0, value='J', summary=(null), changed=0
+083803.206 $$$  updateVarState: Var=[8]  : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.206 $$$  formatExpressionPath: expressionpathdesc=[8]
+083803.206 $$$  updateVarState: name=[8], varexpressionpath=$7[8], varnumchildren=0, value='K', summary=(null), changed=0
+083803.207 $$$  updateVarState: Var=[9]  : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.207 $$$  formatExpressionPath: expressionpathdesc=[9]
+083803.207 $$$  updateVarState: name=[9], varexpressionpath=$7[9], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.207 $$$  updateVarState: Var=[10] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.207 $$$  formatExpressionPath: expressionpathdesc=[10]
+083803.207 $$$  updateVarState: name=[10], varexpressionpath=$7[10], varnumchildren=0, value='\xbf', summary=(null), changed=0
+083803.207 $$$  updateVarState: Var=[11] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.207 $$$  formatExpressionPath: expressionpathdesc=[11]
+083803.207 $$$  updateVarState: name=[11], varexpressionpath=$7[11], varnumchildren=0, value='_', summary=(null), changed=0
+083803.207 $$$  updateVarState: Var=[12] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.207 $$$  formatExpressionPath: expressionpathdesc=[12]
+083803.207 $$$  updateVarState: name=[12], varexpressionpath=$7[12], varnumchildren=0, value='\xff', summary=(null), changed=0
+083803.207 $$$  updateVarState: Var=[13] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.207 $$$  formatExpressionPath: expressionpathdesc=[13]
+083803.207 $$$  updateVarState: name=[13], varexpressionpath=$7[13], varnumchildren=0, value='\x7f', summary=(null), changed=0
+083803.207 $$$  updateVarState: Var=[14] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.207 $$$  formatExpressionPath: expressionpathdesc=[14]
+083803.207 $$$  updateVarState: name=[14], varexpressionpath=$7[14], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.208 $$$  updateVarState: Var=[15] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.208 $$$  formatExpressionPath: expressionpathdesc=[15]
+083803.208 $$$  updateVarState: name=[15], varexpressionpath=$7[15], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.208 $$$  updateVarState: Var=[16] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.208 $$$  formatExpressionPath: expressionpathdesc=[16]
+083803.208 $$$  updateVarState: name=[16], varexpressionpath=$7[16], varnumchildren=0, value='\x10', summary=(null), changed=0
+083803.208 $$$  updateVarState: Var=[17] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.208 $$$  formatExpressionPath: expressionpathdesc=[17]
+083803.208 $$$  updateVarState: name=[17], varexpressionpath=$7[17], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.208 $$$  updateVarState: Var=[18] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.208 $$$  formatExpressionPath: expressionpathdesc=[18]
+083803.208 $$$  updateVarState: name=[18], varexpressionpath=$7[18], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.208 $$$  updateVarState: Var=[19] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.208 $$$  formatExpressionPath: expressionpathdesc=[19]
+083803.208 $$$  updateVarState: name=[19], varexpressionpath=$7[19], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.208 $$$  updateVarState: Var=[20] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.208 $$$  formatExpressionPath: expressionpathdesc=[20]
+083803.208 $$$  updateVarState: name=[20], varexpressionpath=$7[20], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.208 $$$  updateVarState: Var=[21] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.208 $$$  formatExpressionPath: expressionpathdesc=[21]
+083803.208 $$$  updateVarState: name=[21], varexpressionpath=$7[21], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.208 $$$  updateVarState: Var=[22] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.208 $$$  formatExpressionPath: expressionpathdesc=[22]
+083803.209 $$$  updateVarState: name=[22], varexpressionpath=$7[22], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.209 $$$  updateVarState: Var=[23] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.209 $$$  formatExpressionPath: expressionpathdesc=[23]
+083803.209 $$$  updateVarState: name=[23], varexpressionpath=$7[23], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.209 $$$  updateVarState: Var=[24] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.209 $$$  formatExpressionPath: expressionpathdesc=[24]
+083803.209 $$$  updateVarState: name=[24], varexpressionpath=$7[24], varnumchildren=0, value='\x01', summary=(null), changed=0
+083803.209 $$$  updateVarState: Var=[25] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.209 $$$  formatExpressionPath: expressionpathdesc=[25]
+083803.209 $$$  updateVarState: name=[25], varexpressionpath=$7[25], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.209 $$$  updateVarState: Var=[26] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.209 $$$  formatExpressionPath: expressionpathdesc=[26]
+083803.209 $$$  updateVarState: name=[26], varexpressionpath=$7[26], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.209 $$$  updateVarState: Var=[27] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.209 $$$  formatExpressionPath: expressionpathdesc=[27]
+083803.209 $$$  updateVarState: name=[27], varexpressionpath=$7[27], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.209 $$$  updateVarState: Var=[28] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.209 $$$  formatExpressionPath: expressionpathdesc=[28]
+083803.209 $$$  updateVarState: name=[28], varexpressionpath=$7[28], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.209 $$$  updateVarState: Var=[29] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.209 $$$  formatExpressionPath: expressionpathdesc=[29]
+083803.209 $$$  updateVarState: name=[29], varexpressionpath=$7[29], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.210 $$$  updateVarState: Var=[30] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.210 $$$  formatExpressionPath: expressionpathdesc=[30]
+083803.210 $$$  updateVarState: name=[30], varexpressionpath=$7[30], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.210 $$$  updateVarState: Var=[31] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.210 $$$  formatExpressionPath: expressionpathdesc=[31]
+083803.210 $$$  updateVarState: name=[31], varexpressionpath=$7[31], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.210 $$$  updateVarState: Var=[32] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.210 $$$  formatExpressionPath: expressionpathdesc=[32]
+083803.210 $$$  updateVarState: name=[32], varexpressionpath=$7[32], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.210 $$$  updateVarState: Var=[33] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.210 $$$  formatExpressionPath: expressionpathdesc=[33]
+083803.210 $$$  updateVarState: name=[33], varexpressionpath=$7[33], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.210 $$$  updateVarState: Var=[34] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.210 $$$  formatExpressionPath: expressionpathdesc=[34]
+083803.210 $$$  updateVarState: name=[34], varexpressionpath=$7[34], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.210 $$$  updateVarState: Var=[35] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.210 $$$  formatExpressionPath: expressionpathdesc=[35]
+083803.210 $$$  updateVarState: name=[35], varexpressionpath=$7[35], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.210 $$$  updateVarState: Var=[36] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.210 $$$  formatExpressionPath: expressionpathdesc=[36]
+083803.210 $$$  updateVarState: name=[36], varexpressionpath=$7[36], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.210 $$$  updateVarState: Var=[37] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.210 $$$  formatExpressionPath: expressionpathdesc=[37]
+083803.210 $$$  updateVarState: name=[37], varexpressionpath=$7[37], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.211 $$$  updateVarState: Var=[38] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.211 $$$  formatExpressionPath: expressionpathdesc=[38]
+083803.211 $$$  updateVarState: name=[38], varexpressionpath=$7[38], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.211 $$$  updateVarState: Var=[39] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.211 $$$  formatExpressionPath: expressionpathdesc=[39]
+083803.211 $$$  updateVarState: name=[39], varexpressionpath=$7[39], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.211 $$$  updateVarState: Var=[40] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.211 $$$  formatExpressionPath: expressionpathdesc=[40]
+083803.211 $$$  updateVarState: name=[40], varexpressionpath=$7[40], varnumchildren=0, value='\n', summary=(null), changed=0
+083803.211 $$$  updateVarState: Var=[41] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.211 $$$  formatExpressionPath: expressionpathdesc=[41]
+083803.211 $$$  updateVarState: name=[41], varexpressionpath=$7[41], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.211 $$$  updateVarState: Var=[42] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.211 $$$  formatExpressionPath: expressionpathdesc=[42]
+083803.211 $$$  updateVarState: name=[42], varexpressionpath=$7[42], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.211 $$$  updateVarState: Var=[43] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.211 $$$  formatExpressionPath: expressionpathdesc=[43]
+083803.211 $$$  updateVarState: name=[43], varexpressionpath=$7[43], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.211 $$$  updateVarState: Var=[44] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.211 $$$  formatExpressionPath: expressionpathdesc=[44]
+083803.211 $$$  updateVarState: name=[44], varexpressionpath=$7[44], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.211 $$$  updateVarState: Var=[45] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.212 $$$  formatExpressionPath: expressionpathdesc=[45]
+083803.212 $$$  updateVarState: name=[45], varexpressionpath=$7[45], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.212 $$$  updateVarState: Var=[46] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.212 $$$  formatExpressionPath: expressionpathdesc=[46]
+083803.212 $$$  updateVarState: name=[46], varexpressionpath=$7[46], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.212 $$$  updateVarState: Var=[47] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.212 $$$  formatExpressionPath: expressionpathdesc=[47]
+083803.212 $$$  updateVarState: name=[47], varexpressionpath=$7[47], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.212 $$$  updateVarState: Var=[48] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.212 $$$  formatExpressionPath: expressionpathdesc=[48]
+083803.212 $$$  updateVarState: name=[48], varexpressionpath=$7[48], varnumchildren=0, value='\x10', summary=(null), changed=0
+083803.212 $$$  updateVarState: Var=[49] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.212 $$$  formatExpressionPath: expressionpathdesc=[49]
+083803.212 $$$  updateVarState: name=[49], varexpressionpath=$7[49], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.212 $$$  updateVarState: Var=[50] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.212 $$$  formatExpressionPath: expressionpathdesc=[50]
+083803.212 $$$  updateVarState: name=[50], varexpressionpath=$7[50], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.212 $$$  updateVarState: Var=[51] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.212 $$$  formatExpressionPath: expressionpathdesc=[51]
+083803.212 $$$  updateVarState: name=[51], varexpressionpath=$7[51], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.212 $$$  updateVarState: Var=[52] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.213 $$$  formatExpressionPath: expressionpathdesc=[52]
+083803.213 $$$  updateVarState: name=[52], varexpressionpath=$7[52], varnumchildren=0, value='0', summary=(null), changed=0
+083803.213 $$$  updateVarState: Var=[53] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.213 $$$  formatExpressionPath: expressionpathdesc=[53]
+083803.213 $$$  updateVarState: name=[53], varexpressionpath=$7[53], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.213 $$$  updateVarState: Var=[54] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.213 $$$  formatExpressionPath: expressionpathdesc=[54]
+083803.213 $$$  updateVarState: name=[54], varexpressionpath=$7[54], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.213 $$$  updateVarState: Var=[55] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.213 $$$  formatExpressionPath: expressionpathdesc=[55]
+083803.213 $$$  updateVarState: name=[55], varexpressionpath=$7[55], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.213 $$$  updateVarState: Var=[56] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.213 $$$  formatExpressionPath: expressionpathdesc=[56]
+083803.213 $$$  updateVarState: name=[56], varexpressionpath=$7[56], varnumchildren=0, value='\xa0', summary=(null), changed=0
+083803.213 $$$  updateVarState: Var=[57] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.213 $$$  formatExpressionPath: expressionpathdesc=[57]
+083803.213 $$$  updateVarState: name=[57], varexpressionpath=$7[57], varnumchildren=0, value='\xf5', summary=(null), changed=0
+083803.213 $$$  updateVarState: Var=[58] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.213 $$$  formatExpressionPath: expressionpathdesc=[58]
+083803.213 $$$  updateVarState: name=[58], varexpressionpath=$7[58], varnumchildren=0, value='\xbf', summary=(null), changed=0
+083803.213 $$$  updateVarState: Var=[59] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.213 $$$  formatExpressionPath: expressionpathdesc=[59]
+083803.213 $$$  updateVarState: name=[59], varexpressionpath=$7[59], varnumchildren=0, value='_', summary=(null), changed=0
+083803.213 $$$  updateVarState: Var=[60] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.214 $$$  formatExpressionPath: expressionpathdesc=[60]
+083803.214 $$$  updateVarState: name=[60], varexpressionpath=$7[60], varnumchildren=0, value='\xff', summary=(null), changed=0
+083803.214 $$$  updateVarState: Var=[61] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.214 $$$  formatExpressionPath: expressionpathdesc=[61]
+083803.214 $$$  updateVarState: name=[61], varexpressionpath=$7[61], varnumchildren=0, value='\x7f', summary=(null), changed=0
+083803.214 $$$  updateVarState: Var=[62] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.214 $$$  formatExpressionPath: expressionpathdesc=[62]
+083803.214 $$$  updateVarState: name=[62], varexpressionpath=$7[62], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.214 $$$  updateVarState: Var=[63] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.214 $$$  formatExpressionPath: expressionpathdesc=[63]
+083803.214 $$$  updateVarState: name=[63], varexpressionpath=$7[63], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.214 $$$  updateVarState: Var=[64] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.214 $$$  formatExpressionPath: expressionpathdesc=[64]
+083803.214 $$$  updateVarState: name=[64], varexpressionpath=$7[64], varnumchildren=0, value='\xa0', summary=(null), changed=0
+083803.214 $$$  updateVarState: Var=[65] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.214 $$$  formatExpressionPath: expressionpathdesc=[65]
+083803.214 $$$  updateVarState: name=[65], varexpressionpath=$7[65], varnumchildren=0, value='\xf4', summary=(null), changed=0
+083803.214 $$$  updateVarState: Var=[66] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.215 $$$  formatExpressionPath: expressionpathdesc=[66]
+083803.215 $$$  updateVarState: name=[66], varexpressionpath=$7[66], varnumchildren=0, value='\xbf', summary=(null), changed=0
+083803.215 $$$  updateVarState: Var=[67] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.215 $$$  formatExpressionPath: expressionpathdesc=[67]
+083803.215 $$$  updateVarState: name=[67], varexpressionpath=$7[67], varnumchildren=0, value='_', summary=(null), changed=0
+083803.215 $$$  updateVarState: Var=[68] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.215 $$$  formatExpressionPath: expressionpathdesc=[68]
+083803.215 $$$  updateVarState: name=[68], varexpressionpath=$7[68], varnumchildren=0, value='\xff', summary=(null), changed=0
+083803.217 $$$  updateVarState: Var=[69] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.217 $$$  formatExpressionPath: expressionpathdesc=[69]
+083803.217 $$$  updateVarState: name=[69], varexpressionpath=$7[69], varnumchildren=0, value='\x7f', summary=(null), changed=0
+083803.217 $$$  updateVarState: Var=[70] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.217 $$$  formatExpressionPath: expressionpathdesc=[70]
+083803.217 $$$  updateVarState: name=[70], varexpressionpath=$7[70], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.217 $$$  updateVarState: Var=[71] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.217 $$$  formatExpressionPath: expressionpathdesc=[71]
+083803.217 $$$  updateVarState: name=[71], varexpressionpath=$7[71], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.217 $$$  updateVarState: Var=[72] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.217 $$$  formatExpressionPath: expressionpathdesc=[72]
+083803.218 $$$  updateVarState: name=[72], varexpressionpath=$7[72], varnumchildren=0, value='\x18', summary=(null), changed=0
+083803.218 $$$  updateVarState: Var=[73] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.218 $$$  formatExpressionPath: expressionpathdesc=[73]
+083803.218 $$$  updateVarState: name=[73], varexpressionpath=$7[73], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.218 $$$  updateVarState: Var=[74] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.218 $$$  formatExpressionPath: expressionpathdesc=[74]
+083803.218 $$$  updateVarState: name=[74], varexpressionpath=$7[74], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.218 $$$  updateVarState: Var=[75] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.218 $$$  formatExpressionPath: expressionpathdesc=[75]
+083803.218 $$$  updateVarState: name=[75], varexpressionpath=$7[75], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.218 $$$  updateVarState: Var=[76] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.218 $$$  formatExpressionPath: expressionpathdesc=[76]
+083803.218 $$$  updateVarState: name=[76], varexpressionpath=$7[76], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.218 $$$  updateVarState: Var=[77] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.218 $$$  formatExpressionPath: expressionpathdesc=[77]
+083803.218 $$$  updateVarState: name=[77], varexpressionpath=$7[77], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.218 $$$  updateVarState: Var=[78] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.218 $$$  formatExpressionPath: expressionpathdesc=[78]
+083803.218 $$$  updateVarState: name=[78], varexpressionpath=$7[78], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.218 $$$  updateVarState: Var=[79] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.218 $$$  formatExpressionPath: expressionpathdesc=[79]
+083803.218 $$$  updateVarState: name=[79], varexpressionpath=$7[79], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.218 $$$  updateVarState: Var=[80] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.218 $$$  formatExpressionPath: expressionpathdesc=[80]
+083803.219 $$$  updateVarState: name=[80], varexpressionpath=$7[80], varnumchildren=0, value='u', summary=(null), changed=0
+083803.219 $$$  updateVarState: Var=[81] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.219 $$$  formatExpressionPath: expressionpathdesc=[81]
+083803.219 $$$  updateVarState: name=[81], varexpressionpath=$7[81], varnumchildren=0, value='\xce', summary=(null), changed=0
+083803.219 $$$  updateVarState: Var=[82] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.219 $$$  formatExpressionPath: expressionpathdesc=[82]
+083803.219 $$$  updateVarState: name=[82], varexpressionpath=$7[82], varnumchildren=0, value='\xe9', summary=(null), changed=0
+083803.219 $$$  updateVarState: Var=[83] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.219 $$$  formatExpressionPath: expressionpathdesc=[83]
+083803.219 $$$  updateVarState: name=[83], varexpressionpath=$7[83], varnumchildren=0, value='\x84', summary=(null), changed=0
+083803.219 $$$  updateVarState: Var=[84] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.219 $$$  formatExpressionPath: expressionpathdesc=[84]
+083803.219 $$$  updateVarState: name=[84], varexpressionpath=$7[84], varnumchildren=0, value='\x11', summary=(null), changed=0
+083803.219 $$$  updateVarState: Var=[85] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.219 $$$  formatExpressionPath: expressionpathdesc=[85]
+083803.219 $$$  updateVarState: name=[85], varexpressionpath=$7[85], varnumchildren=0, value='z', summary=(null), changed=0
+083803.219 $$$  updateVarState: Var=[86] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.219 $$$  formatExpressionPath: expressionpathdesc=[86]
+083803.219 $$$  updateVarState: name=[86], varexpressionpath=$7[86], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.219 $$$  updateVarState: Var=[87] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.219 $$$  formatExpressionPath: expressionpathdesc=[87]
+083803.219 $$$  updateVarState: name=[87], varexpressionpath=$7[87], varnumchildren=0, value='\xdb', summary=(null), changed=0
+083803.220 $$$  updateVarState: Var=[88] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.220 $$$  formatExpressionPath: expressionpathdesc=[88]
+083803.220 $$$  updateVarState: name=[88], varexpressionpath=$7[88], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.220 $$$  updateVarState: Var=[89] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.220 $$$  formatExpressionPath: expressionpathdesc=[89]
+083803.220 $$$  updateVarState: name=[89], varexpressionpath=$7[89], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.220 $$$  updateVarState: Var=[90] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.220 $$$  formatExpressionPath: expressionpathdesc=[90]
+083803.220 $$$  updateVarState: name=[90], varexpressionpath=$7[90], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.220 $$$  updateVarState: Var=[91] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.220 $$$  formatExpressionPath: expressionpathdesc=[91]
+083803.220 $$$  updateVarState: name=[91], varexpressionpath=$7[91], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.220 $$$  updateVarState: Var=[92] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.220 $$$  formatExpressionPath: expressionpathdesc=[92]
+083803.220 $$$  updateVarState: name=[92], varexpressionpath=$7[92], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.220 $$$  updateVarState: Var=[93] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.220 $$$  formatExpressionPath: expressionpathdesc=[93]
+083803.220 $$$  updateVarState: name=[93], varexpressionpath=$7[93], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.221 $$$  updateVarState: Var=[94] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.221 $$$  formatExpressionPath: expressionpathdesc=[94]
+083803.221 $$$  updateVarState: name=[94], varexpressionpath=$7[94], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.221 $$$  updateVarState: Var=[95] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.221 $$$  formatExpressionPath: expressionpathdesc=[95]
+083803.221 $$$  updateVarState: name=[95], varexpressionpath=$7[95], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.221 $$$  updateVarState: Var=[96] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.221 $$$  formatExpressionPath: expressionpathdesc=[96]
+083803.221 $$$  updateVarState: name=[96], varexpressionpath=$7[96], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.221 $$$  updateVarState: Var=[97] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.222 $$$  formatExpressionPath: expressionpathdesc=[97]
+083803.222 $$$  updateVarState: name=[97], varexpressionpath=$7[97], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.222 $$$  updateVarState: Var=[98] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.222 $$$  formatExpressionPath: expressionpathdesc=[98]
+083803.222 $$$  updateVarState: name=[98], varexpressionpath=$7[98], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.222 $$$  updateVarState: Var=[99] : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.222 $$$  formatExpressionPath: expressionpathdesc=[99]
+083803.222 $$$  updateVarState: name=[99], varexpressionpath=$7[99], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.222 $$$  formatExpressionPath: expressionpathdesc=$7
+083803.222 $$$  formatValue: Var=$7   : children=100, typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Array     , basictype=Invalid   , bytesize=100
+083803.222 $$$  formatSummary: Var=$7   : children=100, typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Array     , basictype=Invalid   , bytesize=100
+083803.222 $$$  formatValue: var=0x7fff55884d48, name=$7, summary=, value=0x00007fff5fbff520, address=0x7fff5fbff520
+083803.222 <<=  |58^done,name="$7",numchild="100",value="0x00007fff5fbff520 {...}",type="char (*)[100]",thread-id="1",has_more="0"\n(gdb)\n|
+083803.222 >>=  |59-var-create --thread 1 --frame 0 - * &(*((ccc)+100)@2)|
+083803.223 $$$  getVariable: expression=&ccc, name=&ccc, value=0x00007fff5fbff520, changed=0
+083803.244 $$$  getVariable: expression=&(*(char (*)[2])&ccc[100]), name=$8, value=0x00007fff5fbff584, changed=0
+083803.244 $$$  getPeudoArrayVariable: expression &(*((ccc)+100)@2) -> &(*(char (*)[2])&ccc[100])
+083803.244 $$$  getVariable: expression=&(*((ccc)+100)@2), name=$8, value=0x00007fff5fbff584, changed=0
+083803.244 $$$  updateVarState: Var=$8   : children=2 , typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Array     , basictype=Invalid   , bytesize=2 
+083803.244 $$$  formatExpressionPath: expressionpathdesc=$8
+083803.244 $$$  updateVarState: name=$8, varexpressionpath=$8, varnumchildren=2, value=0x00007fff5fbff584, summary=(null), changed=0
+083803.244 $$$  updateVarState: Var=[0]  : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.244 $$$  formatExpressionPath: expressionpathdesc=[0]
+083803.244 $$$  updateVarState: name=[0], varexpressionpath=$8[0], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.244 $$$  updateVarState: Var=[1]  : children=0 , typeclass=Builtin   , basictype=SignedChar, bytesize=1 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083803.244 $$$  formatExpressionPath: expressionpathdesc=[1]
+083803.244 $$$  updateVarState: name=[1], varexpressionpath=$8[1], varnumchildren=0, value='\0', summary=(null), changed=0
+083803.244 $$$  formatExpressionPath: expressionpathdesc=$8
+083803.244 $$$  formatValue: Var=$8   : children=2 , typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Array     , basictype=Invalid   , bytesize=2 
+083803.244 $$$  formatSummary: Var=$8   : children=2 , typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Array     , basictype=Invalid   , bytesize=2 
+083803.244 $$$  formatValue: var=0x7fff55884d48, name=$8, summary=, value=0x00007fff5fbff584, address=0x7fff5fbff584
+083803.245 <<=  |59^done,name="$8",numchild="2",value="0x00007fff5fbff584 {...}",type="char (*)[2]",thread-id="1",has_more="0"\n(gdb)\n|
+083804.057 >>=  |60-data-evaluate-expression --thread 1 --frame 0 *((ccc)+0)@100|
+083804.057 $$$  getVariable: expression=&ccc, name=&ccc, value=0x00007fff5fbff520, changed=0
+083804.060 $$$  getVariable: expression=*(char (*)[100])&ccc[0], name=$9, value=(null), changed=0
+083804.060 $$$  getPeudoArrayVariable: expression *((ccc)+0)@100 -> *(char (*)[100])&ccc[0]
+083804.060 $$$  getVariable: expression=*((ccc)+0)@100, name=$9, value=(null), changed=0
+083804.060 $$$  formatValue: Var=$9   : children=100, typeclass=Array     , basictype=Invalid   , bytesize=100, Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083804.060 $$$  formatSummary: Var=$9   : children=100, typeclass=Array     , basictype=Invalid   , bytesize=100, Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
+083804.060 $$$  formatValue: var=0x7fff55884378, name=$9, summary=HI\"abc\"JK, value=(null), address=0x7fff5fbff520
+083804.060 <<=  |60^done,value="0x7fff5fbff520 \"HI\"abc\"JK\""\n(gdb)\n|
+083804.060 >>=  |61-var-set-format $7 octal|
+083804.060 $$$  getVariable: expression=$7, name=$7, value=0x00007fff5fbff520, changed=0
+083804.060 $$$  formatValue: Var=$7   : children=100, typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Array     , basictype=Invalid   , bytesize=100
+083804.060 $$$  formatSummary: Var=$7   : children=100, typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Array     , basictype=Invalid   , bytesize=100
+083804.060 $$$  formatValue: var=0x7fff55884378, name=$7, summary=, value=03777753757772440, address=0x7fff5fbff520
+083804.060 <<=  |61^done,format="octal",value="03777753757772440 {...}"\n(gdb)\n|
+083804.067 >>=  |62-var-set-format $7 natural|
+083804.067 $$$  getVariable: expression=$7, name=$7, value=03777753757772440, changed=0
+083804.067 $$$  formatValue: Var=$7   : children=100, typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Array     , basictype=Invalid   , bytesize=100
+083804.067 $$$  formatSummary: Var=$7   : children=100, typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Array     , basictype=Invalid   , bytesize=100
+083804.067 $$$  formatValue: var=0x7fff55884378, name=$7, summary=, value=0x00007fff5fbff520, address=0x7fff5fbff520
+083804.067 <<=  |62^done,format="natural",value="0x00007fff5fbff520 {...}"\n(gdb)\n|
+083804.070 >>=  |63-var-set-format $7 decimal|
+083804.071 $$$  getVariable: expression=$7, name=$7, value=0x00007fff5fbff520, changed=0
+083804.071 $$$  formatValue: Var=$7   : children=100, typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Array     , basictype=Invalid   , bytesize=100
+083804.071 $$$  formatSummary: Var=$7   : children=100, typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Array     , basictype=Invalid   , bytesize=100
+083804.071 $$$  formatValue: var=0x7fff55884378, name=$7, summary=, value=140734799803680, address=0x7fff5fbff520
+083804.071 <<=  |63^done,format="decimal",value="140734799803680 {...}"\n(gdb)\n|
+083804.075 >>=  |64-var-set-format $7 natural|
+083804.076 $$$  getVariable: expression=$7, name=$7, value=140734799803680, changed=0
+083804.076 $$$  formatValue: Var=$7   : children=100, typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Array     , basictype=Invalid   , bytesize=100
+083804.076 $$$  formatSummary: Var=$7   : children=100, typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Array     , basictype=Invalid   , bytesize=100
+083804.076 $$$  formatValue: var=0x7fff55884378, name=$7, summary=, value=0x00007fff5fbff520, address=0x7fff5fbff520
+083804.076 <<=  |64^done,format="natural",value="0x00007fff5fbff520 {...}"\n(gdb)\n|
+083804.080 >>=  |65-var-set-format $7 binary|
+083804.080 $$$  getVariable: expression=$7, name=$7, value=0x00007fff5fbff520, changed=0
+083804.080 $$$  formatValue: Var=$7   : children=100, typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Array     , basictype=Invalid   , bytesize=100
+083804.080 $$$  formatSummary: Var=$7   : children=100, typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Array     , basictype=Invalid   , bytesize=100
+083804.080 $$$  formatValue: var=0x7fff55884378, name=$7, summary=, value=0b0000000000000000011111111111111101011111101111111111010100100000, address=0x7fff5fbff520
+083804.080 <<=  |65^done,format="binary",value="0b0000000000000000011111111111111101011111101111111111010100100000 {...}"\n(gdb)\n|
+083804.086 >>=  |66-var-set-format $7 natural|
+083804.086 $$$  getVariable: expression=$7, name=$7, value=0b0000000000000000011111111111111101011111101111111111010100100000, changed=0
+083804.086 $$$  formatValue: Var=$7   : children=100, typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Array     , basictype=Invalid   , bytesize=100
+083804.086 $$$  formatSummary: Var=$7   : children=100, typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Array     , basictype=Invalid   , bytesize=100
+083804.087 $$$  formatValue: var=0x7fff55884378, name=$7, summary=, value=0x00007fff5fbff520, address=0x7fff5fbff520
+083804.087 <<=  |66^done,format="natural",value="0x00007fff5fbff520 {...}"\n(gdb)\n|
+083804.090 >>=  |67-var-set-format $7 hexadecimal|
+083804.090 $$$  getVariable: expression=$7, name=$7, value=0x00007fff5fbff520, changed=0
+083804.090 $$$  formatValue: Var=$7   : children=100, typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Array     , basictype=Invalid   , bytesize=100
+083804.091 $$$  formatSummary: Var=$7   : children=100, typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Array     , basictype=Invalid   , bytesize=100
+083804.091 $$$  formatValue: var=0x7fff55884378, name=$7, summary=, value=0x00007fff5fbff520, address=0x7fff5fbff520
+083804.091 <<=  |67^done,format="hexadecimal",value="0x00007fff5fbff520 {...}"\n(gdb)\n|
+083804.095 >>=  |68-var-set-format $7 natural|
+083804.095 $$$  getVariable: expression=$7, name=$7, value=0x00007fff5fbff520, changed=0
+083804.095 $$$  formatValue: Var=$7   : children=100, typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Array     , basictype=Invalid   , bytesize=100
+083804.095 $$$  formatSummary: Var=$7   : children=100, typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Array     , basictype=Invalid   , bytesize=100
+083804.095 $$$  formatValue: var=0x7fff55884378, name=$7, summary=, value=0x00007fff5fbff520, address=0x7fff5fbff520
+083804.095 <<=  |68^done,format="natural",value="0x00007fff5fbff520 {...}"\n(gdb)\n|
+083806.645 >>=  |69-interpreter-exec --thread-group i1 console kill|
+083806.645 ---  console kill: restart process
+083806.645 <<=  |69^done\n(gdb)\n|
+083806.645 ---  console kill: terminateProcess
+083806.669 <<=  |=thread-group-exited,id="i1",exit-code="0"\n|
+083806.669 ###  eStateRunning
+083806.669 ###  processlistener exited. pstate->eof=1
+083806.682 ---  main exit

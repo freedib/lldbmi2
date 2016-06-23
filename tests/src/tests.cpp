@@ -88,7 +88,7 @@ int test_LARGE_CHAR_ARRAY ()
 {
 	char ccc[102];
 
-	strcpy (ccc, "HIJ");
+	strcpy (ccc, "HI\"abc\"JK");
 	strcpy (&ccc[100], "K");						// breakpoint 1 LARGE_CHAR_ARRAY
 
 	return 0;

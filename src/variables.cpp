@@ -8,7 +8,7 @@
 
 extern LIMITS limits;
 
-
+//TODO: tests.cpp, 92: ccc: no summary but detail ok, ccc+1: summary and detail stop at apostrophe
 
 // bug struct CD (*cdp)[2]
 // gdb:     -var-create --thread 1 --frame 0 - * cdp		->    name="var4",numchild="1",type="CD (*)[2]"
@@ -556,8 +556,12 @@ formatSummary (StringB &summarydescB, SBValue var)
 				getName(var), var.GetNumChildren(), getNameForTypeClass(vartype.GetTypeClass()), getNameForBasicType(vartype.GetBasicType()), vartype.GetByteSize(),
 				getNameForTypeClass(vartype.GetPointeeType().GetTypeClass()), getNameForBasicType(vartype.GetPointeeType().GetBasicType()), vartype.GetPointeeType().GetByteSize());
 	if ((varsummary=var.GetSummary()) != NULL) {				// string
-		summarydescB.append(varsummary+1);						// copy and remove start apostrophe
-		summarydescB.clear(1,summarydescB.size()-1);			// remove trailing apostrophe
+		// copy varsummary in summarydescB.exclude heading & trainling apostrophe. escape inner apostrophes if required
+		for (const char *ps=varsummary+1; *ps&&*(ps+1); ps++) {
+			if (*ps=='"' && *(ps-1)!='\\')
+				summarydescB.append ('\\');
+			summarydescB.append (*ps);
+		}
 		return summarydescB.c_str();
 	}
 	int datasize=0;
