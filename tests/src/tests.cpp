@@ -86,9 +86,9 @@ int test_BASE ()
 
 int test_LARGE_CHAR_ARRAY ()
 {
+	const char *ddd="HI\"abc\"JK";
 	char ccc[102];
-
-	strcpy (ccc, "HI\"abc\"JK");
+	strcpy (ccc, ddd);
 	strcpy (&ccc[100], "K");						// breakpoint 1 LARGE_CHAR_ARRAY
 
 	return 0;
@@ -205,7 +205,7 @@ int test_CRASH()
 /////////////////////////////
 
 void testfunction (int *i, char (&sr)[7], char *s, char *ps, const char*v, double *d, bool &b, struct CD (*cdp) [3], struct CD (&cdr)[3], AB &ab, BA *pba)
-{								// note: struct CD (*cd) [2] is invalid syntax for a pointer to a structure of 2 elements
+{
 	int bb=b;	(void)bb;
 	return;															// breakpoint 1 ARGS
 }
