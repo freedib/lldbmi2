@@ -78,7 +78,7 @@ main (int argc, char **argv, char **envp)
 		logarg (argv[narg]);
 		if (strcmp (argv[narg],"--version") == 0)
 			isVersion = 1;
-		else if (strcmp (argv[narg],"--interpreter") == 0 ) {
+		else if (strcmp (argv[narg],"--interpreter") == 0 || strcmp (argv[narg],"--interpreter=mi2") == 0) {
 			isInterpreter = 1;
 			if (++narg<argc)
 				logarg(argv[narg]);
