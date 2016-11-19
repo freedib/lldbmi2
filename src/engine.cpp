@@ -1006,13 +1006,16 @@ evalCDTCommand (STATE *pstate, const char *cdtcommand, CDT_COMMAND *cc)
 	cc->arguments[0] = '\0';
 	if (cdtcommand[0] == '\0')	// just ENTER
 		return 0;
+	// decode command with sequence number
 	int fields = sscanf (cdtcommand, "%d%[^\0]", &cc->sequence, cc->arguments);
 	if (fields == 0) {
+		// try decode command without sequence number
 		fields = sscanf (cdtcommand, "%[^\0]", cc->arguments);
-		if (fields != 1) return 0;
+		if (fields != 1)
+			return 0;
 		cc->sequence = 0;
 	}
-	else {
+	else if (fields < 2) {
 		logprintf (LOG_WARN, "invalid command format: ");
 		logdata (LOG_NOHEADER, cdtcommand, strlen(cdtcommand));
 		cdtprintf ("%d^error,msg=\"%s\"\n(gdb)\n", cc->sequence, "invalid command format.");

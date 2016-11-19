@@ -25,14 +25,14 @@ void help (STATE *pstate)
 	fprintf (stderr, "Description:\n");
 	fprintf (stderr, "   A MI2 interface to LLDB\n");
 	fprintf (stderr, "Author:\n");
-	fprintf (stderr, "   Didier Bertrand, 2015\n");
+	fprintf (stderr, "   Didier Bertrand, 2015, 2016\n");
 	fprintf (stderr, "Syntax:\n");
 	fprintf (stderr, "   lldbmi2 --version [options]\n");
 	fprintf (stderr, "   lldbmi2 --interpreter mi2 [options]\n");
-	fprintf (stderr, "   lldbmi2 --test [options]\n");
 	fprintf (stderr, "Arguments:\n");
 	fprintf (stderr, "   --version:           Return GDB's version (GDB 7.7.1) and exits.\n");
 	fprintf (stderr, "   --interpreter mi2:   Standard mi2 interface.\n");
+	fprintf (stderr, "   --interpreter=mi2:   Standard mi2 interface.\n");
 	fprintf (stderr, "Options:\n");
 	fprintf (stderr, "   --log:                Create log file in project root directory.\n");
 	fprintf (stderr, "   --logmask mask:       Select log categories. 0xFFF. See source code for values.\n");
@@ -78,11 +78,13 @@ main (int argc, char **argv, char **envp)
 		logarg (argv[narg]);
 		if (strcmp (argv[narg],"--version") == 0)
 			isVersion = 1;
-		else if (strcmp (argv[narg],"--interpreter") == 0 || strcmp (argv[narg],"--interpreter=mi2") == 0) {
+		else if (strcmp (argv[narg],"--interpreter") == 0) {
 			isInterpreter = 1;
 			if (++narg<argc)
 				logarg(argv[narg]);
 		}
+		else if (strcmp (argv[narg],"--interpreter=mi2") == 0)
+			isInterpreter = 1;
 		else if (strcmp (argv[narg],"--test") == 0 ) {
 			limits.istest = true;
 			if (++narg<argc)
