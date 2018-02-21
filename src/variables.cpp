@@ -661,7 +661,7 @@ formatValue (StringB &vardescB, SBValue var, VariableDetails details)
 			if (summarydescB.size()>0 && details==FULL_SUMMARY)
 				vardescB.catsprintf ("%s \\\"%s\\\"", varvalue, summarydescB.c_str());
 			else
-				vardescB.catsprintf ("%s {...}", varvalue);
+				vardescB.catsprintf ("%s", varvalue);
 		}
 		else		// basic type
 			vardescB.append(varvalue);
@@ -670,6 +670,6 @@ formatValue (StringB &vardescB, SBValue var, VariableDetails details)
 	else if (summarydescB.size()>0 && details==FULL_SUMMARY)
 		vardescB.catsprintf ("%p \\\"%s\\\"", varaddr, summarydescB.c_str());
 	else
-		vardescB.catsprintf ("%p {...}", varaddr);
+		vardescB.catsprintf ("%p", varaddr);
 	return vardescB.c_str();
 }
