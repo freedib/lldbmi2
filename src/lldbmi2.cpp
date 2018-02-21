@@ -85,6 +85,8 @@ main (int argc, char **argv, char **envp)
 		}
 		else if (strcmp (argv[narg],"--interpreter=mi2") == 0)
 			isInterpreter = 1;
+		else if ((strcmp (argv[narg],"-i") == 0) && (strcmp (argv[narg+1], "mi") == 0))
+			isInterpreter = 1;
 		else if (strcmp (argv[narg],"--test") == 0 ) {
 			limits.istest = true;
 			if (++narg<argc)
@@ -263,6 +265,8 @@ cdtprintf ( const char *format, ... )
 		va_start (args, format);
 		buffer.vosprintf (0, format, args);
 		va_end (args);
+		if ((buffer.c_str()[0] == '0') && (buffer.c_str()[1] == '^'))
+			buffer.clear(1,0);
 		writetocdt (buffer.c_str());
 	}
 }
