@@ -372,6 +372,36 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 		else
 			cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
 	}
+	else if (strcmp(cc.argv[0],"-exec-until")==0) {
+		char path[NAME_MAX];
+		if (nextarg<cc.argc)
+			strlcpy (path, cc.argv[nextarg++], sizeof(path));
+		if (pstate->process.IsValid()) {
+			int state = pstate->process.GetState ();
+			if (state == eStateStopped) {
+				SBThread thread = pstate->process.GetSelectedThread();
+				if (thread.IsValid()) {
+					char *pline;
+					if ((pline=strchr(path,':')) != NULL) {
+						*pline++ = '\0';
+						int iline=0;
+						sscanf (pline, "%d", &iline);
+						SBFileSpec fspec(path, true);
+						SBFrame frame = thread.GetSelectedFrame();
+						if (frame.IsValid()) {
+							cdtprintf ("%d^running\n", cc.sequence);
+							cdtprintf ("*running,thread-id=\"all\"\n(gdb)\n");
+							thread.StepOverUntil(frame, fspec, iline);
+						}
+					}
+				}
+				else
+					cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
+			}
+		}
+		else
+			cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
+	}
 	else if ((strcmp(cc.argv[0],"kill")==0) || (strcmp(cc.argv[0],"-exec-abort")==0)) {
 		srcprintf("kill\n");
 		if (target.GetProcess().IsValid()) {
