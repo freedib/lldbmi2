@@ -63,7 +63,10 @@ StringB::clear (int bytes, int start) {
 		buffer_size = start;
 	}
 	else {
-		::strcpy (buffer_array+start, buffer_array+start+bytes);
+		char *tmp = (char *)malloc(buffer_size);
+		::strcpy (tmp, buffer_array+start+bytes);
+		::strcpy (buffer_array+start, tmp);
+		free(tmp);
 		buffer_size -= bytes;
 	}
 	return buffer_array;
