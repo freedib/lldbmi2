@@ -26,6 +26,7 @@ const char *getName ( SBValue &var);
 char *strfind (char *string, const char *find, int way=1, const char *except=NULL);
 bool  getDirectPathVariable (SBFrame frame, const char *expression, SBValue *foundvar, SBValue &parent, int depth);
 char *castexpression (SBFrame frame, const char *expression, char *newexpression, size_t expressionsize);
+char *strup (char *string, int len);
 
 SBValue getVariable (SBFrame frame, const char *expression, bool tryDirect=true);
 int     updateVarState (SBValue var, int depth);
@@ -38,6 +39,8 @@ char * formatChangedList (StringB &changedescB, SBValue var, bool &separatorvisi
 char * formatVariables (StringB &varsdescB, SBValueList varslist);
 char * formatSummary (StringB &summarydescB, SBValue var);
 char * formatValue (StringB &varsdescB, SBValue var, VariableDetails details);
+char * formatDesc (StringB &vardescB, SBValue var);
+char * formatStruct (StringB &vardescB, SBValue var);
 
 char * formatExpressionPath (SBValue var);
 char * formatChildrenList (SBValue var, char *expression, int threadindexid, int &varnumchildren);

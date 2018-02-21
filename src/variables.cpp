@@ -125,6 +125,20 @@ strfind (char *string, const char *find, int way, const char *except)
 	return NULL;
 }
 
+char *
+strup (char *string, int len)
+{
+	char *p = string;
+	while (*p) {
+		*p = toupper(*p);
+		p++;
+		if ((len != -1) && ((p - string) >= len))
+			break;
+	}
+	return string;
+}
+
+
 // try go get a variable child from a path by walking its children
 // while there are parts, search children for the remaining
 bool
@@ -658,6 +672,85 @@ formatValue (SBValue var, VariableDetails details)
 	vardescB.clear();
 	return formatValue (vardescB, var, details);
 }
+
+char *
+formatDesc (StringB &s, SBValue var)
+{
+  	s.catsprintf("{ %s = ", var.GetTypeName());
+  	SBType type = var.GetType();
+    int basecnt = type.GetNumberOfDirectBaseClasses();
+    if (basecnt > 0) {
+    	const char *newn = type.GetDirectBaseClassAtIndex(0).GetName();
+    	int first;
+    	int ndx = var.GetIndexOfChildWithName(newn);
+    	if (ndx > -1) {
+    		SBValue child = var.GetChildAtIndex(ndx);
+    		formatDesc(s, child);
+   			first = 1;
+    	}
+    	else {
+    		s.catsprintf("{ %s, }, ", newn);
+    		first = 0;
+    	}
+    	for (ndx = first; ndx < var.GetNumChildren(); ndx++ ) {
+    		SBValue child = var.GetChildAtIndex(ndx);
+	    	SBStream l;
+    		child.GetDescription(l);
+    		// Trim off Type descriptor at front
+    		char *tmp = (char *)l.GetData();
+    		char *desc = strfind(tmp, ") ");
+    		if (desc != nullptr)
+    			desc+=2;
+    		else
+    			desc = tmp;
+	   		while(*desc) {
+    			if (*desc == '\n')
+    				s.append(' ');
+    			else if (*desc == '(')
+    				s.append('{');
+    			else if (*desc == ')')
+    				s.append('}');
+    			else
+    				s.append(*desc);
+    			desc++;
+    		}
+     		s.append(", ");
+     	}
+    }
+    s.append("}, ");
+	return (s.c_str());
+}
+
+char * 
+formatStruct (StringB &s, SBValue var)
+{
+	s.append("{");
+   	for (int ndx = 0; ndx < var.GetNumChildren(); ndx++ ) {
+   		SBValue child = var.GetChildAtIndex(ndx);
+    	if (ndx > 0)
+   			s.append(", ");
+   		s.catsprintf("%s = ", child.GetName());
+
+  		if ((child.GetType().GetNumberOfFields() > 0))   {
+   			formatStruct(s, child);
+   		}
+   		else {
+	   		int flags = child.GetType().GetTypeFlags();
+	   		if ((flags & eTypeHasValue) != 0) {
+	   			if((flags & eTypeIsFuncPrototype) != 0) {
+	   				s.catsprintf(" {%s} %s", child.GetType().GetName(), var.GetLocation());
+	   			}
+	   			else
+	   				s.catsprintf("%s", child.GetValue());
+	    	}
+	    	else
+	    		s.catsprintf("%s", child.GetLocation());
+	    }
+   	}
+   	s.append("}");
+    return (s.c_str());
+}
+
 
 char *
 formatValue (StringB &vardescB, SBValue var, VariableDetails details)

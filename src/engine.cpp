@@ -885,7 +885,7 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 				cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
 		}
 	}
-	else if (strcmp(cc.argv[0],"-var-evaluate-expression")==0 || strcmp(cc.argv[0],"-data-evaluate-expression")==0) {
+	else if (strcmp(cc.argv[0],"-var-evaluate-expression")==0){
 		// 36-var-evaluate-expression --thread-group i1 "sizeof (void*)"
 		// 36^done,value="50 '2'"
 		// 58-var-evaluate-expression var5.y
@@ -918,8 +918,83 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 			else
 				cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
 		}
+	}	
+	else if ((strcmp(cc.argv[0],"-data-evaluate-expression")==0) ||
+		(strcmp(cc.argv[0],"-bob")==0)) {
+		char expression[PATH_MAX];
+		char expressionPath[PATH_MAX];
+		bool doDeref = false;
+		if (nextarg<cc.argc)
+			strlcpy (expression, cc.argv[nextarg++], sizeof(expression));
+		
+		strup(expression, -1);
+
+		char *pathStart = strchr(expression, '.');
+		if (pathStart != NULL) {
+			strlcpy(expressionPath, pathStart, sizeof(expressionPath));
+			if (expressionPath[strlen(expressionPath)-1] == '^') {
+				doDeref = true;
+				expressionPath[strlen(expressionPath)-1] = '\0';
+			}
+			*pathStart = '\0';
+		}
+		else {
+			if (expression[strlen(expression)-1] == '^') {
+				doDeref = true;
+				expression[strlen(expression)-1] = '\0';
+			}
+		}
+
+		SBValue val = target.EvaluateExpression(expression);
+		if (val.IsValid() && (pathStart != NULL)) {
+			val = val.GetValueForExpressionPath(expressionPath);
+		}
+		if (val.IsValid() && doDeref) {
+			val = val.Dereference();
+		}
+		
+		if (val.IsValid()) {
+			if (val.GetError().Fail())
+				cdtprintf ("%d^error,msg=\"%s.\"\n(gdb)\n", cc.sequence, val.GetError().GetCString());
+			else {
+				if (doDeref) {
+					StringB s(VALUE_MAX);
+					s.clear();
+					char *vardesc = formatDesc (s, val);
+					cdtprintf ("%d^done,value=\"%s\"\n(gdb)\n", cc.sequence, vardesc);
+				}
+				else {
+					SBType valtype = val.GetType();
+					if ((valtype.GetTypeClass() & eTypeClassTypedef) != 0)
+						valtype = valtype.GetTypedefedType();
+
+					if ((valtype.GetTypeClass() & eTypeClassPointer) != 0) {
+						if (strcasecmp(valtype.GetName(), "char *") == 0) {
+							SBStream s;
+							val.GetDescription(s);
+							char *str = strchr(s.GetData(), '=');
+							str = str+2;
+							cdtprintf ("%d^done,value=\"%s\"\n(gdb)\n", cc.sequence, str);
+						}
+						else
+							cdtprintf ("%d^done,value=\"%s\"\n(gdb)\n", cc.sequence, val.GetValue());
+					}
+					else if ((valtype.GetTypeClass() & eTypeClassStruct) != 0) {
+						StringB s(VALUE_MAX);
+						s.clear();
+						char *vardesc = formatStruct (s, val);
+						cdtprintf ("%d^done,value=\"%s\"\n(gdb)\n", cc.sequence, vardesc);
+					}
+					else
+						cdtprintf ("%d^done,value=\"%s\"\n(gdb)\n", cc.sequence, val.GetValue());
+				}
+			}
+		}
+		else
+			cdtprintf ("%d^error,msg=\"No valid value.\"\n(gdb)\n", cc.sequence);
 	}
-	else if ((strcmp(cc.argv[0],"ptype")==0) || (strcmp(cc.argv[0],"-symbol-type")==0)) {
+	else if (strcmp(cc.argv[0],"ptype")==0){
+		// MI cmd: -symbol-type
 		char expression[NAME_MAX];
 		char expressionPath[NAME_MAX];
 		if (nextarg<cc.argc)
