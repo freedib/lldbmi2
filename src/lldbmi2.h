@@ -65,6 +65,8 @@ typedef struct {
 const char * logarg (const char *arg);
 void         writetocdt    (const char *line);
 void         cdtprintf     (const char *format, ... );
+void         srcprintf     (const char *format, ... );
+void         srlprintf     (const char *format, ... );
 void         signalHandler (int vSigno);
 
 #endif	// LLDBMIG_H

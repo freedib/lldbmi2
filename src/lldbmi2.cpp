@@ -271,6 +271,72 @@ cdtprintf ( const char *format, ... )
 	}
 }
 
+std::string ReplaceString(std::string subject, const std::string& search,
+                          const std::string& replace) {
+    size_t pos = 0;
+    while ((pos = subject.find(search, pos)) != std::string::npos) {
+         subject.replace(pos, search.length(), replace);
+         pos += replace.length();
+    }
+    return subject;
+}
+
+void
+strrecprintf (const char *typestr, const char *format, va_list args)
+{
+	logprintf (LOG_NONE, "srcprintf (...)\n");
+	static StringB buffer(BIG_LINE_MAX);
+	static StringB lineout(BIG_LINE_MAX);
+	static StringB prepend(10);
+
+	buffer.vosprintf (0, format, args);
+	prepend.clear();
+	prepend.append(typestr);
+	prepend.append("\"");
+	lineout.clear();
+	lineout.append(prepend.c_str());
+	for (int ndx=0; ndx<buffer.size(); ndx++) {
+		if (buffer.c_str()[ndx] == '\"')
+			lineout.append("\\\"");
+		else if (buffer.c_str()[ndx] == '\n') {
+			lineout.append("\\n\"\n");
+			writetocdt(lineout.c_str());
+			lineout.clear();
+			lineout.append(prepend.c_str());
+		}
+		else 
+			lineout.append(buffer.c_str()[ndx]);
+	}
+	if (lineout.size() > 2) {
+		lineout.append("\n\"");
+		writetocdt (lineout.c_str());
+	}
+}
+
+void
+srcprintf (const char *format, ... )
+{
+	va_list args;
+
+	if (format!=NULL) {
+		va_start (args, format);
+		strrecprintf("&", format, args);
+		va_end (args);
+	}
+}
+
+void
+srlprintf (const char *format, ... )
+{
+	va_list args;
+
+	if (format!=NULL) {
+		va_start (args, format);
+		strrecprintf("~", format, args);
+		va_end (args);
+	}
+}
+
 static int signals_received=0;
 
 void
