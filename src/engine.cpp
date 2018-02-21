@@ -444,13 +444,15 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 	else if (strcmp(cc.argv[0],"-break-insert")==0) {
 		// break-insert --thread-group i1 -f /project_path/tests/Sources/tests.cpp:17
 		// break-insert --thread-group i1 -t -f main
-		int isoneshot=0;
+		bool isoneshot=false;
+		bool ispending=false;
 		char path[PATH_MAX];
 		for (; nextarg<cc.argc; nextarg++) {
 			if (strcmp(cc.argv[nextarg],"-t")==0)
-				isoneshot = 1;
-			else if (strcmp(cc.argv[nextarg],"-f")==0)
-				++nextarg;
+				isoneshot = true;
+			else if (strcmp(cc.argv[nextarg],"-f")==0) {
+				ispending = true;
+			}
 			snprintf (path, sizeof(path), cc.argv[nextarg], pstate->project_loc);
 			if (strstr(cc.argv[nextarg],"%s")!=NULL)
 				logprintf (LOG_VARS, "%%s -> %s\n", path);
@@ -463,16 +465,23 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 			sscanf (pline, "%d", &iline);
 			breakpoint = target.BreakpointCreateByLocation (path, iline);
 		}
+		else if ((pline=strchr(path,'*')) != NULL) { // address
+			*pline++ = '\0';
+			addr_t addr=0;
+			sscanf (pline, "%lld", &addr);
+			breakpoint = target.BreakpointCreateByAddress(addr);
+		}
 		else		// function
 			breakpoint = target.BreakpointCreateByName (path, target.GetExecutable().GetFilename());
-		if (breakpoint.IsValid()) {
-			if (isoneshot)
-				breakpoint.SetOneShot(true);
+		if ((breakpoint.GetNumLocations() > 0) || ispending) {
+			breakpoint.SetOneShot(isoneshot);
 			char *breakpointdesc = formatBreakpoint (breakpoint, pstate);
 			cdtprintf ("%d^done,bkpt=%s\n(gdb)\n", cc.sequence, breakpointdesc);
 		}
-		else
-			cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
+		else {
+			target.BreakpointDelete(breakpoint.GetID());
+			cdtprintf ("^error,msg=\"could not find %s\"\n(gdb) \n", path);
+		}
 	}
 	else if (strcmp(cc.argv[0],"-break-delete")==0) {
 		// 11-break-delete 1
