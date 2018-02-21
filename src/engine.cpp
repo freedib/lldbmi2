@@ -53,7 +53,6 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 
 	static SBTarget target;
 	static SBLaunchInfo launchInfo(NULL);
-	static SBProcess process;
 
 	dataflag = MORE_DATA;
 	logdata (LOG_CDT_IN|LOG_RAW, commandLine, strlen(commandLine));
@@ -161,7 +160,7 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 	else if (strcmp(cc.argv[0],"-gdb-show")==0) {
 		// 21-gdb-show --thread-group i1 language
 		// do no work. eclipse send it too early. must not rely on frame
-		SBThread thread = process.GetSelectedThread();
+		SBThread thread = pstate->process.GetSelectedThread();
 		if (thread.IsValid()) {
 			SBFrame frame = thread.GetSelectedFrame();
 			if (frame.IsValid()) {
@@ -240,6 +239,7 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 		}
 		target = pstate->debugger.CreateTarget (NULL);
 	//	pstate->debugger.SetAsync (false);
+		SBProcess process;
 		if (pid > 0)
 			process = target.AttachToProcessWithID (pstate->listener, pid, error);
 		else if (processname[0]!='\0')
@@ -261,7 +261,7 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 	}
 	else if (strcmp(cc.argv[0],"-target-detach")==0) {
 		// target-detach --thread-group i1
-		if (process.IsValid()) {
+		if (pstate->process.IsValid()) {
 			terminateProcess (pstate, PRINT_THREAD|PRINT_GROUP|AND_EXIT);
 			cdtprintf (	"%d^done\n(gdb)\n",	cc.sequence);
 		}
@@ -274,7 +274,7 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 		launchInfo.SetEnvironmentEntries (pstate->envp, false);
 		logprintf (LOG_NONE, "launchInfo: args=%d env=%d, pwd=%s\n", launchInfo.GetNumArguments(), launchInfo.GetNumEnvironmentEntries(), launchInfo.GetWorkingDirectory());
 		SBError error;
-		process = target.Launch (launchInfo, error);
+		SBProcess process = target.Launch (launchInfo, error);
 		if (!process.IsValid() || error.Fail()) {
 			cdtprintf ("%d^error,msg=\"%s\"\n(gdb)\n", cc.sequence, "Can not start process.");
 			logprintf (LOG_INFO, "process_error=%s\n", error.GetCString());
@@ -295,13 +295,13 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 		// 37^running
 		// *running,thread-id="1"
 		// Ignore a --thread argument. restart all threads
-		if (process.IsValid()) {
-			int state = process.GetState ();
+		if (pstate->process.IsValid()) {
+			int state = pstate->process.GetState ();
 			if (state == eStateStopped) {
-				SBThread thread = process.GetSelectedThread();
+				SBThread thread = pstate->process.GetSelectedThread();
 				cdtprintf ("%d^running\n", cc.sequence);
 				cdtprintf ("*running,thread-id=\"%d\"\n(gdb)\n", thread.IsValid()? thread.GetIndexID(): 0);
-				process.Continue();
+				pstate->process.Continue();
 				pstate->isrunning = true;
 			}
 		}
@@ -317,10 +317,10 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 		if (cc.argv[nextarg] != NULL)
 			if (isdigit(*cc.argv[nextarg]))
 				sscanf (cc.argv[nextarg], "%d", &times);
-		if (process.IsValid()) {
-			int state = process.GetState ();
+		if (pstate->process.IsValid()) {
+			int state = pstate->process.GetState ();
 			if (state == eStateStopped) {
-				SBThread thread = process.GetSelectedThread();
+				SBThread thread = pstate->process.GetSelectedThread();
 				if (thread.IsValid()) {
 					cdtprintf ("%d^running\n", cc.sequence);
 					cdtprintf ("*running,thread-id=\"%d\"\n(gdb)\n", thread.IsValid()? thread.GetIndexID(): 0);
@@ -340,10 +340,10 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 		// 37-exec-finish --thread 1 --frame 0
 		// 37^running
 		// *running,thread-id="all"
-		if (process.IsValid()) {
-			int state = process.GetState ();
+		if (pstate->process.IsValid()) {
+			int state = pstate->process.GetState ();
 			if (state == eStateStopped) {
-				SBThread thread = process.GetSelectedThread();
+				SBThread thread = pstate->process.GetSelectedThread();
 				if (thread.IsValid()) {
 					cdtprintf ("%d^running\n", cc.sequence);
 					cdtprintf ("*running,thread-id=\"all\"\n(gdb)\n");
@@ -352,6 +352,18 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 				else
 					cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
 			}
+		}
+		else
+			cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
+	}
+	else if ((strcmp(cc.argv[0],"kill")==0) || (strcmp(cc.argv[0],"-exec-abort")==0)) {
+		srcprintf("kill\n");
+		if (target.GetProcess().IsValid()) {
+			if (target.GetProcess().GetState() == eStateStopped) // if process is stopped. restart it before kill
+				target.GetProcess().Continue();
+			target.GetProcess().Destroy();
+			target.GetProcess().Clear();
+			cdtprintf (	"%d^done\n(gdb)\n",	cc.sequence);
 		}
 		else
 			cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
@@ -386,14 +398,14 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 						 cc.sequence);
 			}
 			else if (strcmp(cc.argv[nextarg],"kill") == 0) {
-				if (process.IsValid()) {
-					int state = process.GetState ();
+				if (pstate->process.IsValid()) {
+					int state = pstate->process.GetState ();
 					if (state == eStateStopped) {			// if process is stopped. restart it before kill
 						logprintf (LOG_INFO, "console kill: restart process\n");
-						SBThread thread = process.GetSelectedThread();
+						SBThread thread = pstate->process.GetSelectedThread();
 					//	cdtprintf ("%d^running\n", cc.sequence);
 					//	cdtprintf ("*running,thread-id=\"%d\"\n(gdb)\n", thread.IsValid()? thread.GetIndexID(): 0);
-						process.Continue();
+						pstate->process.Continue();
 						pstate->isrunning = true;
 						pstate->wanttokill = true;	// wait for process running to kill it
 					}
@@ -496,8 +508,8 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 			const char *filename=NULL, *filedir=NULL;
 			snprintf (groupsdesc, sizeof(groupsdesc), "id=\"%s\",type=\"process\"", pstate->threadgroup);
 			groupdesclength = strlen(groupsdesc);
-			if (process.IsValid()) {
-				pid=process.GetProcessID();
+			if (pstate->process.IsValid()) {
+				pid=pstate->process.GetProcessID();
 				snprintf (groupsdesc+groupdesclength, sizeof(groupsdesc)-groupdesclength,
 						",pid=\"%d\"", pid);
 				groupdesclength = strlen(groupsdesc);
@@ -513,7 +525,7 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 			cdtprintf ("%d^done,groups=[{%s}]\n(gdb)\n", cc.sequence, groupsdesc);
 		}
 		else if (strcmp(cc.argv[nextarg],pstate->threadgroup) == 0) {
-			char *threaddesc = formatThreadInfo (process, -1);
+			char *threaddesc = formatThreadInfo (pstate->process, -1);
 			if (threaddesc[0] != '\0')
 				cdtprintf ("%d^done,threads=[%s]\n(gdb)\n", cc.sequence, threaddesc);
 			else
@@ -527,8 +539,8 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 		if (cc.argv[nextarg] != NULL)
 			if (isdigit(*cc.argv[nextarg]))
 				sscanf (cc.argv[nextarg++], "%d", &maxdepth);
-		if (process.IsValid()) {
-			SBThread thread = process.GetSelectedThread();
+		if (pstate->process.IsValid()) {
+			SBThread thread = pstate->process.GetSelectedThread();
 			if (thread.IsValid()) {
 				int numframes = getNumFrames (thread);
 				cdtprintf ("%d^done,depth=\"%d\"\n(gdb)\n", cc.sequence, numframes);
@@ -548,7 +560,7 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 		if (cc.argv[nextarg] != NULL)
 			if (isdigit(*cc.argv[nextarg]))
 				sscanf (cc.argv[nextarg++], "%d", &endframe);
-		SBThread thread = process.GetSelectedThread();
+		SBThread thread = pstate->process.GetSelectedThread();
 		if (thread.IsValid()) {
 			if (endframe<0)
 				endframe = getNumFrames (thread);
@@ -585,7 +597,7 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 		if (cc.argv[nextarg] != NULL)
 			if (isdigit(*cc.argv[nextarg]))
 				sscanf (cc.argv[nextarg++], "%d", &endframe);
-		SBThread thread = process.GetSelectedThread();
+		SBThread thread = pstate->process.GetSelectedThread();
 		if (thread.IsValid()) {
 			if (endframe<0)
 				endframe = getNumFrames (thread);
@@ -611,9 +623,9 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 			cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
 	}
 	else if (strcmp(cc.argv[0],"thread")==0) {
-		if (process.IsValid()) {
-			int pid=process.GetProcessID();
-			SBThread thread = process.GetSelectedThread();
+		if (pstate->process.IsValid()) {
+			int pid=pstate->process.GetProcessID();
+			SBThread thread = pstate->process.GetSelectedThread();
 			if (thread.IsValid()) {
 				int tid=thread.GetThreadID();
 				int threadindexid=thread.GetIndexID();
@@ -632,7 +644,7 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 		if (cc.argv[nextarg] != NULL)
 			if (isdigit(*cc.argv[nextarg]))
 				sscanf (cc.argv[nextarg++], "%d", &threadindexid);
-		char *threaddesc = formatThreadInfo (process, threadindexid);
+		char *threaddesc = formatThreadInfo (pstate->process, threadindexid);
 		if (threaddesc[0] != '\0')
 			cdtprintf ("%d^done,threads=[%s]\n(gdb)\n", cc.sequence, threaddesc);
 		else
@@ -646,8 +658,8 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 		if (++nextarg<cc.argc)
 			strlcpy (printvalues, cc.argv[nextarg], sizeof(printvalues));
 		bool isValid = false;
-		if (process.IsValid()) {
-			SBThread thread = process.GetSelectedThread();
+		if (pstate->process.IsValid()) {
+			SBThread thread = pstate->process.GetSelectedThread();
 			if (thread.IsValid()) {
 				SBFrame frame = thread.GetSelectedFrame();
 				if (frame.IsValid()) {
@@ -680,7 +692,7 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 				strlcat (expression, cc.argv[nextarg++], sizeof(expression));
 				sep = " ";
 			}
-			SBThread thread = process.GetSelectedThread();
+			SBThread thread = pstate->process.GetSelectedThread();
 			if (thread.IsValid()) {
 				SBFrame frame = thread.GetSelectedFrame();
 				if (frame.IsValid()) {
@@ -729,7 +741,7 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 				sscanf (cc.argv[nextarg++], "%d", &printvalues);
 		if (nextarg<cc.argc)									// variable name
 			strlcpy (expression, cc.argv[nextarg++], sizeof(expression));
-		SBThread thread = process.GetSelectedThread();
+		SBThread thread = pstate->process.GetSelectedThread();
 		if (thread.IsValid()) {
 			SBFrame frame = thread.GetSelectedFrame();
 			if (frame.IsValid()) {
@@ -763,7 +775,7 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 		*expression = '\0';
 		if (nextarg<cc.argc)
 			strlcpy (expression, cc.argv[nextarg++], sizeof(expression));
-		SBThread thread = process.GetSelectedThread();
+		SBThread thread = pstate->process.GetSelectedThread();
 		if (thread.IsValid()) {
 			SBFrame frame = thread.GetSelectedFrame();
 			if (frame.IsValid()) {
@@ -799,7 +811,7 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 		if (*expression!='$')		// it is yet a path
 			cdtprintf ("%d^done,path_expr=\"%s\"\n(gdb)\n", cc.sequence, expression);
 		else {
-			SBThread thread = process.GetSelectedThread();
+			SBThread thread = pstate->process.GetSelectedThread();
 			if (thread.IsValid()) {
 				SBFrame frame = thread.GetSelectedFrame();
 				if (frame.IsValid()) {
@@ -833,7 +845,7 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 		if (strcmp(expression,"sizeof (void*)")==0)
 			cdtprintf ("%d^done,value=\"8\"\n(gdb)\n", cc.sequence);
 		else {
-			SBThread thread = process.GetSelectedThread();
+			SBThread thread = pstate->process.GetSelectedThread();
 			if (thread.IsValid()) {
 				SBFrame frame = thread.GetSelectedFrame();
 				if (frame.IsValid()) {
@@ -989,7 +1001,7 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 			formatcode = eFormatHex;
 		else
 			formatcode = eFormatDefault;
-		SBThread thread = process.GetSelectedThread();
+		SBThread thread = pstate->process.GetSelectedThread();
 		if (thread.IsValid()) {
 			SBFrame frame = thread.GetSelectedFrame();
 			if (frame.IsValid()) {

@@ -36,6 +36,7 @@ void
 terminateProcess (STATE *pstate, int how)
 {
 	logprintf (LOG_TRACE, "terminateProcess (0x%x, 0x%x)\n", pstate, how);
+	pstate->procstop = true;
 	if (pstate->process.IsValid()) {
 		SBThread thread = pstate->process.GetSelectedThread();
 		int tid = thread.IsValid()? thread.GetIndexID():0;
@@ -56,6 +57,7 @@ terminateProcess (STATE *pstate, int how)
 int
 startProcessListener (STATE *pstate)
 {
+	pstate->procstop = false;
 	logprintf (LOG_TRACE, "startProcessListener (0x%x)\n", pstate);
 	int ret = pthread_create (&sbTID, NULL, &processListener, pstate);
 	if (ret)
@@ -85,9 +87,9 @@ processListener (void *arg)
 	if (!pstate->listener.IsValid())
 		return NULL;
 
-	while (!pstate->eof) {
+	while (!pstate->eof && !pstate->procstop) {
 		SBEvent event;
-		bool gotevent = pstate->listener.WaitForEvent (1000, event);
+		bool gotevent = pstate->listener.WaitForEvent (1, event);
 		if (!gotevent || !event.IsValid())
 			continue;
 		uint32_t eventtype = event.GetType();
@@ -109,8 +111,8 @@ processListener (void *arg)
 				case eStateExited:
 					logprintf (LOG_EVENTS, "eStateExited\n");
 					checkThreadsLife (pstate, process);		// not useful. threads are not stopped before exit
-					terminateProcess (pstate, PRINT_GROUP|AND_EXIT);
-					cdtprintf ("*stopped,reason=\"exited-normally\"\n(gdb)\n");
+					terminateProcess (pstate, PRINT_GROUP);
+					//cdtprintf ("*stopped,reason=\"exited-normally\"\n(gdb)\n");
 					logprintf (LOG_INFO, "processlistener. eof=%d\n", pstate->eof);
 					break;
 				case eStateStopped:

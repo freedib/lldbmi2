@@ -41,6 +41,7 @@ typedef struct {
 typedef struct {
 	int  ptyfd;
 	bool eof;
+	bool procstop;
 	bool isrunning;
 	bool wanttokill;
 	int test_sequence;
