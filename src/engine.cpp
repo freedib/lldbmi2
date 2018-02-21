@@ -1082,11 +1082,17 @@ scanArgs (CDT_COMMAND *cc)
 		while (isspace(*pa))
 			++pa;
 		if (*pa=='"') {
-			ps = ++pa;
-			while (*pa && *pa!='"' && *(pa-1)!='\\')
-				++pa;
-			if (*pa == '"')
-				*pa++ = '\0';
+			int ndx = 0;
+			ps = pa;
+			while (*pa) {
+				pa++;
+				if (*pa=='\\' && *(pa+1)=='"')
+					pa = pa+2;
+				if (*pa=='"')
+					pa++;
+				ps[ndx++] = *pa;
+			}
+			ps[ndx] = '\0';
 		}
 		else {
 			ps = pa;
