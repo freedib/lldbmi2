@@ -1416,6 +1416,51 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 		else
 			cdtprintf ("%d^error,msg=\"%s\"\n(gdb)\n", cc.sequence, "thread not found");
 	}
+	else if (strcmp(cc.argv[0],"-data-disassemble")==0) {
+		// Limited to following form:
+		// -data-disassemble -s dddd -e ddddd -- 0
+		addr_t startaddr = -1;
+		addr_t endaddr = -1;
+		if ((strcmp(cc.argv[nextarg], "-s") == 0) && isdigit(*cc.argv[nextarg+1])) {
+			nextarg+=1;
+			sscanf (cc.argv[nextarg++], "%lld", &startaddr);
+		}
+		if ((strcmp(cc.argv[nextarg], "-e") == 0) && isdigit(*cc.argv[nextarg+1])) {
+			nextarg+=1;
+			sscanf (cc.argv[nextarg++], "%lld", &endaddr);
+		}
+		if ((startaddr != -1) && (endaddr != -1)) {
+			SBAddress saddr = target.ResolveFileAddress(startaddr);
+			SBAddress eaddr = target.ResolveFileAddress(endaddr);
+			int cnt = eaddr.GetFileAddress() - saddr.GetFileAddress();
+			if (saddr.IsValid() && eaddr.IsValid()) {
+				SBInstructionList ilist = target.ReadInstructions(saddr, cnt);
+				if (ilist.IsValid()) {
+					cdtprintf ("%d^done,asm_insns=[",cc.sequence); 
+					for (int i = 0; i < cnt; i++) {
+						SBInstruction instr = ilist.GetInstructionAtIndex(i);
+						SBAddress iaddr = instr.GetAddress();
+						if (iaddr.GetFileAddress() > eaddr.GetFileAddress()) {
+							break;
+						}
+						addr_t off = iaddr.GetFileAddress() - iaddr.GetFunction().GetStartAddress().GetFileAddress();
+						if (i != 0)
+							cdtprintf(",");
+						cdtprintf("{address=\"%p\",func-name=\"%s\",offset=\"%d\",inst=\"%s %s\"}",
+							iaddr.GetFileAddress(), iaddr.GetFunction().GetName(), off, 
+							instr.GetMnemonic(target), instr.GetOperands(target));
+					}
+					cdtprintf ("]\n(gdb)\n");
+				}
+				else
+					cdtprintf ("%d^error,msg=\"%s\"\n(gdb)\n", cc.sequence, "no valid instructions");
+			}
+			else
+				cdtprintf ("%d^error,msg=\"%s\"\n(gdb)\n", cc.sequence, "Could not resolve addresses");
+		}
+		else
+			cdtprintf ("%d^error,msg=\"%s\"\n(gdb)\n", cc.sequence, "Could not parse addresses");
+	}
 	else {
 		logprintf (LOG_WARN, "command not understood: ");
 		logdata (LOG_NOHEADER, cc.argv[0], strlen(cc.argv[0]));
