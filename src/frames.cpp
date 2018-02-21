@@ -42,7 +42,7 @@ formatBreakpoint (StringB &breakpointdescB, SBBreakpoint breakpoint, STATE *psta
 	int bpid = breakpoint.GetID();
 	SBBreakpointLocation location = breakpoint.GetLocationAtIndex(0);
 	SBAddress addr = location.GetAddress();
-	uint32_t file_addr=addr.GetFileAddress();
+	addr_t file_addr=addr.GetFileAddress();
 	SBFunction function=addr.GetFunction();
 	const char *func_name=function.GetName();
 	SBLineEntry line_entry=addr.GetLineEntry();
@@ -55,7 +55,7 @@ formatBreakpoint (StringB &breakpointdescB, SBBreakpoint breakpoint, STATE *psta
 	const char *originallocation = "";
 	//	originallocation,dispose = breakpoints[bpid]
 	breakpointdescB.catsprintf (
-			"{number=\"%d\",type=\"breakpoint\",disp=\"%s\",enabled=\"y\",addr=\"0x%016x\","
+			"{number=\"%d\",type=\"breakpoint\",disp=\"%s\",enabled=\"y\",addr=\"%p\","
 			"func=\"%s\",file=\"%s\",fullname=\"%s\",line=\"%d\","
 			"thread-groups=[\"%s\"],times=\"0\",original-location=\"%s\"}",
 			bpid,dispose,file_addr,func_name,filename,
@@ -80,7 +80,7 @@ formatFrame (StringB &framedescB, SBFrame frame, FrameDetails framedetails)
 	logprintf (LOG_TRACE, "formatFrame (0x%x, 0x%x, 0x%x)\n", &framedescB, &frame, framedetails);
 	int frameid = frame.GetFrameID();
 	SBAddress addr = frame.GetPCAddress();
-	uint32_t file_addr = addr.GetFileAddress();
+	addr_t file_addr = addr.GetFileAddress();
 	SBFunction function = addr.GetFunction();
 	char levelstring[NAME_MAX];
 	if (framedetails&WITH_LEVEL)
@@ -118,7 +118,7 @@ formatFrame (StringB &framedescB, SBFrame frame, FrameDetails framedetails)
 		if (framedetails==JUST_LEVEL_AND_ARGS)
 			framedescB.catsprintf ("frame={%s%s}", levelstring, argsstringB.c_str());
 		else
-			framedescB.catsprintf ("frame={%saddr=\"0x%016x\",func=\"%s\"%s,file=\"%s\","
+			framedescB.catsprintf ("frame={%saddr=\"%p\",func=\"%s\"%s,file=\"%s\","
 								"fullname=\"%s/%s\",line=\"%d\"}",
 								levelstring,file_addr,func_name,argsstringB.c_str(),filename,filedir,filename,line);
 	}
@@ -129,7 +129,7 @@ formatFrame (StringB &framedescB, SBFrame frame, FrameDetails framedetails)
 			framedescB.catsprintf ("frame={%s%s}", levelstring, argsstringB.c_str());
 		else {
 			func_name = frame.GetFunctionName();
-			framedescB.catsprintf ("frame={%saddr=\"0x%016x\",func=\"%s\"%s,file=\"%s\"}",
+			framedescB.catsprintf ("frame={%saddr=\"%p\",func=\"%s\"%s,file=\"%s\"}",
 					levelstring, file_addr, func_name, argsstringB.c_str(), modulefilename);
 		}
 	}

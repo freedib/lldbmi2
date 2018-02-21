@@ -236,13 +236,13 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 		// target-attach --thread-group i1 40088
 		// =thread-group-started,id="i1",pid="40123"
 		// =thread-created,id="1",group-id="i1"
-		int pid=0;
+		lldb::pid_t pid=0;
 		SBError error;
 		char processname[PATH_MAX];
 		processname[0] = '\0';
 		if (cc.argv[nextarg] != NULL) {
 			if (isdigit(*cc.argv[nextarg]))
-				sscanf (cc.argv[nextarg], "%d", &pid);
+				sscanf (cc.argv[nextarg], "%llu", &pid);
 			else
 				strlcpy (processname, cc.argv[nextarg], PATH_MAX);
 		}
@@ -1067,7 +1067,7 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 		                    addrLoadSize += section.GetByteSize();
 		                }
 		            }
-					cdtprintf ("~\"0x%016x\t0x%016x\t%s\t\t%s/%s\"\n",
+					cdtprintf ("~\"%p\t%p\t%s\t\t%s/%s\"\n",
 							addrLoadS, addrLoadS + addrLoadSize,
 							moduleHasSymbols, moduleFilePath, moduleFileName);
 					++nLibraries;

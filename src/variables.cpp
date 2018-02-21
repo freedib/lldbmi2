@@ -595,9 +595,9 @@ formatSummary (StringB &summarydescB, SBValue var)
 				else
 					childaddr = var.GetLoadAddress();
 				if (vartype.IsArrayType())
-					vardescB.catsprintf ("%s0x%llx", separator, childaddr);
+					vardescB.catsprintf ("%s%p", separator, childaddr);
 				else
-					vardescB.catsprintf ("%s%s=0x%llx", separator, getName(child), childaddr);
+					vardescB.catsprintf ("%s%s=%p", separator, getName(child), childaddr);
 			}
 			summarydescB.append(vardescB.c_str());
 			separator = ",";
@@ -653,7 +653,7 @@ formatValue (StringB &vardescB, SBValue var, VariableDetails details)
 		varaddr = var.GetValueAsUnsigned();
 	else
 		varaddr = var.GetLoadAddress();
-	logprintf (LOG_DEBUG, "formatValue: var=0x%llx, name=%s, summary=%s, value=%s, address=0x%llx\n",
+	logprintf (LOG_DEBUG, "formatValue: var=%p, name=%s, summary=%s, value=%s, address=%p\n",
 			&var, varname, summarydescB.c_str(), varvalue, varaddr);
 
 	if (varvalue != NULL) {			// basic types and arrays
@@ -668,8 +668,8 @@ formatValue (StringB &vardescB, SBValue var, VariableDetails details)
 	}
 	// classes and structures
 	else if (summarydescB.size()>0 && details==FULL_SUMMARY)
-		vardescB.catsprintf ("0x%llx \\\"%s\\\"", varaddr, summarydescB.c_str());
+		vardescB.catsprintf ("%p \\\"%s\\\"", varaddr, summarydescB.c_str());
 	else
-		vardescB.catsprintf ("0x%llx {...}", varaddr);
+		vardescB.catsprintf ("%p {...}", varaddr);
 	return vardescB.c_str();
 }
