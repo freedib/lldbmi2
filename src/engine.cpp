@@ -1331,6 +1331,30 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 		else
 			cdtprintf ("%d^error,msg=\"%s\"\n(gdb)\n", cc.sequence, "Command unimplemented.");
 	}
+	else if (strcmp(cc.argv[0],"-symbol-list-lines")==0) {
+		char path[NAME_MAX];
+		if (nextarg<cc.argc)
+			strlcpy (path, cc.argv[nextarg++], sizeof(path));
+		SBFileSpec fspec;
+		SBCompileUnit foundCU = findCUForFile(path, target, fspec);
+
+		if (foundCU.IsValid()) {
+			cdtprintf("%d^done,lines={", cc.sequence);
+			for (int ndx = 0; ndx < foundCU.GetNumLineEntries(); ndx++) {
+				SBLineEntry line = foundCU.GetLineEntryAtIndex(ndx);
+				addr_t startaddr = line.GetStartAddress().GetFileAddress();
+				SBFileSpec searchspec(path, true);
+				if (strcmp(line.GetFileSpec().GetFilename(), searchspec.GetFilename()) == 0) {
+					if (ndx != 0)
+						cdtprintf(",");
+					cdtprintf("{pc=\"%p\",line=\"%d\"}", startaddr, line.GetLine());
+				}
+			}
+			cdtprintf("}\n(gdb)\n");
+		}
+		else
+			cdtprintf ("%d^error,msg=\"-symbol-list-lines: Unknown source file name.\"\n(gdb)\n", cc.sequence);
+	}
 	else if (strcmp(cc.argv[0],"catch")==0 && strcmp(cc.argv[1],"catch")==0) {
 		SBBreakpoint breakpoint = target.BreakpointCreateForException(lldb::LanguageType::eLanguageTypeC_plus_plus, true, false);
 
