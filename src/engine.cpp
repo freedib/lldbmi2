@@ -695,6 +695,23 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 		else
 			cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
 	}
+	else if (strcmp(cc.argv[0],"-stack-select-frame")==0) {
+		int selectframe = 0;
+		if (cc.argv[nextarg] != NULL)
+				if (isdigit(*cc.argv[nextarg]))
+					sscanf (cc.argv[nextarg++], "%d", &selectframe);
+		SBThread thread = pstate->process.GetSelectedThread();
+		if (thread.IsValid()) {
+			if ((selectframe >= 0) && (selectframe < thread.GetNumFrames())) {
+				thread.SetSelectedFrame(selectframe);
+				cdtprintf ("%d^done\n(gdb)\n", cc.sequence);
+			}
+			else
+				cdtprintf ("%d^error,msg=\"%s\"\n(gdb)\n", cc.sequence, "No such frame.");
+		}
+		else
+				cdtprintf ("%d^error,msg=\"%s\"\n(gdb)\n", cc.sequence, "Invalid Thread.");
+	}
 	else if (strcmp(cc.argv[0],"thread")==0) {
 		if (pstate->process.IsValid()) {
 			int pid=pstate->process.GetProcessID();
