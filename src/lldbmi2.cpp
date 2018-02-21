@@ -10,6 +10,7 @@
 #include <sys/timeb.h>
 #include <stdarg.h>
 #include <string.h>
+#include <iostream>
 
 #include "lldbmi2.h"
 #include "engine.h"
