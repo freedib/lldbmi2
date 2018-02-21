@@ -212,6 +212,7 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 	// TARGET AND RUN COMMANDS
 	else if (strcmp(cc.argv[0],"-file-exec-and-symbols")==0) {
 		// file-exec-and-symbols --thread-group i1 /project_path/tests/Debug/tests
+		if (cc.argc > 1) {
 		char path[PATH_MAX];
 		snprintf (path, sizeof(path), cc.argv[nextarg], pstate->project_loc);
 		if (strstr(cc.argv[nextarg],"%s")!=NULL)
@@ -222,6 +223,14 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 			cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
 		else
 			cdtprintf ("%d^done\n(gdb)\n", cc.sequence);
+	}
+		else { // no arg to file-exec-and-symbols so clear executable and symbol informat.
+			if (pstate->process.IsValid()) {
+				pstate->process.Destroy();
+			}
+			pstate->debugger.DeleteTarget(target);
+			cdtprintf ("%d^done\n(gdb)\n", cc.sequence);
+		}
 	}
 	else if (strcmp(cc.argv[0],"-target-attach")==0) {
 		// target-attach --thread-group i1 40088
