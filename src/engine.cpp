@@ -352,6 +352,24 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 		else
 			cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
 	}
+	else if ((strcmp(cc.argv[0],"-exec-step-instruction")==0) ||
+	   (strcmp(cc.argv[0],"-exec-next-instruction")==0)) {
+		if (pstate->process.IsValid()) {
+			int state = pstate->process.GetState ();
+			if (state == eStateStopped) {
+				SBThread thread = pstate->process.GetSelectedThread();
+				if (thread.IsValid()) {
+					cdtprintf ("%d^running\n", cc.sequence);
+					cdtprintf ("*running,thread-id=\"%d\"\n(gdb)\n", thread.IsValid()? thread.GetIndexID(): 0);
+					thread.StepInstruction(strcmp(cc.argv[0],"-exec-next-instruction")==0);
+				}
+				else
+					cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
+			}
+		}
+		else
+			cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
+	}
 	else if (strcmp(cc.argv[0],"-exec-finish")==0) {
 		// 37-exec-finish --thread 1 --frame 0
 		// 37^running
