@@ -1373,8 +1373,48 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 	}
 	else if (strcmp(cc.argv[0],"-data-list-register-names")==0) {
 		// 95-data-list-register-names --thread-group i1
-		// not implemented. no use for now
-		cdtprintf ("%d^error,msg=\"%s\"\n(gdb)\n", cc.sequence, "Command unimplemented.");
+		SBThread thread = pstate->process.GetSelectedThread();
+		if (thread.IsValid()) {
+			SBFrame frame = thread.GetSelectedFrame();
+			SBValueList reglist = frame.GetRegisters();
+			cdtprintf ("%d^done,register-names=[", cc.sequence);
+			for (int i = 0; i < reglist.GetSize(); i++) {
+				SBValue val = reglist.GetValueAtIndex(i);
+				for (int k = 0; k < val.GetNumChildren(); k++) {
+					const char *name = val.GetChildAtIndex(k).GetName();
+					if ((i == 0) && (k == 0))
+						cdtprintf("\"%s\"", name);
+					else
+						cdtprintf(",\"%s\"", name);
+				}
+			}
+			cdtprintf("]\n(gdb)\n");
+		}
+		else
+			cdtprintf ("%d^error,msg=\"%s\"\n(gdb)\n", cc.sequence, "thread not found");
+	}
+	else if (strcmp(cc.argv[0],"-data-list-register-values")==0) {
+		SBThread thread = pstate->process.GetSelectedThread();
+		if (thread.IsValid()) {
+			SBFrame frame = thread.GetSelectedFrame();
+			SBValueList reglist = frame.GetRegisters();
+			int regnum = 0;
+			cdtprintf ("%d^done,register-values=[", cc.sequence);
+			for (int i = 0; i < reglist.GetSize(); i++) {
+				SBValue val = reglist.GetValueAtIndex(i);
+				for (int k = 0; k < val.GetNumChildren(); k++) {
+					const char *value = val.GetChildAtIndex(k).GetValue();
+					if (regnum == 0)
+						cdtprintf("{number=\"%d\",value=\"%s\"}", regnum, value);
+					else
+						cdtprintf(",{number=\"%d\",value=\"%s\"}", regnum, value);
+					regnum++;
+				}
+			}
+			cdtprintf("]\n(gdb)\n");
+		}
+		else
+			cdtprintf ("%d^error,msg=\"%s\"\n(gdb)\n", cc.sequence, "thread not found");
 	}
 	else {
 		logprintf (LOG_WARN, "command not understood: ");
