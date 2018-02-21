@@ -1086,6 +1086,143 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 				cdtprintf ("%s\n", "~\"No shared libraries loaded at this time.\n\"");
 	    	cdtprintf ("%d^done\n(gdb)\n", cc.sequence);
 		}
+		// Symbol Commands
+		else if (strcmp(cc.argv[nextarg],"address") == 0) {
+			//-symbol-info-address
+			char symbol[NAME_MAX];
+			if (nextarg<cc.argc)
+				strlcpy (symbol, cc.argv[++nextarg], sizeof(symbol));
+			srcprintf("info address %s\n", symbol);
+			SBSymbolContextList list = target.FindSymbols(symbol);
+			if (list.IsValid()) {
+				SBSymbolContext ctxt = list.GetContextAtIndex(0);
+				SBSymbol symb = ctxt.GetSymbol();
+				if (symb.GetType() == eSymbolTypeData) {
+					SBValue val = ctxt.GetModule().FindFirstGlobalVariable(target, symb.GetName());
+					if (val.IsValid()) {
+						srlprintf("Symbol \"%s\" is %s at %s\n", symbol, val.GetTypeName(), val.GetLocation());
+						cdtprintf ("%d^done\n(gdb)\n", cc.sequence);
+					}
+					else
+						cdtprintf ("%d^error,msg=\"No symbol \\\"%s\\\" in current context.\"\n(gdb)\n", cc.sequence, symbol);
+				}
+				else {
+					SBAddress startaddr = symb.GetStartAddress();
+					addr_t vaddr = startaddr.GetLoadAddress(target);
+					if (vaddr == -1)
+						vaddr = startaddr.GetFileAddress();
+					if (symb.GetType() == eSymbolTypeCode) 
+						srlprintf("Symbol \"%s\" is a function at address %p.\n", symb.GetName(), vaddr);
+					else
+						srlprintf("Symbol \"%s\" is at address %p.\n", symbol, vaddr);
+					cdtprintf ("%d^done\n(gdb)\n", cc.sequence);
+				}
+			}
+			else
+				cdtprintf ("%d^error,msg=\"No symbol \\\"%s\\\" in current context.\"\n(gdb)\n", cc.sequence, symbol);
+		}
+		else if (strcmp(cc.argv[nextarg],"functions") == 0) {
+			// -symbol-list-functions
+			char symbol[NAME_MAX];
+			if (nextarg<cc.argc)
+				strlcpy (symbol, cc.argv[++nextarg], sizeof(symbol));
+			SBSymbolContextList list = target.FindFunctions(symbol, eFunctionNameTypeAny);
+			srcprintf("info functions %s\n", symbol);
+			static StringB funcdescB(BIG_LINE_MAX);
+			funcdescB.clear();
+			srlprintf("All functions matching regular expression \"%s\"\n\n", symbol);
+			for (size_t i=0; i<list.GetSize(); i++) {
+				SBSymbolContext ctxt = list.GetContextAtIndex(i);
+				if (ctxt.IsValid()) {
+					SBCompileUnit cu = ctxt.GetCompileUnit();
+					SBFileSpec fspec = ctxt.GetCompileUnit().GetFileSpec();
+					SBFunction func = ctxt.GetFunction();
+					srlprintf ("File %s/%s:\n", fspec.GetDirectory(), fspec.GetFilename());
+					srlprintf ("%s %s;\n", func.GetType().GetFunctionReturnType().GetName(), func.GetName());
+				}
+			}
+			cdtprintf ("%d^done\n(gdb)\n", cc.sequence);
+		}
+		else if (strcmp(cc.argv[nextarg],"line") == 0) {
+			// -symbol-info-line
+			char path[NAME_MAX];
+			if (nextarg<cc.argc)
+				strlcpy (path, cc.argv[++nextarg], sizeof(path));
+			char *pline;
+			srcprintf("info line %s\n", path);
+			if ((pline=strchr(path,':')) != NULL) {
+				*pline++ = '\0';
+				int iline=0;
+				sscanf (pline, "%d", &iline);
+				SBFileSpec fspec;
+				SBCompileUnit foundCU = findCUForFile(path, target, fspec);
+				if (foundCU.IsValid()) {
+					bool HasCode = true;
+					int linendx = foundCU.FindLineEntryIndex(0, iline, &fspec, HasCode);
+					if (linendx < 0) {
+						HasCode = false;
+						linendx = foundCU.FindLineEntryIndex(0, iline, &fspec, HasCode);
+					}
+					SBLineEntry lEntry = foundCU.GetLineEntryAtIndex(linendx);
+					if (HasCode) {
+						addr_t startaddr = lEntry.GetStartAddress().GetFileAddress();
+						SBFunction startfunc = lEntry.GetStartAddress().GetFunction();
+						addr_t startfuncaddr = startfunc.GetStartAddress().GetFileAddress();
+						addr_t endaddr = lEntry.GetEndAddress().GetFileAddress();
+						SBFunction endfunc = lEntry.GetEndAddress().GetFunction();
+						addr_t endfuncaddr = startfunc.GetStartAddress().GetFileAddress();
+						srlprintf("Line %d of \"%s\" starts at address %p <%s+%d> and ends at %p <%s+%d>\n",
+							iline, lEntry.GetFileSpec().GetFilename(), 
+							startaddr, startfunc.GetName(), (startaddr - startfuncaddr),
+							endaddr, endfunc.GetName(), (endaddr - endfuncaddr));
+					}
+					else {
+						SBAddress startsbaddr = lEntry.GetStartAddress();
+						srlprintf("Line %d of \"%s\" is at address %p <%s> but contains no code.\n",
+							iline, lEntry.GetFileSpec().GetFilename(),
+							startsbaddr.GetOffset(), startsbaddr.GetFunction().GetName());
+					}
+					cdtprintf ("%d^done\n(gdb)\n", cc.sequence);
+				}
+				else {
+					srcprintf("No source file named %s.\n",path);
+					cdtprintf ("%d^error,msg=\"No source file named %s.\"\n(gdb)\n", cc.sequence, path);	
+				}
+			}
+			else {
+				srcprintf ("Function \"%s\" not defined.\n", path);	
+				cdtprintf ("%d^error,msg=\"Function \"%s\" not defined.\"\n(gdb)\n", cc.sequence, path);	
+			}
+		}
+		else if (strcmp(cc.argv[nextarg],"program") == 0) {
+			srcprintf("info program\n");
+			if (pstate->process.IsValid()) {
+				int state = pstate->process.GetState ();
+				if (state == eStateStopped) {
+					SBThread thrd = pstate->process.GetSelectedThread();
+					srlprintf("Using the running image of child Thread 0x%llx (LWP %lld) .\n",
+						thrd.GetThreadID(), pstate->process.GetProcessID());
+					srlprintf("Program stopped at %p.\n", thrd.GetSelectedFrame().GetPC());
+					char why[LINE_MAX];
+					thrd.GetStopDescription(why, LINE_MAX);
+					srlprintf("Stopped for: %s\n", why);
+				}
+				else if (state == eStateCrashed) {
+					srlprintf("The program being debugged has crashed.\n");
+				}
+				else if (state == eStateExited) {
+					srlprintf("The program being debugged is not being run.\n");
+				}
+				else if (state == eStateSuspended) {
+					srlprintf("The program being debugged is currently suspended.\n");
+				}
+				else
+					srlprintf("state is %d\n", state);
+			}
+			else
+				srlprintf("process invalid\n");
+			cdtprintf ("%d^done\n(gdb)\n", cc.sequence);
+		}
 		else
 			cdtprintf ("%d^error,msg=\"%s\"\n(gdb)\n", cc.sequence, "Command unimplemented.");
 	}

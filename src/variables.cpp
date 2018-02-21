@@ -308,6 +308,48 @@ findClassOfType(SBTypeList list, TypeClass type)
 	return found;
 }
 
+SBCompileUnit 
+findCUForFile(char *filePath, SBTarget target, SBFileSpec &file)
+{
+	SBFileSpec searchSpec(filePath, true);
+	SBCompileUnit foundCU;
+	int modNdx = -1;
+	while (!foundCU.IsValid() && (++modNdx < target.GetNumModules())) {
+		SBModule mod = target.GetModuleAtIndex(modNdx);
+		int cuNdx = -1;
+		while(!foundCU.IsValid() && (++cuNdx < mod.GetNumCompileUnits())) {
+			SBCompileUnit cu = mod.GetCompileUnitAtIndex(cuNdx);
+			int fNdx = -1;
+			while(!foundCU.IsValid() && (++fNdx < cu.GetNumSupportFiles())) {
+				SBFileSpec fs = cu.GetSupportFileAtIndex(fNdx);
+				if (strcmp(searchSpec.GetFilename(), fs.GetFilename()) == 0) {
+					if (searchSpec.GetDirectory() == NULL)
+						foundCU = cu;
+					else {
+						if (fs.GetDirectory() != NULL) {
+							char a[PATH_MAX];
+							char b[PATH_MAX];
+							char *spath = realpath(searchSpec.GetDirectory(), a);
+							if (spath == NULL)
+								spath = (char *)searchSpec.GetDirectory();
+							char *fpath = realpath(fs.GetDirectory(), b);
+							if (fpath == NULL)
+								fpath = (char *)fs.GetDirectory();
+							char *compstr = strfind(fpath, spath, -1);
+							if ((compstr != NULL) && (strlen(compstr) == strlen(spath)))
+								foundCU = cu;	 
+						}
+					}
+				}
+				if (foundCU.IsValid())
+					file = fs;
+			}
+		}
+	}
+	return foundCU;
+}
+
+
 char *
 formatExpressionPath (SBValue var)
 {
