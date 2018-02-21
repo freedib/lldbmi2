@@ -852,6 +852,118 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 				cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
 		}
 	}
+	else if ((strcmp(cc.argv[0],"ptype")==0) || (strcmp(cc.argv[0],"-symbol-type")==0)) {
+		char expression[NAME_MAX];
+		char expressionPath[NAME_MAX];
+		if (nextarg<cc.argc)
+			strlcpy (expression, cc.argv[nextarg++], sizeof(expression));
+		srcprintf("ptype %s\n", expression);
+		SBTypeList list = target.FindTypes(expression);
+		SBType type = findClassOfType(list, eTypeClassClass);
+		if (!type.IsValid())
+			type = findClassOfType(list, eTypeClassAny);
+		if (!type.IsValid()) {
+			char *pathStart = strchr(expression, '.');
+			if (pathStart != NULL) {
+				strlcpy(expressionPath, pathStart, sizeof(expressionPath));
+				*pathStart = '\0';
+			}
+			SBValue val = target.EvaluateExpression(expression);
+			if (val.IsValid() && (pathStart != NULL))
+				val = val.GetValueForExpressionPath(expressionPath);
+			if (val.IsValid()) {
+				list = target.FindTypes(val.GetDisplayTypeName());
+				type = findClassOfType(list, eTypeClassClass);
+				if (!type.IsValid())
+					type = findClassOfType(list, eTypeClassAny);
+				if (!type.IsValid()) {
+					SBSymbolContextList list = target.FindFunctions(expression);
+					SBSymbolContext ctxt = list.GetContextAtIndex(0);
+					type = ctxt.GetFunction().GetType();
+					if (!type.IsValid()) {
+						type = val.GetType();
+					}
+				}
+			}
+		}
+		if (type.IsValid()) {
+			if ((type.GetTypeClass() & eTypeClassClass) != 0) {
+				const char *name = type.GetDisplayTypeName();
+				int numfields = type.GetNumberOfFields();
+				int numbase = type.GetNumberOfDirectBaseClasses();
+				int numfuncs = type.GetNumberOfMemberFunctions();
+
+				if (numbase > 0) {
+					SBTypeMember mbr = type.GetDirectBaseClassAtIndex(0);
+					srlprintf("type = %s = class : public %s \n", name, mbr.GetName());
+				}
+				else
+					srlprintf("type = %s = class\n", name);
+
+				if (numfields > 0) {
+					for (int i = 0; i < numfields; i++) {
+						SBTypeMember mbr = type.GetFieldAtIndex(i);
+						srlprintf("    %s : %s;\n", mbr.GetName(), mbr.GetType().GetDisplayTypeName());
+					}
+				}
+
+				if (numfuncs > 0) {
+					for (int i = 0; i < numfuncs; i++) {
+						StringB funcs(BIG_LINE_MAX);
+						SBTypeMemberFunction mbr = type.GetMemberFunctionAtIndex(i);
+						if (mbr.GetReturnType().GetBasicType() == eBasicTypeVoid) 
+							funcs.append("    procedure");
+						else
+							funcs.append("    function ");
+						funcs.catsprintf(" %s (", mbr.GetName());
+						int cnt = mbr.GetNumberOfArguments();
+						if (cnt > 0) {
+							for (int i = 0; i < cnt; i++) {
+								if (i != 0)
+									funcs.catsprintf(", ");
+								funcs.catsprintf("%s", mbr.GetArgumentTypeAtIndex(i).GetDisplayTypeName());
+							}
+						}
+						funcs.append(")");
+						if (mbr.GetReturnType().GetBasicType() != eBasicTypeVoid) 
+							funcs.catsprintf(" : %s", mbr.GetReturnType().GetDisplayTypeName());
+						srlprintf("%s;\n", funcs.c_str());
+					}
+				}
+				srlprintf("end\n");
+			}
+			else if ((type.GetTypeClass() & eTypeClassFunction) != 0) {
+				SBType funcReturnType = type.GetFunctionReturnType();
+				SBTypeList argList = type.GetFunctionArgumentTypes();
+				StringB func(BIG_LINE_MAX);
+				if (funcReturnType.GetBasicType() == eBasicTypeVoid)
+					func.append("type = procedure");
+				else
+					func.append("type = function");
+				int cnt = argList.GetSize();
+				if (cnt > 0) {
+					func.append(" (");
+					for (int i = 0; i < cnt; i++) {
+						if (i != 0)
+							func.append(", ");
+						func.catsprintf("%s", argList.GetTypeAtIndex(i).GetDisplayTypeName());
+					}
+					func.append(")");
+				}
+				if (funcReturnType.GetBasicType() != eBasicTypeVoid) 
+					func.catsprintf(" : %s", funcReturnType.GetDisplayTypeName());
+				srlprintf("%s\n", func.c_str());
+			}
+			// Check for enums? tuidlgicontype
+			else {
+				srlprintf("type = %s\n", type.GetDisplayTypeName());
+			}
+	    	cdtprintf ("%d^done\n(gdb)\n", cc.sequence);
+		}
+		else
+			cdtprintf ("%d^error,msg=\"No symbol \\\"%s\\\" in current context.\"\n(gdb)\n", cc.sequence, expression);
+
+	}
 	else if (strcmp(cc.argv[0],"-var-set-format")==0) {
 		// 36-var-set-format var3 natural
 		// 36-var-set-format var3 binary

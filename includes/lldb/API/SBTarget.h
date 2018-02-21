@@ -771,6 +771,9 @@ public:
     lldb::SBValue
     EvaluateExpression (const char *expr, const SBExpressionOptions &options);
 
+    lldb::SBValue
+    EvaluateExpression (const char *expr);
+
     lldb::addr_t
     GetStackRedZoneSize();
 

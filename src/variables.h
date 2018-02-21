@@ -29,6 +29,7 @@ char *castexpression (SBFrame frame, const char *expression, char *newexpression
 
 SBValue getVariable (SBFrame frame, const char *expression, bool tryDirect=true);
 int     updateVarState (SBValue var, int depth);
+SBType  findClassOfType(SBTypeList list, TypeClass type);
 
 char * formatExpressionPath (StringB &expressionpathdescB, SBValue var);
 char * formatChildrenList (StringB &childrendescB, SBValue var, char *expression, int threadindexid, int &varnumchildren);

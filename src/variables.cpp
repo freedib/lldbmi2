@@ -294,6 +294,19 @@ updateVarState (SBValue var, int depth)
 	return changes;
 }
 
+SBType
+findClassOfType(SBTypeList list, TypeClass type)
+{
+	int ndx;
+	SBType found;
+	for (ndx = 0; ndx < list.GetSize(); ndx++) {
+		if ((list.GetTypeAtIndex(ndx).GetTypeClass() & type) != 0)
+			break;
+	}
+	if (ndx < list.GetSize())
+		found = list.GetTypeAtIndex(ndx);
+	return found;
+}
 
 char *
 formatExpressionPath (SBValue var)
