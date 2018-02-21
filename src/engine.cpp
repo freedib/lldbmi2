@@ -271,12 +271,19 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 	}
 	else if (strcmp(cc.argv[0],"-exec-run")==0) {
 		// exec-run --thread-group i1
-		launchInfo.SetEnvironmentEntries (pstate->envp, false);
-		logprintf (LOG_NONE, "launchInfo: args=%d env=%d, pwd=%s\n", launchInfo.GetNumArguments(), launchInfo.GetNumEnvironmentEntries(), launchInfo.GetWorkingDirectory());
 		SBError error;
-		SBProcess process = target.Launch (launchInfo, error);
+		SBLaunchInfo targLaunchInfo(NULL);
+		const char *largv[] = {0,0};
+		for (int i = 0; i < launchInfo.GetNumArguments(); i++) {
+			largv[0] = launchInfo.GetArgumentAtIndex(i);
+			targLaunchInfo.SetArguments(largv, true);
+		}
+		targLaunchInfo.SetWorkingDirectory(launchInfo.GetWorkingDirectory());
+		targLaunchInfo.SetEnvironmentEntries (pstate->envp, false);
+		logprintf (LOG_NONE, "launchInfo: args=%d env=%d, pwd=%s\n", targLaunchInfo.GetNumArguments(), targLaunchInfo.GetNumEnvironmentEntries(), targLaunchInfo.GetWorkingDirectory());
+		SBProcess process = target.Launch (targLaunchInfo, error);
 		if (!process.IsValid() || error.Fail()) {
-			cdtprintf ("%d^error,msg=\"%s\"\n(gdb)\n", cc.sequence, "Can not start process.");
+			cdtprintf ("%d^error,msg=\"%s %s\"\n(gdb)\n", cc.sequence, "Can not start process.", error.GetCString());
 			logprintf (LOG_INFO, "process_error=%s\n", error.GetCString());
 		}
 		else {
