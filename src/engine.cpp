@@ -1563,12 +1563,14 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 						if (iaddr.GetFileAddress() > eaddr.GetFileAddress()) {
 							break;
 						}
-						addr_t off = iaddr.GetFileAddress() - iaddr.GetFunction().GetStartAddress().GetFileAddress();
+						SBAddress laddr = target.ResolveLoadAddress(iaddr.GetFileAddress());
+						SBSymbol symb = laddr.GetSymbol();
+						addr_t off = laddr.GetFileAddress() - symb.GetStartAddress().GetFileAddress();
 						if (i != 0)
 							cdtprintf(",");
-						cdtprintf("{address=\"%p\",func-name=\"%s\",offset=\"%d\",inst=\"%s %s\"}",
-							iaddr.GetFileAddress(), iaddr.GetFunction().GetName(), off, 
-							instr.GetMnemonic(target), instr.GetOperands(target));
+						cdtprintf("{address=\"%p\",func-name=\"%s\",offset=\"%d\",inst=\"%-12s%-25s %s\"}",
+							iaddr.GetFileAddress(), symb.GetName(), off, 
+							instr.GetMnemonic(target), instr.GetOperands(target), instr.GetComment(target));
 					}
 					cdtprintf ("]\n(gdb)\n");
 				}
