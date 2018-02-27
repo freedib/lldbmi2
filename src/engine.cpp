@@ -182,8 +182,11 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 		// source .gdbinit
 		cdtprintf ("%d^done\n(gdb)\n", cc.sequence);
 	}
-	else if (strcmp(cc.argv[0],"-inferior-tty-set")==0) {
+	else if ((strcmp(cc.argv[0],"-inferior-tty-set")==0) ||
+	    ((strcmp(cc.argv[0],"set")==0) &&  (strcmp(cc.argv[1],"inferior-tty")==0))) {
 		// inferior-tty-set --thread-group i1 /dev/ttyp0
+		if (strcmp(cc.argv[0],"set")==0) 
+			nextarg++;
 		strlcpy (pstate->cdtptyname, cc.argv[nextarg], sizeof(pstate->cdtptyname));
 		if (strcmp(pstate->cdtptyname,"%s") == 0)
 			pstate->ptyfd = EOF;
