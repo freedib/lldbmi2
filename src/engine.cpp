@@ -969,16 +969,13 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 				cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
 		}
 	}	
-	else if ((strcmp(cc.argv[0],"-data-evaluate-expression")==0) ||
-		(strcmp(cc.argv[0],"-bob")==0)) {
+	else if (strcmp(cc.argv[0],"-data-evaluate-expression")==0) {
 		char expression[PATH_MAX];
 		char expressionPath[PATH_MAX];
 		bool doDeref = false;
 		if (nextarg<cc.argc)
 			strlcpy (expression, cc.argv[nextarg++], sizeof(expression));
 		
-		strup(expression, -1);
-
 		char *pathStart = strchr(expression, '.');
 		if (pathStart != NULL) {
 			strlcpy(expressionPath, pathStart, sizeof(expressionPath));
@@ -993,7 +990,13 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 				doDeref = true;
 				expression[strlen(expression)-1] = '\0';
 			}
+			if (strcasecmp(expression, "sizeof(^char)")==0) {
+				strlcpy(expression, "sizeof(char*)", sizeof(expression));	
+			}
 		}
+		char *takeAddrOp = strchr(expression, '@');
+		if (takeAddrOp != NULL) 
+			*takeAddrOp = '&';
 
 		SBValue val = target.EvaluateExpression(expression);
 		if (val.IsValid() && (pathStart != NULL)) {
