@@ -15,7 +15,6 @@
 #include "names.h"
 #include "test.h"
 
-
 extern LIMITS limits;
 
 
@@ -280,6 +279,19 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 		else
 			cdtprintf ("%d^error,msg=\"%s\"\n(gdb)\n", cc.sequence, "The program is not being run.");
 
+	}
+	else if (strcmp(cc.argv[0],"-exec-arguments") == 0) {
+		int firstarg = nextarg;
+		for (; nextarg<cc.argc; nextarg++) {
+			if (cc.argv[nextarg][0] == '\'') {
+				size_t copyarg=0; size_t length=strlen(cc.argv[nextarg])-2;
+				for (; copyarg<length; ++copyarg)
+					((char*)(cc.argv[nextarg]))[copyarg] = cc.argv[nextarg][copyarg+1];
+				((char*)(cc.argv[nextarg]))[copyarg] = '\0';
+			}
+		}
+		launchInfo.SetArguments (&cc.argv[firstarg], false);
+		cdtprintf ("%d^done\n(gdb)\n", cc.sequence);
 	}
 	else if (strcmp(cc.argv[0],"-exec-run")==0) {
 		// exec-run --thread-group i1
