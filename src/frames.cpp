@@ -80,8 +80,8 @@ formatFrame (StringB &framedescB, SBFrame frame, FrameDetails framedetails)
 	logprintf (LOG_TRACE, "formatFrame (0x%x, 0x%x, 0x%x)\n", &framedescB, &frame, framedetails);
 	int frameid = frame.GetFrameID();
 	SBAddress addr = frame.GetPCAddress();
-	addr_t file_addr = addr.GetFileAddress();
-	SBFunction function = addr.GetFunction();
+	addr_t file_addr = frame.GetPC();
+	SBFunction function = frame.GetFunction();
 	char levelstring[NAME_MAX];
 	if (framedetails&WITH_LEVEL)
 		snprintf (levelstring, sizeof(levelstring), "level=\"%d\",", frameid);
