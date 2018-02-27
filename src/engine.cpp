@@ -1189,6 +1189,73 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 			cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
 	}
 	// OTHER COMMANDS
+	else if ((strcmp(cc.argv[0],"-file-list-exec-sections")==0) || 
+	   ((cc.argc == 2) && (strcmp(cc.argv[0],"info")==0) && (strcmp(cc.argv[1],"file")==0))) {
+		if (target.IsValid()) {
+			addr_t NOTLOADED = (addr_t)(-1);
+		   	char filename[PATH_MAX];
+			SBFileSpec execFile = target.GetExecutable();
+			execFile.GetPath(filename, sizeof(filename));
+		   	const char *filetype = target.GetTriple();
+		   	addr_t entrypt = -1;
+		   	SBModule execMod = target.FindModule(execFile);
+		   	if (execMod.IsValid()) {
+		   		SBSection txtSect = execMod.FindSection("__TEXT");
+		   		if (txtSect.IsValid()) {
+		   			SBSection subTxtSect = txtSect.FindSubSection("__text");
+		   			if (subTxtSect.IsValid()) {
+		   				entrypt = subTxtSect.GetLoadAddress(target);
+		   				if (entrypt == NOTLOADED)
+		   					entrypt = subTxtSect.GetFileAddress();
+		   			}
+		   		}
+		   	}
+		   	if (strcmp(cc.argv[0],"info")==0) {
+				srcprintf("info file\n");
+				srlprintf("Symbols from \"%s\".\n", filename);
+				srlprintf("\"%s\"\n", filetype);
+		   	}
+			cdtprintf ("%d^done,section-info={filename=\"%s\",filetype=\"%s\",entry-point=\"%p\",sections={", 
+				cc.sequence, filename, filetype, entrypt);
+			for (int mndx = 0; mndx < target.GetNumModules(); mndx++) {
+				SBModule mod = target.GetModuleAtIndex(mndx);
+				if (!mod.IsValid())
+					continue;
+				SBFileSpec modfilespec = mod.GetFileSpec();
+				char modfilename[PATH_MAX];
+				modfilespec.GetPath(modfilename, sizeof(modfilename));
+				for (int sndx = 0; sndx < mod.GetNumSections(); sndx++) {
+					SBSection sect = mod.GetSectionAtIndex(sndx);
+					if (!sect.IsValid())
+						continue;
+					const char *sectName = sect.GetName();
+					addr_t faddr = sect.GetLoadAddress(target);
+					if (faddr == NOTLOADED)
+						faddr = sect.GetFileAddress();
+					addr_t eaddr = faddr + sect.GetByteSize();
+					if ((sndx != 0) || (mndx != 0))
+						cdtprintf(",");
+					cdtprintf("section={addr=\"%p\",endaddr=\"%p\",name=\"%s\",filename=\"%s\"}",
+							faddr, eaddr, sectName, modfilename);
+					for (int sbndx = 0; sbndx < sect.GetNumSubSections(); sbndx++) {
+						SBSection subsect = sect.GetSubSectionAtIndex(sbndx);
+						if (!subsect.IsValid())
+							continue;
+						faddr = subsect.GetLoadAddress(target);
+						if (faddr == NOTLOADED)
+							faddr = subsect.GetFileAddress();
+						eaddr = faddr + subsect.GetByteSize();
+						cdtprintf(",section={addr=\"%p\",endaddr=\"%p\",name=\"%s.%s\",filename=\"%s\"}",
+							faddr, eaddr, sectName, subsect.GetName(), modfilename);
+					}
+				}
+
+			}
+			cdtprintf ("}}\n(gdb)\n");
+		}
+		else
+			cdtprintf ("%d^error,msg=\"%s\"\n(gdb)\n", cc.sequence, "Target not loaded.");
+	}
 	else if (strcmp(cc.argv[0],"info")==0) {
 		// 96info sharedlibrary
 		if (nextarg>=cc.argc)
