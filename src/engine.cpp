@@ -572,6 +572,68 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 		breakpoint.SetEnabled(0);
 		cdtprintf ("%d^done\n(gdb)\n", cc.sequence);
 	}
+	else if (strcmp(cc.argv[0],"-break-watch")==0) {
+		// -break-watch [-r|-a] expression
+		// Set a watch on address that results from evaluating 'expression'
+		char expression[LINE_MAX];
+		char watchExpr[LINE_MAX];
+		bool isRead = false;
+		bool isWrite = true;
+		if (strcmp(cc.argv[nextarg],"-a")==0) {
+			isRead = true;
+			nextarg++;
+		}
+		if (strcmp(cc.argv[nextarg],"-r")==0) {
+			isRead = true;
+			isWrite = false;
+			nextarg++;
+		}
+		if (nextarg<cc.argc)
+			strlcpy (expression, cc.argv[nextarg++], sizeof(expression));
+
+		/* Convert Pascal expression to C 
+		 *  Expected formats from laz-ide are:
+		 *    type(addr_t^)
+		 *    ^type(addr_t^)
+		 *  In spite of '^' at end of addresses we want straight address not dereference
+		 */
+		char *typeStr = expression;
+		if (*typeStr == '^')
+			typeStr++;
+		char *addrStr = strchr(typeStr, '(');
+		if (addrStr != NULL) {
+			*addrStr++ = '\0';
+			char *tmp = strchr(addrStr,')');
+			if ((tmp != NULL) && (*(tmp-1) == '^')) {
+				tmp--;
+				*tmp = '\0';
+			}
+		}
+		snprintf(watchExpr, sizeof(watchExpr), "(%s *)(%s)", typeStr, addrStr);
+		/* 
+		 * End of Pascal manipulation 
+		 */
+
+		SBValue val = target.EvaluateExpression(watchExpr);
+		if (val.IsValid()) {
+			addr_t watchAddr = val.GetValueAsUnsigned();
+			if (watchAddr != 0) {
+				SBError error;
+				SBWatchpoint watch = target.WatchAddress(watchAddr, val.GetByteSize(), isRead, isWrite, error);
+				if (watch.IsValid() && error.Success()) {
+					cdtprintf ("%d^done,wpt={number=\"%d\",\"%s\"}\n(gdb)\n", cc.sequence, watch.GetID(), watchExpr);
+				}
+				else
+					cdtprintf ("^error,msg=\"Could not create watch: %s\"\n(gdb) \n", error.GetCString());
+			}
+			else
+				cdtprintf ("^error,msg=\"Value failed to return valid address (%s %s %p)\"\n(gdb) \n", watchExpr, val.GetValue(), watchAddr);
+		}
+		else {
+			SBError err = val.GetError();
+			cdtprintf ("^error,msg=\"Expression does not return valid value: %s\"\n(gdb) \n", err.GetCString());
+		}
+	}
 	// STACK COMMANDS
 	else if (strcmp(cc.argv[0],"-list-thread-groups")==0) {
 		// list-thread-groups --available

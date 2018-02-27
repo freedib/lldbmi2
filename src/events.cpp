@@ -159,6 +159,9 @@ processListener (void *arg)
 				break;
 			}
 		}
+		if (SBWatchpoint::EventIsWatchpointEvent(event)) {
+			printf("Is Watchpoint event\n");
+		}
 		else
 			logprintf (LOG_EVENTS, "event type %s\n", eventtype);
 	}
@@ -218,6 +221,30 @@ onStopped (STATE *pstate, SBProcess process)
 			target.BreakpointDelete(bpid);
 			cdtprintf ("=breakpoint-deleted,id=\"%d\"\n", bpid);
 		}
+	}
+	else if (stopreason==eStopReasonWatchpoint) {
+		if (thread.GetStopReasonDataCount() > 0) {
+			int wpid = thread.GetStopReasonDataAtIndex(0);
+			SBWatchpoint watch = target.FindWatchpointByID(wpid);
+			cdtprintf ("*stopped,reason=\"watchpoint-trigger\",wpt={number=\"%d\",exp=\"%p\"},",
+		   		watch.GetID(), watch.GetWatchAddress());
+			SBStream str;
+			watch.GetDescription(str,eDescriptionLevelVerbose);
+			const char *desc = str.GetData();
+			uint64_t oldValue=0, newValue=0;
+			const char *s = strstr(desc, "old value:");
+			sscanf(s, "%*[^0-9]%lli", &oldValue);
+			s = strstr(desc, "new value:");
+			sscanf(s, "%*[^0-9]%lli", &newValue);
+			cdtprintf ("value={old=\"%llu\",new=\"%llu\"},", oldValue, newValue);
+			SBFrame frame = thread.GetSelectedFrame();
+			SBLineEntry lentry = frame.GetLineEntry();
+			SBFileSpec fspec = lentry.GetFileSpec();
+			cdtprintf ("frame={func=\"%s\",args=[],file=\"%s\",line=\"%d\"}\n(gdb)\n",
+				frame.GetFunctionName(), fspec.GetFilename(), lentry.GetLine());
+		}
+		else
+			cdtprintf ("*stopped,reason=\"watchpoint-trigger\"}\n(gdb)\n");
 	}
 	else if (stopreason==eStopReasonSignal) {
 		// raised when attaching to a process
