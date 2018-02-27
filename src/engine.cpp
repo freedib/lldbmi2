@@ -1499,12 +1499,90 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 		else
 			cdtprintf ("%d^error,msg=\"%s\"\n(gdb)\n", cc.sequence, "Could not parse addresses");
 	}
+	else if (strcmp(cc.argv[0],"-data-read-memory")==0) {
+		//-data-read-memory 4297035496 x 1 1 1359
+		//-data-read-memory 4297035496 x 2 1 679
+		//-data-read-memory 4297035496 x 4 1 339
+		//-data-read-memory 4297035496 x 8 1 169
+		addr_t address = -1;
+		int wordSize = 0, nrRows = 0, nrCols = 0;
+		char wordFormat = 'x';
+		char expression[NAME_MAX];
+		if (nextarg<cc.argc)
+			strlcpy (expression, cc.argv[nextarg++], sizeof(expression));
+		if ((nextarg<cc.argc) && (strlen(cc.argv[nextarg]) == 1)) {
+			wordFormat = cc.argv[nextarg++][0];
+		}
+		if ((nextarg<cc.argc) && isdigit(*cc.argv[nextarg])) {
+			sscanf (cc.argv[nextarg++], "%d", &wordSize);
+		}
+		if ((nextarg<cc.argc) && isdigit(*cc.argv[nextarg])) {
+			sscanf (cc.argv[nextarg++], "%d", &nrRows);
+		}
+		if ((nextarg<cc.argc) && isdigit(*cc.argv[nextarg])) {
+			sscanf (cc.argv[nextarg++], "%d", &nrCols);
+		}
+		SBValue value = target.EvaluateExpression(expression);
+		if (!value.IsValid()) {
+			cdtprintf ("%d^error,msg=\"Could not find value for %s\"\n(gdb)\n", cc.sequence, expression);
+		}
+		else {
+			SBError error;
+			address = value.GetValueAsUnsigned(error);
+			if (error.Fail()) {
+				cdtprintf ("%d^error,msg=\"Could not convert value to address\"\n(gdb)\n", cc.sequence);
+			}
+			else {
+				size_t size = wordSize * nrCols * nrRows;
+				void *buf = malloc(size);
+				size_t readCnt = pstate->process.ReadMemory(address, buf, size, error);
+				if (error.Fail() || (readCnt == 0)) {
+					SBStream s;
+					error.GetDescription(s);
+					printf("Read failed (%d %d): %s\n", error.GetError(), 
+						error.GetType(), s.GetData());
+					cdtprintf ("%d^error,msg=\"%s\"\n(gdb)\n", cc.sequence, s.GetData());
+				}
+				else {
+					addr_t rowAddr = address;
+					addr_t bufAddr = (addr_t)buf;
+					cdtprintf ("%d^done,addr=\"%p\",nr-bytes=\"%d\",total-bytes=\"%d\",",
+						cc.sequence, (void *)address, readCnt, size);
+					cdtprintf ("next-row=\"%p\",prev-row=\"%p\",next-page=\"%p\",prev-page=\"%p\",",
+						rowAddr + (wordSize * nrCols), rowAddr - (wordSize * nrCols), rowAddr + size, rowAddr - size);
+					cdtprintf ("memory=[");
+					for (int row = 0; row < nrRows; row++) {
+						if (row != 0)
+							cdtprintf(",");
+						cdtprintf("{addr=\"%p\",data=[", rowAddr);
+						for (int col = 0; col < nrCols; col++) {
+							if (col != 0)
+								cdtprintf(",");
+							switch(wordSize) {
+								case 1: cdtprintf ("\"0x%02x\"", *(uint8_t *)(bufAddr + col*1));
+										break;
+								case 2: cdtprintf ("\"0x%04x\"", *(uint16_t *)(bufAddr + col*2));
+										break;
+								case 4: cdtprintf ("\"0x%08x\"", *(uint32_t *)(bufAddr + col*4));
+										break;
+								case 8: cdtprintf ("\"0x%016llx\"", *(uint64_t *)(bufAddr + col*8));
+										break;
+							} 
+						}
+						cdtprintf("]}");
+						rowAddr += wordSize * nrCols;
+						bufAddr += wordSize * nrCols;
+					}
+					cdtprintf ("]\n(gdb)\n");
+				}
+			}
+		}
+	}
 	else {
 		logprintf (LOG_WARN, "command not understood: ");
 		logdata (LOG_NOHEADER, cc.argv[0], strlen(cc.argv[0]));
 		cdtprintf ("%d^error,msg=\"%s\"\n(gdb)\n", cc.sequence, "Command unimplemented.");
 	}
-
 	return dataflag;
 }
 
