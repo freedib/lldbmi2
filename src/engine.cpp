@@ -1097,7 +1097,7 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 						if (strcasecmp(valtype.GetName(), "char *") == 0) {
 							SBStream s;
 							val.GetDescription(s);
-							char *str = strchr(s.GetData(), '=');
+							const char *str = strchr(s.GetData(), '=');
 							str = str+2;
 							cdtprintf ("%d^done,value=\"%s\"\n(gdb)\n", cc.sequence, str);
 						}
