@@ -1,9 +1,9 @@
 # LLDBMI2 - An MI2 interface to LLDB
 
-##Author
+## Author
 Didier Bertrand
 
-##Contributors
-Eduard Matveev
+## Contributors
+Eduard Matveev (CMAKE)
 
-Dmitriy Tarasov
+David Jenkins (Lazarus IDE)

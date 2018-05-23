@@ -220,7 +220,17 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 			if (strstr(cc.argv[nextarg],"%s")!=NULL)
 				logprintf (LOG_VARS, "%%s -> %s\n", path);
 			strlcpy (programpath, path, sizeof(programpath));
-			target = pstate->debugger.CreateTargetWithFileAndArch (programpath, "x86_64");
+			// check file type
+			int fd;
+			unsigned int magic = 0xfeedfacf;		// x86_64
+			if ((fd = open (programpath, O_RDONLY)) > 0) {
+				read (fd, (void *)&magic, sizeof(magic));
+				close (fd);
+			}
+			if (magic==0xfeedface)
+				target = pstate->debugger.CreateTargetWithFileAndArch (programpath, "i386");
+			else
+				target = pstate->debugger.CreateTargetWithFileAndArch (programpath, "x86_64");
 			if (!target.IsValid())
 				cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
 			else 

@@ -25,8 +25,10 @@ void help (STATE *pstate)
 	fprintf (stderr, "%s", pstate->lldbmi2Prompt);
 	fprintf (stderr, "Description:\n");
 	fprintf (stderr, "   A MI2 interface to LLDB\n");
-	fprintf (stderr, "Author:\n");
-	fprintf (stderr, "   Didier Bertrand, 2015, 2016\n");
+	fprintf (stderr, "Authors:\n");
+	fprintf (stderr, "   Didier Bertrand, 2015, 2016, 2018\n");
+	fprintf (stderr, "   Eduard Matveev, 2016\n");
+	fprintf (stderr, "   David Jenkins, 2018\n");
 	fprintf (stderr, "Syntax:\n");
 	fprintf (stderr, "   lldbmi2 --version [options]\n");
 	fprintf (stderr, "   lldbmi2 --interpreter mi2 [options]\n");
