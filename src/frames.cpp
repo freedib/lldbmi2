@@ -129,8 +129,18 @@ formatFrame (StringB &framedescB, SBFrame frame, FrameDetails framedetails)
 			framedescB.catsprintf ("frame={%s%s}", levelstring, argsstringB.c_str());
 		else {
 			func_name = frame.GetFunctionName();
-			framedescB.catsprintf ("frame={%saddr=\"%p\",func=\"%s\"%s,file=\"%s\"}",
-					levelstring, file_addr, func_name, argsstringB.c_str(), modulefilename);
+			SBLineEntry line_entry = addr.GetLineEntry();
+			SBFileSpec filespec = line_entry.GetFileSpec();
+			const char *filename = filespec.GetFilename();
+			const char *filedir = filespec.GetDirectory();
+			int line = line_entry.GetLine();
+
+			framedescB.catsprintf ("frame={%saddr=\"%p\",func=\"%s\"%s,file=\"%s\","
+								"fullname=\"%s/%s\",line=\"%d\"}",
+								levelstring,file_addr,func_name,argsstringB.c_str(),filename,filedir,filename,line);
+
+			// framedescB.catsprintf ("frame={%saddr=\"%p\",func=\"%s\"%s,file=\"%s\",line=\"%d\"}",
+			// 		levelstring, file_addr, func_name, argsstringB.c_str(), modulefilename, line);
 		}
 	}
 	return framedescB.c_str();

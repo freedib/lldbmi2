@@ -148,22 +148,26 @@ logprintf ( unsigned scope, const char *format, ... )
 	char *ts;
 	const char *header;
 
-	if (scope==LOG_NONE)
-		return;
+	// if (scope==LOG_NONE)
+	// 	return;
 	if (log_fd >= 0 && (scope&log_mask)==scope) {	// if logmask don't include LOG_RAW, LOG_XXX|LOG_RAW won't print
 		ts = gettimestamp();
-		write(log_fd, ts, strlen(ts));
-		header = getheader(scope);
-		write(log_fd, header, strlen(header));
-		write(log_fd, "  ", 2);
+		// write(log_fd, ts, strlen(ts));
+		// header = getheader(scope);
+		// write(log_fd, header, strlen(header));
+		// write(log_fd, "  ", 2);
 		if (format!=NULL) {
+			// printf("about to print fmt=%s :", format);
+			fflush(stdout);
 			va_start (args, format);
-			logbuffer.vosprintf (0, format, args);
+			vfprintf(stderr, format, args );
+			fflush(stderr);
+			//logbuffer.vosprintf (0, format, args);
 			va_end (args);
 		}
-		write(log_fd, logbuffer.c_str(), logbuffer.size());
-		if (scope==LOG_ERROR || scope==LOG_STDERR)
-			fprintf (stderr, "%s", logbuffer.c_str());
+		// write(log_fd, logbuffer.c_str(), logbuffer.size());
+		// if (scope==LOG_ERROR || scope==LOG_STDERR)
+			//fprintf (stderr, "%s", logbuffer.c_str());
 	}
 }
 

@@ -184,7 +184,7 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 	else if ((strcmp(cc.argv[0],"-inferior-tty-set")==0) ||
 	    ((strcmp(cc.argv[0],"set")==0) &&  (strcmp(cc.argv[1],"inferior-tty")==0))) {
 		// inferior-tty-set --thread-group i1 /dev/ttyp0
-		if (strcmp(cc.argv[0],"set")==0) 
+		if (strcmp(cc.argv[0],"set")==0)
 			nextarg++;
 		strlcpy (pstate->cdtptyname, cc.argv[nextarg], sizeof(pstate->cdtptyname));
 		if (strcmp(pstate->cdtptyname,"%s") == 0)
@@ -233,7 +233,7 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 				target = pstate->debugger.CreateTargetWithFileAndArch (programpath, "x86_64");
 			if (!target.IsValid())
 				cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
-			else 
+			else
 				cdtprintf ("%d^done\n(gdb)\n", cc.sequence);
 		}
 		else { // no arg to file-exec-and-symbols so clear executable and symbol informat.
@@ -601,7 +601,7 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 		if (nextarg<cc.argc)
 			strlcpy (expression, cc.argv[nextarg++], sizeof(expression));
 
-		/* Convert Pascal expression to C 
+		/* Convert Pascal expression to C
 		 *  Expected formats from laz-ide are:
 		 *    type(addr_t^)
 		 *    ^type(addr_t^)
@@ -620,8 +620,8 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 			}
 		}
 		snprintf(watchExpr, sizeof(watchExpr), "(%s *)(%s)", typeStr, addrStr);
-		/* 
-		 * End of Pascal manipulation 
+		/*
+		 * End of Pascal manipulation
 		 */
 
 		SBValue val = target.EvaluateExpression(watchExpr);
@@ -854,6 +854,37 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 			cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
 	}
 	// VARIABLES COMMANDS
+	else if (strcmp(cc.argv[0],"-stack-list-variables")==0) {
+    // stack-list-variables --thread 1 --frame 0 --no-values
+
+    // what?
+		char printvalues[NAME_MAX];		// 1 or --all-values OR 2 or --simple-values
+		printvalues[0] = '\0';
+		if (++nextarg<cc.argc)
+			strlcpy (printvalues, cc.argv[nextarg], sizeof(printvalues));
+		bool isValid = false;
+		if (pstate->process.IsValid()) {
+			SBThread thread = pstate->process.GetSelectedThread();
+			if (thread.IsValid()) {
+				SBFrame frame = thread.GetSelectedFrame();
+				if (frame.IsValid()) {
+					// SBFunction function = frame.GetFunction();
+					// if (function.IsValid()) {
+						isValid = true;
+						SBValueList vars = frame.GetVariables(1,1,1,0);
+						char *varsdesc = formatVariables (vars);
+						cdtprintf ("%d^done,variables=[%s]\n(gdb)\n", cc.sequence, varsdesc);
+					// }
+				}
+			}
+		}
+		if (!isValid)
+			cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
+
+
+
+
+	}
 	else if (strcmp(cc.argv[0],"-var-create")==0) {
 		// TODO: strlen(variable) not updated in expression pane
 		// var-create --thread 1 --frame 0 - * a
@@ -1040,14 +1071,14 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 			else
 				cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
 		}
-	}	
+	}
 	else if (strcmp(cc.argv[0],"-data-evaluate-expression")==0) {
 		char expression[PATH_MAX];
 		char expressionPath[PATH_MAX];
 		bool doDeref = false;
 		if (nextarg<cc.argc)
 			strlcpy (expression, cc.argv[nextarg++], sizeof(expression));
-		
+
 		char *pathStart = strchr(expression, '.');
 		if (pathStart != NULL) {
 			strlcpy(expressionPath, pathStart, sizeof(expressionPath));
@@ -1063,11 +1094,11 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 				expression[strlen(expression)-1] = '\0';
 			}
 			if (strcasecmp(expression, "sizeof(^char)")==0) {
-				strlcpy(expression, "sizeof(char*)", sizeof(expression));	
+				strlcpy(expression, "sizeof(char*)", sizeof(expression));
 			}
 		}
 		char *takeAddrOp = strchr(expression, '@');
-		if (takeAddrOp != NULL) 
+		if (takeAddrOp != NULL)
 			*takeAddrOp = '&';
 
 		SBValue val = target.EvaluateExpression(expression);
@@ -1077,7 +1108,7 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 		if (val.IsValid() && doDeref) {
 			val = val.Dereference();
 		}
-		
+
 		if (val.IsValid()) {
 			if (val.GetError().Fail())
 				cdtprintf ("%d^error,msg=\"%s.\"\n(gdb)\n", cc.sequence, val.GetError().GetCString());
@@ -1178,7 +1209,7 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 					for (int i = 0; i < numfuncs; i++) {
 						StringB funcs(BIG_LINE_MAX);
 						SBTypeMemberFunction mbr = type.GetMemberFunctionAtIndex(i);
-						if (mbr.GetReturnType().GetBasicType() == eBasicTypeVoid) 
+						if (mbr.GetReturnType().GetBasicType() == eBasicTypeVoid)
 							funcs.append("    procedure");
 						else
 							funcs.append("    function ");
@@ -1192,7 +1223,7 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 							}
 						}
 						funcs.append(")");
-						if (mbr.GetReturnType().GetBasicType() != eBasicTypeVoid) 
+						if (mbr.GetReturnType().GetBasicType() != eBasicTypeVoid)
 							funcs.catsprintf(" : %s", mbr.GetReturnType().GetDisplayTypeName());
 						srlprintf("%s;\n", funcs.c_str());
 					}
@@ -1217,7 +1248,7 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 					}
 					func.append(")");
 				}
-				if (funcReturnType.GetBasicType() != eBasicTypeVoid) 
+				if (funcReturnType.GetBasicType() != eBasicTypeVoid)
 					func.catsprintf(" : %s", funcReturnType.GetDisplayTypeName());
 				srlprintf("%s\n", func.c_str());
 			}
@@ -1276,7 +1307,7 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 			cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
 	}
 	// OTHER COMMANDS
-	else if ((strcmp(cc.argv[0],"-file-list-exec-sections")==0) || 
+	else if ((strcmp(cc.argv[0],"-file-list-exec-sections")==0) ||
 	   ((cc.argc == 2) && (strcmp(cc.argv[0],"info")==0) && (strcmp(cc.argv[1],"file")==0))) {
 		if (target.IsValid()) {
 			addr_t NOTLOADED = (addr_t)(-1);
@@ -1302,7 +1333,7 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 				srlprintf("Symbols from \"%s\".\n", filename);
 				srlprintf("\"%s\"\n", filetype);
 		   	}
-			cdtprintf ("%d^done,section-info={filename=\"%s\",filetype=\"%s\",entry-point=\"%p\",sections={", 
+			cdtprintf ("%d^done,section-info={filename=\"%s\",filetype=\"%s\",entry-point=\"%p\",sections={",
 				cc.sequence, filename, filetype, entrypt);
 			for (int mndx = 0; mndx < target.GetNumModules(); mndx++) {
 				SBModule mod = target.GetModuleAtIndex(mndx);
@@ -1408,7 +1439,7 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 					addr_t vaddr = startaddr.GetLoadAddress(target);
 					if (vaddr == -1)
 						vaddr = startaddr.GetFileAddress();
-					if (symb.GetType() == eSymbolTypeCode) 
+					if (symb.GetType() == eSymbolTypeCode)
 						srlprintf("Symbol \"%s\" is a function at address %p.\n", symb.GetName(), vaddr);
 					else
 						srlprintf("Symbol \"%s\" is at address %p.\n", symbol, vaddr);
@@ -1469,7 +1500,7 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 						SBFunction endfunc = lEntry.GetEndAddress().GetFunction();
 						addr_t endfuncaddr = startfunc.GetStartAddress().GetFileAddress();
 						srlprintf("Line %d of \"%s\" starts at address %p <%s+%d> and ends at %p <%s+%d>\n",
-							iline, lEntry.GetFileSpec().GetFilename(), 
+							iline, lEntry.GetFileSpec().GetFilename(),
 							startaddr, startfunc.GetName(), (startaddr - startfuncaddr),
 							endaddr, endfunc.GetName(), (endaddr - endfuncaddr));
 					}
@@ -1483,12 +1514,12 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 				}
 				else {
 					srcprintf("No source file named %s.\n",path);
-					cdtprintf ("%d^error,msg=\"No source file named %s.\"\n(gdb)\n", cc.sequence, path);	
+					cdtprintf ("%d^error,msg=\"No source file named %s.\"\n(gdb)\n", cc.sequence, path);
 				}
 			}
 			else {
-				srcprintf ("Function \"%s\" not defined.\n", path);	
-				cdtprintf ("%d^error,msg=\"Function \"%s\" not defined.\"\n(gdb)\n", cc.sequence, path);	
+				srcprintf ("Function \"%s\" not defined.\n", path);
+				cdtprintf ("%d^error,msg=\"Function \"%s\" not defined.\"\n(gdb)\n", cc.sequence, path);
 			}
 		}
 		else if (strcmp(cc.argv[nextarg],"program") == 0) {
@@ -1628,7 +1659,7 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 			if (saddr.IsValid() && eaddr.IsValid()) {
 				SBInstructionList ilist = target.ReadInstructions(saddr, cnt);
 				if (ilist.IsValid()) {
-					cdtprintf ("%d^done,asm_insns=[",cc.sequence); 
+					cdtprintf ("%d^done,asm_insns=[",cc.sequence);
 					for (int i = 0; i < cnt; i++) {
 						SBInstruction instr = ilist.GetInstructionAtIndex(i);
 						SBAddress iaddr = instr.GetAddress();
@@ -1641,7 +1672,7 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 						if (i != 0)
 							cdtprintf(",");
 						cdtprintf("{address=\"%p\",func-name=\"%s\",offset=\"%d\",inst=\"%-12s%-25s %s\"}",
-							iaddr.GetFileAddress(), symb.GetName(), off, 
+							iaddr.GetFileAddress(), symb.GetName(), off,
 							instr.GetMnemonic(target), instr.GetOperands(target), instr.GetComment(target));
 					}
 					cdtprintf ("]\n(gdb)\n");
@@ -1695,7 +1726,7 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 				if (error.Fail() || (readCnt == 0)) {
 					SBStream s;
 					error.GetDescription(s);
-					printf("Read failed (%d %d): %s\n", error.GetError(), 
+					printf("Read failed (%d %d): %s\n", error.GetError(),
 						error.GetType(), s.GetData());
 					cdtprintf ("%d^error,msg=\"%s\"\n(gdb)\n", cc.sequence, s.GetData());
 				}
@@ -1723,7 +1754,7 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 										break;
 								case 8: cdtprintf ("\"0x%016llx\"", *(uint64_t *)(bufAddr + col*8));
 										break;
-							} 
+							}
 						}
 						cdtprintf("]}");
 						rowAddr += wordSize * nrCols;

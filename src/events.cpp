@@ -155,7 +155,7 @@ processListener (void *arg)
 				logdata (LOG_PROG_IN, iobuffer, iobytes);
 				break;
 			default:
-				logprintf (LOG_WARN, "unknown event type %s\n", eventtype);
+				logprintf (LOG_WARN, "unknown event type %d\n", eventtype);
 				break;
 			}
 		}
@@ -163,7 +163,7 @@ processListener (void *arg)
 			printf("Is Watchpoint event\n");
 		}
 		else
-			logprintf (LOG_EVENTS, "event type %s\n", eventtype);
+			logprintf (LOG_EVENTS, "event type %d\n", eventtype);
 	}
 	logprintf (LOG_EVENTS, "processlistener exited. pstate->eof=%d\n", pstate->eof);
 	return NULL;
@@ -206,7 +206,8 @@ onStopped (STATE *pstate, SBProcess process)
 				snprintf (reasondesc, sizeof(reasondesc), "reason=\"function-finished\",");
 		}
 		else
-			reasondesc[0] = '\0';
+			snprintf (reasondesc, sizeof(reasondesc), "reason=\"end-stepping-range\","); // just give a reason to the parser
+			// reasondesc[0] = '\0';
 		SBFrame frame = thread.GetSelectedFrame();
 		if (!frame.IsValid()) {
 	    	logprintf (LOG_ERROR, "frame invalid on event eStateStopped (eStopReasonBreakpoint)\n");
