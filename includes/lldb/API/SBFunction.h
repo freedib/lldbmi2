@@ -1,96 +1,82 @@
 //===-- SBFunction.h --------------------------------------------*- C++ -*-===//
 //
-//                     The LLVM Compiler Infrastructure
-//
-// This file is distributed under the University of Illinois Open Source
-// License. See LICENSE.TXT for details.
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLDB_SBFunction_h_
-#define LLDB_SBFunction_h_
+#ifndef LLDB_API_SBFUNCTION_H
+#define LLDB_API_SBFUNCTION_H
 
-#include "lldb/API/SBDefines.h"
 #include "lldb/API/SBAddress.h"
+#include "lldb/API/SBDefines.h"
 #include "lldb/API/SBInstructionList.h"
 
 namespace lldb {
 
-class LLDB_API SBFunction
-{
+class LLDB_API SBFunction {
 public:
+  SBFunction();
 
-    SBFunction ();
+  SBFunction(const lldb::SBFunction &rhs);
 
-    SBFunction (const lldb::SBFunction &rhs);
+  const lldb::SBFunction &operator=(const lldb::SBFunction &rhs);
 
-    const lldb::SBFunction &
-    operator = (const lldb::SBFunction &rhs);
+  ~SBFunction();
 
-    ~SBFunction ();
+  explicit operator bool() const;
 
-    bool
-    IsValid () const;
+  bool IsValid() const;
 
-    const char *
-    GetName() const;
+  const char *GetName() const;
 
-    const char *
-    GetMangledName () const;
+  const char *GetDisplayName() const;
 
-    lldb::SBInstructionList
-    GetInstructions (lldb::SBTarget target);
+  const char *GetMangledName() const;
 
-    lldb::SBInstructionList
-    GetInstructions (lldb::SBTarget target, const char *flavor);
+  lldb::SBInstructionList GetInstructions(lldb::SBTarget target);
 
-    lldb::SBAddress
-    GetStartAddress ();
+  lldb::SBInstructionList GetInstructions(lldb::SBTarget target,
+                                          const char *flavor);
 
-    lldb::SBAddress
-    GetEndAddress ();
+  lldb::SBAddress GetStartAddress();
 
-    uint32_t
-    GetPrologueByteSize ();
+  lldb::SBAddress GetEndAddress();
 
-    lldb::SBType
-    GetType ();
+  const char *GetArgumentName(uint32_t arg_idx);
 
-    lldb::SBBlock
-    GetBlock ();
-    
-    lldb::LanguageType
-    GetLanguage ();
+  uint32_t GetPrologueByteSize();
 
-    bool
-    operator == (const lldb::SBFunction &rhs) const;
+  lldb::SBType GetType();
 
-    bool
-    operator != (const lldb::SBFunction &rhs) const;
+  lldb::SBBlock GetBlock();
 
-    bool
-    GetDescription (lldb::SBStream &description);
+  lldb::LanguageType GetLanguage();
+
+  bool GetIsOptimized();
+
+  bool operator==(const lldb::SBFunction &rhs) const;
+
+  bool operator!=(const lldb::SBFunction &rhs) const;
+
+  bool GetDescription(lldb::SBStream &description);
 
 protected:
+  lldb_private::Function *get();
 
-    lldb_private::Function *
-    get ();
-
-    void
-    reset (lldb_private::Function *lldb_object_ptr);
+  void reset(lldb_private::Function *lldb_object_ptr);
 
 private:
-    friend class SBAddress;
-    friend class SBFrame;
-    friend class SBSymbolContext;
+  friend class SBAddress;
+  friend class SBFrame;
+  friend class SBSymbolContext;
 
-    SBFunction (lldb_private::Function *lldb_object_ptr);
+  SBFunction(lldb_private::Function *lldb_object_ptr);
 
-
-    lldb_private::Function *m_opaque_ptr;
+  lldb_private::Function *m_opaque_ptr = nullptr;
 };
-
 
 } // namespace lldb
 
-#endif // LLDB_SBFunction_h_
+#endif // LLDB_API_SBFUNCTION_H

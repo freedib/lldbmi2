@@ -6,7 +6,7 @@
 083744.546 <<=  |~"GNU gdb (GDB) 7.7.1\n"\n|
 083744.548 <<=  |~"lldbmi2 version 1.0.123\n"\n|
 083744.548 <<=  |2^done\n(gdb)\n|
-083744.585 >>=  |3-environment-cd /Users/didier/Projets/git-lldbmi2/lldbmi2|
+083744.585 >>=  |3-environment-cd /home/didier/projets/c/lldbmi2|
 083744.585 <<=  |3^done\n(gdb)\n|
 083744.595 >>=  |4-gdb-set breakpoint pending on|
 083744.595 <<=  |4^done\n(gdb)\n|
@@ -34,10 +34,10 @@
 083744.674 <<=  |15^done\n(gdb)\n|
 083744.677 >>=  |16-gdb-set auto-solib-add on|
 083744.677 <<=  |16^done\n(gdb)\n|
-083744.704 >>=  |17-file-exec-and-symbols --thread-group i1 /Users/didier/Projets/git-lldbmi2/lldbmi2/build/tests|
+083744.704 >>=  |17-file-exec-and-symbols --thread-group i1 /home/didier/projets/c/lldbmi2/build/tests|
 083745.401 <<=  |17^done\n(gdb)\n|
 083745.402 >>=  |18-list-thread-groups|
-083745.405 <<=  |18^done,groups=[{id="i1",type="process",executable="/Users/didier/Projets/git-lldbmi2/lldbmi2/build/tests"}]\n(gdb)\n|
+083745.405 <<=  |18^done,groups=[{id="i1",type="process",executable="/home/didier/projets/c/lldbmi2/build/tests"}]\n(gdb)\n|
 083745.429 >>=  |19-gdb-set --thread-group i1 args 4|
 083745.429 <<=  |19^done\n(gdb)\n|
 083745.447 >>=  |20-gdb-show --thread-group i1 language|
@@ -52,18 +52,18 @@
 083745.478 <<=  |24^done\n(gdb)\n|
 083745.484 >>=  |25-interpreter-exec --thread-group i1 console "show endian"|
 083745.484 <<=  |~"The target endianness is set automatically (currently little endian)\n"\n25^done\n(gdb)\n|
-083745.553 >>=  |26-break-insert -f /Users/didier/Projets/git-lldbmi2/lldbmi2/src/variables.cpp:446|
+083745.553 >>=  |26-break-insert -f /home/didier/projets/c/lldbmi2/src/variables.cpp:447|
 083745.554 <<=  |26^done,bkpt={number="1",type="breakpoint",disp="keep",enabled="y",addr="0x00000000ffffffff",func="(null)",file="(null)",fullname="(null)/(null)",line="0",thread-groups=["i1"],times="0",original-location=""}\n(gdb)\n|
-083745.554 >>=  |27-break-insert -f /Users/didier/Projets/git-lldbmi2/lldbmi2/tests/src/tests.cpp:125|
-083745.562 <<=  |27^done,bkpt={number="2",type="breakpoint",disp="keep",enabled="y",addr="0x00000000000014eb",func="test_POINTERS()",file="tests.cpp",fullname="/Users/didier/Projets/git-lldbmi2/lldbmi2/tests/src/tests.cpp",line="125",thread-groups=["i1"],times="0",original-location=""}\n(gdb)\n|
-083745.571 >>=  |28-break-insert -f /Users/didier/Projets/git-lldbmi2/lldbmi2/tests/src/tests.cpp:338|
-083745.583 <<=  |28^done,bkpt={number="3",type="breakpoint",disp="keep",enabled="y",addr="0x0000000000001f7e",func="test_BIG_CLASS()",file="tests.cpp",fullname="/Users/didier/Projets/git-lldbmi2/lldbmi2/tests/src/tests.cpp",line="339",thread-groups=["i1"],times="0",original-location=""}\n(gdb)\n|
-083745.583 >>=  |29-break-insert -f /Users/didier/Projets/git-lldbmi2/lldbmi2/tests/src/tests.cpp:175|
-083745.583 <<=  |29^done,bkpt={number="4",type="breakpoint",disp="keep",enabled="y",addr="0x000000000000162c",func="AB::sumab()",file="tests.cpp",fullname="/Users/didier/Projets/git-lldbmi2/lldbmi2/tests/src/tests.cpp",line="175",thread-groups=["i1"],times="0",original-location=""}\n(gdb)\n|
-083745.583 >>=  |30-break-insert -f /Users/didier/Projets/git-lldbmi2/lldbmi2/tests/src/tests.cpp:92|
-083745.584 <<=  |30^done,bkpt={number="5",type="breakpoint",disp="keep",enabled="y",addr="0x0000000000001434",func="test_LARGE_CHAR_ARRAY()",file="tests.cpp",fullname="/Users/didier/Projets/git-lldbmi2/lldbmi2/tests/src/tests.cpp",line="92",thread-groups=["i1"],times="0",original-location=""}\n(gdb)\n|
-083745.584 >>=  |31-break-insert -f /Users/didier/Projets/git-lldbmi2/lldbmi2/tests/src/tests.cpp:376|
-083745.584 <<=  |31^done,bkpt={number="6",type="breakpoint",disp="keep",enabled="y",addr="0x0000000000001fd2",func="test_LONG_INHERITANCE()",file="tests.cpp",fullname="/Users/didier/Projets/git-lldbmi2/lldbmi2/tests/src/tests.cpp",line="376",thread-groups=["i1"],times="0",original-location=""}\n(gdb)\n|
+083745.554 >>=  |27-break-insert -f /home/didier/projets/c/lldbmi2/tests/src/tests.cpp:123|
+083745.562 <<=  |27^done,bkpt={number="2",type="breakpoint",disp="keep",enabled="y",addr="0x00000000000014eb",func="test_POINTERS()",file="tests.cpp",fullname="/home/didier/projets/c/lldbmi2/tests/src/tests.cpp",line="125",thread-groups=["i1"],times="0",original-location=""}\n(gdb)\n|
+083745.571 >>=  |28-break-insert -f /home/didier/projets/c/lldbmi2/tests/src/tests.cpp:349|
+083745.583 <<=  |28^done,bkpt={number="3",type="breakpoint",disp="keep",enabled="y",addr="0x0000000000001f7e",func="test_BIG_CLASS()",file="tests.cpp",fullname="/home/didier/projets/c/lldbmi2/tests/src/tests.cpp",line="339",thread-groups=["i1"],times="0",original-location=""}\n(gdb)\n|
+083745.583 >>=  |29-break-insert -f /home/didier/projets/c/lldbmi2/tests/src/tests.cpp:186|
+083745.583 <<=  |29^done,bkpt={number="4",type="breakpoint",disp="keep",enabled="y",addr="0x000000000000162c",func="AB::sumab()",file="tests.cpp",fullname="/home/didier/projets/c/lldbmi2/tests/src/tests.cpp",line="175",thread-groups=["i1"],times="0",original-location=""}\n(gdb)\n|
+083745.583 >>=  |30-break-insert -f /home/didier/projets/c/lldbmi2/tests/src/tests.cpp:98|
+083745.584 <<=  |30^done,bkpt={number="5",type="breakpoint",disp="keep",enabled="y",addr="0x0000000000001434",func="test_LARGE_CHAR_ARRAY()",file="tests.cpp",fullname="/home/didier/projets/c/lldbmi2/tests/src/tests.cpp",line="92",thread-groups=["i1"],times="0",original-location=""}\n(gdb)\n|
+083745.584 >>=  |31-break-insert -f /home/didier/projets/c/lldbmi2/tests/src/tests.cpp:377|
+083745.584 <<=  |31^done,bkpt={number="6",type="breakpoint",disp="keep",enabled="y",addr="0x0000000000001fd2",func="test_LONG_INHERITANCE()",file="tests.cpp",fullname="/home/didier/projets/c/lldbmi2/tests/src/tests.cpp",line="376",thread-groups=["i1"],times="0",original-location=""}\n(gdb)\n|
 083745.616 >>=  |32-inferior-tty-set --thread-group i1 /dev/ttyp0|
 083745.616 <<=  |32^done\n(gdb)\n|
 083745.642 >>=  |33-exec-run --thread-group i1|
@@ -77,15 +77,15 @@
 083746.103 ###  eBroadcastBitSTDOUT
 083746.103 <<<  |tests 4\n|
 083746.107 ###  eStateStopped
-083746.107 <<=  |=breakpoint-modified,bkpt={number="5",type="breakpoint",disp="keep",enabled="y",addr="0x0000000000001434",func="test_LARGE_CHAR_ARRAY()",file="tests.cpp",fullname="/Users/didier/Projets/git-lldbmi2/lldbmi2/tests/src/tests.cpp",line="92",thread-groups=["i1"],times="0",original-location=""}\n|
-083746.107 <<=  |*stopped,reason="breakpoint-hit",disp="keep",bkptno="5",frame={addr="0x0000000000001434",func="test_LARGE_CHAR_ARRAY()",args=[],file="tests.cpp",fullname="/Users/didier/Projets/git-lldbmi2/lldbmi2/tests/src/tests.cpp",line="92"},thread-id="1",stopped-threads="all"\n(gdb)\n|
+083746.107 <<=  |=breakpoint-modified,bkpt={number="5",type="breakpoint",disp="keep",enabled="y",addr="0x0000000000001434",func="test_LARGE_CHAR_ARRAY()",file="tests.cpp",fullname="/home/didier/projets/c/lldbmi2/tests/src/tests.cpp",line="92",thread-groups=["i1"],times="0",original-location=""}\n|
+083746.107 <<=  |*stopped,reason="breakpoint-hit",disp="keep",bkptno="5",frame={addr="0x0000000000001434",func="test_LARGE_CHAR_ARRAY()",args=[],file="tests.cpp",fullname="/home/didier/projets/c/lldbmi2/tests/src/tests.cpp",line="92"},thread-id="1",stopped-threads="all"\n(gdb)\n|
 083746.262 >>=  |35-list-thread-groups|
-083746.262 <<=  |35^done,groups=[{id="i1",type="process",pid="8196",executable="/Users/didier/Projets/git-lldbmi2/lldbmi2/build/tests"}]\n(gdb)\n|
+083746.262 <<=  |35^done,groups=[{id="i1",type="process",pid="8196",executable="/home/didier/projets/c/lldbmi2/build/tests"}]\n(gdb)\n|
 083746.485 >>=  |36-list-thread-groups|
-083746.485 <<=  |36^done,groups=[{id="i1",type="process",pid="8196",executable="/Users/didier/Projets/git-lldbmi2/lldbmi2/build/tests"}]\n(gdb)\n|
+083746.485 <<=  |36^done,groups=[{id="i1",type="process",pid="8196",executable="/home/didier/projets/c/lldbmi2/build/tests"}]\n(gdb)\n|
 083747.867 >>=  |37-list-thread-groups i1|
 083747.868 $$$  getNumFrames(0x55884298) = 4
-083747.868 <<=  |37^done,threads=[{id="1",target-id="Thread 0x165a0 of process 8196",frame={level="0",addr="0x0000000000001434",func="test_LARGE_CHAR_ARRAY()",args=[],file="tests.cpp",fullname="/Users/didier/Projets/git-lldbmi2/lldbmi2/tests/src/tests.cpp",line="92"},state="stopped"}]\n(gdb)\n|
+083747.868 <<=  |37^done,threads=[{id="1",target-id="Thread 0x165a0 of process 8196",frame={level="0",addr="0x0000000000001434",func="test_LARGE_CHAR_ARRAY()",args=[],file="tests.cpp",fullname="/home/didier/projets/c/lldbmi2/tests/src/tests.cpp",line="92"},state="stopped"}]\n(gdb)\n|
 083747.880 >>=  |38-stack-info-depth --thread 1 11|
 083747.880 $$$  getNumFrames(0x55884f48) = 4
 083747.880 <<=  |38^done,depth="4"\n(gdb)\n|
@@ -772,8 +772,8 @@
 083750.213 >>=  |46-stack-list-frames --thread 1|
 083750.213 $$$  getNumFrames(0x55884f20) = 4
 083750.213 <<=  |46^done,stack=[|
-083750.213 <<=  |frame={level="0",addr="0x0000000000001434",func="test_LARGE_CHAR_ARRAY()",file="tests.cpp",fullname="/Users/didier/Projets/git-lldbmi2/lldbmi2/tests/src/tests.cpp",line="92"}|
-083750.213 <<=  |,frame={level="1",addr="0x00000000000020be",func="main",file="tests.cpp",fullname="/Users/didier/Projets/git-lldbmi2/lldbmi2/tests/src/tests.cpp",line="396"}|
+083750.213 <<=  |frame={level="0",addr="0x0000000000001434",func="test_LARGE_CHAR_ARRAY()",file="tests.cpp",fullname="/home/didier/projets/c/lldbmi2/tests/src/tests.cpp",line="92"}|
+083750.213 <<=  |,frame={level="1",addr="0x00000000000020be",func="main",file="tests.cpp",fullname="/home/didier/projets/c/lldbmi2/tests/src/tests.cpp",line="396"}|
 083750.213 <<=  |,frame={level="2",addr="0x00000000000035ad",func="start",file="libdyld.dylib"}|
 083750.213 <<=  |,frame={level="3",addr="0x00000000000035ad",func="start",file="libdyld.dylib"}|
 083750.213 <<=  |]\n(gdb)\n|

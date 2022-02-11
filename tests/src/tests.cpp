@@ -1,6 +1,7 @@
 
 // test programs for LLDBMI2
 
+// avoid adding or removing lines or -break-insert statements must be ajusted in test.cpp
 
 #include <stdio.h>
 #include <pthread.h>
@@ -31,7 +32,7 @@ hellothread (void *arg)
 {
 	for (int loop=0; loop<20; loop++) {
 		sleep (10);
-		printf ("loop %d\n", loop);					// breakpoint 1 THREAD and ATTACH
+		printf ("loop %d\n", loop);					// breakpoint 1 in testcommands_THREAD and testcommands_ATTACH
 	}
 	return NULL;
 }
@@ -63,7 +64,12 @@ int test_BASE ()
 	Z z;
 	const char *b="22";
 	Y* py = &y;
+#pragma GCC diagnostic push
+#ifndef __clang__
+#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+#endif
 	float m[1];
+#pragma GCC diagnostic pop
 	startthread ();
 	y.m=11; y.n=22; y.o=33L;
 	int c=12;
@@ -71,10 +77,10 @@ int test_BASE ()
 	z.a = 11;
 	z.b = b;
 	z.k[1][1] = 4;
-	z.l[1]="string 2";								// breakpoint 1 VARS
+	z.l[1]="string 2";								// breakpoint 1 in testcommands_VARS
 	m[0] = 123.456;
-	++py->o;										// breakpoint 1 UPDATE
-	c = sub (67, b, &z);							// breakpoint 2 THREAD
+	++py->o;										// breakpoint 1 in testcommands_UPDATE
+	c = sub (67, b, &z);							// breakpoint 2 in testcommands_THREAD
 	c = sub (68, b, &z);
 	printf ("c=%d\n", c);
 	fflush (stdout);
@@ -89,7 +95,7 @@ int test_LARGE_CHAR_ARRAY ()
 	const char *ddd="HI\"abc\"JK";
 	char ccc[102];
 	strcpy (ccc, ddd);
-	strcpy (&ccc[100], "K");						// breakpoint 1 LARGE_CHAR_ARRAY
+	strcpy (&ccc[100], "K");						// breakpoint 1 in testcommands_LARGE_CHAR_ARRAY and largearray.log
 
 	return 0;
 }
@@ -103,13 +109,18 @@ typedef struct {	// can view structs only if typedef in dwarf
 
 int test_LARGE_ARRAY ()
 {
+#pragma GCC diagnostic push
+#ifndef __clang__
+#pragma GCC diagnostic ignored "-Wunused-but-set-variable"
+#endif
 	int i[200];
 	SSS s[200];
+#pragma GCC diagnostic pop
 
 	i[100] = 1001;
 	s[0].c = "hello";
 
-	return 0;									// breakpoint 1 LARGE_ARRAY
+	return 0;										// breakpoint 1 in testcommands_LARGE_ARRAY and largearray.log
 }
 
 /////////////////////////////
@@ -122,7 +133,7 @@ X x;
 
 int test_POINTERS ()
 {
-	X *px = &x;									// breakpoint 1 POINTERS
+	X *px = &x;										// breakpoint 1 in testcommands_POINTERS
 	x.a = 13;
 	px->a = 26;
 	x.b = "hello";
@@ -172,7 +183,7 @@ void AB::setb (int v) {
 	b = v;
 }
 int AB::sumab () {
-	return a+b;								// breakpoint 1 MEMBERS
+	return a+b;									// breakpoint 1 in testcommands_MEMBERS and largearray.log
 }
 
 typedef struct CD {
@@ -199,7 +210,7 @@ int test_CRASH()
 {
 	int *err=NULL;
 	*err=99;
-	return 0;								// breakpoint 1 CRASH
+	return 0;										// breakpoint 1 in testcommands_CRASH
 }
 
 /////////////////////////////
@@ -207,7 +218,7 @@ int test_CRASH()
 void testfunction (int *i, char (&sr)[7], char *s, char *ps, const char*v, double *d, bool &b, struct CD (*cdp) [3], struct CD (&cdr)[3], AB &ab, BA *pba)
 {
 	int bb=b;	(void)bb;
-	return;															// breakpoint 1 ARGS
+	return;											// breakpoint 1 in testcommands_ARGS
 }
 
 int test_ARGS()
@@ -221,9 +232,9 @@ int test_ARGS()
 	struct CD cd[3] = {{10,"10"}, {20,"20"}, {30,"30"}};
 	double d[5] = {1.1, 2.2, 3.3, 4.4, 5.5};
 	strcpy (s, "A");
-	testfunction (i, s, s, &s[0], "a", d, b, &cd, cd, ab, &ab);		// breakpoint 2 ARGS
+	testfunction (i, s, s, &s[0], "a", d, b, &cd, cd, ab, &ab);		// breakpoint 2 in testcommands_ARGS
 	strcpy (s, "B");
-	b=false;														// breakpoint 3 ARGS
+	b=false;														// breakpoint 3 in testcommands_ARGS
 	ab.setb(4);
 	cd[1].c=30;
 	d[0] = 6.6;
@@ -260,7 +271,7 @@ int test_STRING()
 //	int j=1;
 	std::string s;
 	s = "Hello";
-	ComplexClass cc;							// breakpoint 1 STRING
+	ComplexClass cc;							// breakpoint 1 in testcommands_STRING
 	return 0;
 }
 
@@ -271,7 +282,7 @@ int test_INPUT()
 	char c;
 	while ((c=getchar()) != '!')
 		putchar (c);
-	return 0;									// breakpoint 1 INPUT
+	return 0;									// breakpoint 1 in testcommands_INPUT
 }
 
 /////////////////////////////
@@ -286,7 +297,7 @@ int test_CATCH_THROW()
 	{
 		printf ("catch %s\n", error.what());
 	}
-	return 0;									// breakpoint 1 CATCH_THROW
+	return 0;
 }
 
 ///////////////////////////////
@@ -335,7 +346,7 @@ class BigClass
 int test_BIG_CLASS()
 {
 	BigClass bg;
-	return 0;									// breakpoint 1 BIG_CLASS
+	return 0;							// breakpoint 1 in testcommands_BIG_CLASS and largearray.log
 }
 
 ///////////////////////////////
@@ -363,7 +374,7 @@ class D : public C {
         D () : d(4){};
         int test ()
         {
-            H::D* d = this;						// breakpoint 1 LONG_INHERITANCE
+            H::D* d = this;				// breakpoint 1 in testcommands_LONG_INHERITANCE and largearray.log
             return d->a;
         };
 };

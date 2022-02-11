@@ -1,105 +1,87 @@
 //===-- SBEvent.h -----------------------------------------------*- C++ -*-===//
 //
-//                     The LLVM Compiler Infrastructure
-//
-// This file is distributed under the University of Illinois Open Source
-// License. See LICENSE.TXT for details.
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLDB_SBEvent_h_
-#define LLDB_SBEvent_h_
+#ifndef LLDB_API_SBEVENT_H
+#define LLDB_API_SBEVENT_H
 
 #include "lldb/API/SBDefines.h"
 
-#include <stdio.h>
+#include <cstdio>
 #include <vector>
-
 
 namespace lldb {
 
 class SBBroadcaster;
 
-class LLDB_API SBEvent
-{
+class LLDB_API SBEvent {
 public:
-    SBEvent();
+  SBEvent();
 
-    SBEvent (const lldb::SBEvent &rhs);
-    
-    // Make an event that contains a C string.
-    SBEvent (uint32_t event, const char *cstr, uint32_t cstr_len);
+  SBEvent(const lldb::SBEvent &rhs);
 
-    SBEvent (lldb::EventSP &event_sp);
+  // Make an event that contains a C string.
+  SBEvent(uint32_t event, const char *cstr, uint32_t cstr_len);
 
-    SBEvent (lldb_private::Event *event_sp);
+  SBEvent(lldb::EventSP &event_sp);
 
-    ~SBEvent();
+  SBEvent(lldb_private::Event *event_sp);
 
-    const SBEvent &
-    operator = (const lldb::SBEvent &rhs);
+  ~SBEvent();
 
-    bool
-    IsValid() const;
+  const SBEvent &operator=(const lldb::SBEvent &rhs);
 
-    const char *
-    GetDataFlavor ();
+  explicit operator bool() const;
 
-    uint32_t
-    GetType () const;
+  bool IsValid() const;
 
-    lldb::SBBroadcaster
-    GetBroadcaster () const;
+  const char *GetDataFlavor();
 
-    const char *
-    GetBroadcasterClass () const;
+  uint32_t GetType() const;
 
-    bool
-    BroadcasterMatchesPtr (const lldb::SBBroadcaster *broadcaster);
+  lldb::SBBroadcaster GetBroadcaster() const;
 
-    bool
-    BroadcasterMatchesRef (const lldb::SBBroadcaster &broadcaster);
+  const char *GetBroadcasterClass() const;
 
-    void
-    Clear();
+  bool BroadcasterMatchesPtr(const lldb::SBBroadcaster *broadcaster);
 
-    static const char *
-    GetCStringFromEvent (const lldb::SBEvent &event);
+  bool BroadcasterMatchesRef(const lldb::SBBroadcaster &broadcaster);
 
-    bool
-    GetDescription (lldb::SBStream &description);
+  void Clear();
 
-    bool
-    GetDescription (lldb::SBStream &description) const;
+  static const char *GetCStringFromEvent(const lldb::SBEvent &event);
+
+  bool GetDescription(lldb::SBStream &description);
+
+  bool GetDescription(lldb::SBStream &description) const;
 
 protected:
-    friend class SBListener;
-    friend class SBBroadcaster;
-    friend class SBBreakpoint;
-    friend class SBDebugger;
-    friend class SBProcess;
-    friend class SBTarget;
-    friend class SBThread;
-    friend class SBWatchpoint;
+  friend class SBListener;
+  friend class SBBroadcaster;
+  friend class SBBreakpoint;
+  friend class SBDebugger;
+  friend class SBProcess;
+  friend class SBTarget;
+  friend class SBThread;
+  friend class SBWatchpoint;
 
-    lldb::EventSP &
-    GetSP () const;
+  lldb::EventSP &GetSP() const;
 
-    void
-    reset (lldb::EventSP &event_sp);
+  void reset(lldb::EventSP &event_sp);
 
-    void
-    reset (lldb_private::Event* event);
+  void reset(lldb_private::Event *event);
 
-    lldb_private::Event *
-    get () const;
+  lldb_private::Event *get() const;
 
 private:
-
-    mutable lldb::EventSP m_event_sp;
-    mutable lldb_private::Event *m_opaque_ptr;
+  mutable lldb::EventSP m_event_sp;
+  mutable lldb_private::Event *m_opaque_ptr = nullptr;
 };
 
 } // namespace lldb
 
-#endif  // LLDB_SBEvent_h_
+#endif // LLDB_API_SBEVENT_H

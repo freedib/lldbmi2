@@ -1,193 +1,190 @@
 //===-- SBBreakpoint.h ------------------------------------------*- C++ -*-===//
 //
-//                     The LLVM Compiler Infrastructure
-//
-// This file is distributed under the University of Illinois Open Source
-// License. See LICENSE.TXT for details.
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLDB_SBBreakpoint_h_
-#define LLDB_SBBreakpoint_h_
+#ifndef LLDB_API_SBBREAKPOINT_H
+#define LLDB_API_SBBREAKPOINT_H
 
 #include "lldb/API/SBDefines.h"
 
+class SBBreakpointListImpl;
+
 namespace lldb {
 
-class LLDB_API SBBreakpoint
-{
+class LLDB_API SBBreakpoint {
 public:
 
-    typedef bool (*BreakpointHitCallback) (void *baton, 
-                                           SBProcess &process,
-                                           SBThread &thread, 
-                                           lldb::SBBreakpointLocation &location);
+  SBBreakpoint();
 
-    SBBreakpoint ();
+  SBBreakpoint(const lldb::SBBreakpoint &rhs);
 
-    SBBreakpoint (const lldb::SBBreakpoint& rhs);
+  SBBreakpoint(const lldb::BreakpointSP &bp_sp);
 
-    ~SBBreakpoint();
+  ~SBBreakpoint();
 
-    const lldb::SBBreakpoint &
-    operator = (const lldb::SBBreakpoint& rhs);
-    
-    // Tests to see if the opaque breakpoint object in this object matches the
-    // opaque breakpoint object in "rhs".
-    bool
-    operator == (const lldb::SBBreakpoint& rhs);
+  const lldb::SBBreakpoint &operator=(const lldb::SBBreakpoint &rhs);
 
-    bool
-    operator != (const lldb::SBBreakpoint& rhs);
-    
-    break_id_t
-    GetID () const;
+  // Tests to see if the opaque breakpoint object in this object matches the
+  // opaque breakpoint object in "rhs".
+  bool operator==(const lldb::SBBreakpoint &rhs);
 
-    bool
-    IsValid() const;
+  bool operator!=(const lldb::SBBreakpoint &rhs);
 
-    void
-    ClearAllBreakpointSites ();
+  break_id_t GetID() const;
 
-    lldb::SBBreakpointLocation
-    FindLocationByAddress (lldb::addr_t vm_addr);
+  explicit operator bool() const;
 
-    lldb::break_id_t
-    FindLocationIDByAddress (lldb::addr_t vm_addr);
+  bool IsValid() const;
 
-    lldb::SBBreakpointLocation
-    FindLocationByID (lldb::break_id_t bp_loc_id);
+  void ClearAllBreakpointSites();
 
-    lldb::SBBreakpointLocation
-    GetLocationAtIndex (uint32_t index);
+  lldb::SBTarget GetTarget() const;
 
-    void
-    SetEnabled (bool enable);
+  lldb::SBBreakpointLocation FindLocationByAddress(lldb::addr_t vm_addr);
 
-    bool
-    IsEnabled ();
-    
-    void
-    SetOneShot (bool one_shot);
+  lldb::break_id_t FindLocationIDByAddress(lldb::addr_t vm_addr);
 
-    bool
-    IsOneShot () const;
-    
-    bool
-    IsInternal ();
+  lldb::SBBreakpointLocation FindLocationByID(lldb::break_id_t bp_loc_id);
 
-    uint32_t
-    GetHitCount () const;
+  lldb::SBBreakpointLocation GetLocationAtIndex(uint32_t index);
 
-    void
-    SetIgnoreCount (uint32_t count);
+  void SetEnabled(bool enable);
 
-    uint32_t
-    GetIgnoreCount () const;
-    
-    void 
-    SetCondition (const char *condition);
-    
-    const char *
-    GetCondition ();
+  bool IsEnabled();
 
-    void
-    SetThreadID (lldb::tid_t sb_thread_id);
+  void SetOneShot(bool one_shot);
 
-    lldb::tid_t
-    GetThreadID ();
-    
-    void
-    SetThreadIndex (uint32_t index);
-    
-    uint32_t
-    GetThreadIndex() const;
-    
-    void
-    SetThreadName (const char *thread_name);
-    
-    const char *
-    GetThreadName () const;
-    
-    void 
-    SetQueueName (const char *queue_name);
-    
-    const char *
-    GetQueueName () const;
+  bool IsOneShot() const;
 
-    void
-    SetCallback (BreakpointHitCallback callback, void *baton);
-    
-    void
-    SetScriptCallbackFunction (const char *callback_function_name);
-    
-    SBError
-    SetScriptCallbackBody (const char *script_body_text);
+  bool IsInternal();
 
-    bool
-    AddName (const char *new_name);
+  uint32_t GetHitCount() const;
 
-    void
-    RemoveName (const char *name_to_remove);
+  void SetIgnoreCount(uint32_t count);
 
-    bool
-    MatchesName (const char *name);
+  uint32_t GetIgnoreCount() const;
 
-    void
-    GetNames (SBStringList &names);
-    
-    size_t
-    GetNumResolvedLocations() const;
+  void SetCondition(const char *condition);
 
-    size_t
-    GetNumLocations() const;
+  const char *GetCondition();
 
-    bool
-    GetDescription (lldb::SBStream &description);
+  void SetAutoContinue(bool auto_continue);
 
-    static bool
-    EventIsBreakpointEvent (const lldb::SBEvent &event);
-    
-    static lldb::BreakpointEventType
-    GetBreakpointEventTypeFromEvent (const lldb::SBEvent& event);
+  bool GetAutoContinue();
 
-    static lldb::SBBreakpoint
-    GetBreakpointFromEvent (const lldb::SBEvent& event);
-    
-    static lldb::SBBreakpointLocation
-    GetBreakpointLocationAtIndexFromEvent (const lldb::SBEvent& event, uint32_t loc_idx);
-    
-    static uint32_t
-    GetNumBreakpointLocationsFromEvent (const lldb::SBEvent &event_sp);
+  void SetThreadID(lldb::tid_t sb_thread_id);
 
+  lldb::tid_t GetThreadID();
+
+  void SetThreadIndex(uint32_t index);
+
+  uint32_t GetThreadIndex() const;
+
+  void SetThreadName(const char *thread_name);
+
+  const char *GetThreadName() const;
+
+  void SetQueueName(const char *queue_name);
+
+  const char *GetQueueName() const;
+
+  void SetCallback(SBBreakpointHitCallback callback, void *baton);
+
+  void SetScriptCallbackFunction(const char *callback_function_name);
+
+  SBError SetScriptCallbackFunction(const char *callback_function_name,
+                                 SBStructuredData &extra_args);
+
+  void SetCommandLineCommands(SBStringList &commands);
+
+  bool GetCommandLineCommands(SBStringList &commands);
+
+  SBError SetScriptCallbackBody(const char *script_body_text);
+
+  bool AddName(const char *new_name);
+
+  SBError AddNameWithErrorHandling(const char *new_name);
+
+  void RemoveName(const char *name_to_remove);
+
+  bool MatchesName(const char *name);
+
+  void GetNames(SBStringList &names);
+
+  size_t GetNumResolvedLocations() const;
+
+  size_t GetNumLocations() const;
+
+  bool GetDescription(lldb::SBStream &description);
+
+  bool GetDescription(lldb::SBStream &description, bool include_locations);
+
+  static bool EventIsBreakpointEvent(const lldb::SBEvent &event);
+
+  static lldb::BreakpointEventType
+  GetBreakpointEventTypeFromEvent(const lldb::SBEvent &event);
+
+  static lldb::SBBreakpoint GetBreakpointFromEvent(const lldb::SBEvent &event);
+
+  static lldb::SBBreakpointLocation
+  GetBreakpointLocationAtIndexFromEvent(const lldb::SBEvent &event,
+                                        uint32_t loc_idx);
+
+  static uint32_t
+  GetNumBreakpointLocationsFromEvent(const lldb::SBEvent &event_sp);
+
+  bool IsHardware() const;
+
+  // Can only be called from a ScriptedBreakpointResolver...
+  SBError
+  AddLocation(SBAddress &address);
+
+  SBStructuredData SerializeToStructuredData();
 
 private:
-    friend class SBBreakpointLocation;
-    friend class SBTarget;
+  friend class SBBreakpointList;
+  friend class SBBreakpointLocation;
+  friend class SBBreakpointName;
+  friend class SBTarget;
 
-    SBBreakpoint (const lldb::BreakpointSP &bp_sp);
+  lldb::BreakpointSP GetSP() const;
 
-    lldb_private::Breakpoint *
-    operator->() const;
+  lldb::BreakpointWP m_opaque_wp;
+};
 
-    lldb_private::Breakpoint *
-    get() const;
+class LLDB_API SBBreakpointList {
+public:
+  SBBreakpointList(SBTarget &target);
 
-    lldb::BreakpointSP &
-    operator *();
+  ~SBBreakpointList();
 
-    const lldb::BreakpointSP &
-    operator *() const;
+  size_t GetSize() const;
 
-    static bool
-    PrivateBreakpointHitCallback (void *baton, 
-                                  lldb_private::StoppointCallbackContext *context, 
-                                  lldb::user_id_t break_id, 
-                                  lldb::user_id_t break_loc_id);
-    
-    lldb::BreakpointSP m_opaque_sp;
+  SBBreakpoint GetBreakpointAtIndex(size_t idx);
+
+  SBBreakpoint FindBreakpointByID(lldb::break_id_t);
+
+  void Append(const SBBreakpoint &sb_bkpt);
+
+  bool AppendIfUnique(const SBBreakpoint &sb_bkpt);
+
+  void AppendByID(lldb::break_id_t id);
+
+  void Clear();
+
+protected:
+  friend class SBTarget;
+
+  void CopyToBreakpointIDList(lldb_private::BreakpointIDList &bp_id_list);
+
+private:
+  std::shared_ptr<SBBreakpointListImpl> m_opaque_sp;
 };
 
 } // namespace lldb
 
-#endif  // LLDB_SBBreakpoint_h_
+#endif // LLDB_API_SBBREAKPOINT_H

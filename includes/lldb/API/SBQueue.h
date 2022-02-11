@@ -1,89 +1,69 @@
 //===-- SBQueue.h -----------------------------------------------*- C++ -*-===//
 //
-//                     The LLVM Compiler Infrastructure
-//
-// This file is distributed under the University of Illinois Open Source
-// License. See LICENSE.TXT for details.
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLDB_SBQueue_h_
-#define LLDB_SBQueue_h_
+#ifndef LLDB_API_SBQUEUE_H
+#define LLDB_API_SBQUEUE_H
 
 #include <vector>
 
-#include "lldb/lldb-forward.h"
 #include "lldb/API/SBDefines.h"
+#include "lldb/lldb-forward.h"
 
 namespace lldb {
 
-class LLDB_API SBQueue
-{
+class LLDB_API SBQueue {
 public:
-    SBQueue ();
+  SBQueue();
 
-    SBQueue (const QueueSP& queue_sp);
-    
-    SBQueue (const SBQueue& rhs);
+  SBQueue(const QueueSP &queue_sp);
 
-    const SBQueue &
-    operator= (const lldb::SBQueue& rhs);
+  SBQueue(const SBQueue &rhs);
 
-   ~SBQueue();
+  const SBQueue &operator=(const lldb::SBQueue &rhs);
 
-    bool
-    IsValid() const;
+  ~SBQueue();
 
-    void
-    Clear ();
+  explicit operator bool() const;
 
-    lldb::SBProcess
-    GetProcess ();
+  bool IsValid() const;
 
-    lldb::queue_id_t
-    GetQueueID () const;
+  void Clear();
 
-    const char *
-    GetName () const;
+  lldb::SBProcess GetProcess();
 
-    uint32_t
-    GetIndexID () const;
+  lldb::queue_id_t GetQueueID() const;
 
-    uint32_t
-    GetNumThreads ();
+  const char *GetName() const;
 
-    lldb::SBThread
-    GetThreadAtIndex (uint32_t);
+  uint32_t GetIndexID() const;
 
-    uint32_t
-    GetNumPendingItems ();
+  uint32_t GetNumThreads();
 
-    lldb::SBQueueItem
-    GetPendingItemAtIndex (uint32_t);
+  lldb::SBThread GetThreadAtIndex(uint32_t);
 
-    uint32_t
-    GetNumRunningItems ();
+  uint32_t GetNumPendingItems();
 
-    lldb::QueueKind
-    GetKind ();
+  lldb::SBQueueItem GetPendingItemAtIndex(uint32_t);
+
+  uint32_t GetNumRunningItems();
+
+  lldb::QueueKind GetKind();
 
 protected:
-    friend class SBProcess;
-    friend class SBThread;
+  friend class SBProcess;
+  friend class SBThread;
 
-    void
-    SetQueue (const lldb::QueueSP& queue_sp);
-
-    void
-    FetchThreads ();
-
-    void
-    FetchItems ();
+  void SetQueue(const lldb::QueueSP &queue_sp);
 
 private:
-    std::shared_ptr<lldb_private::QueueImpl> m_opaque_sp;
+  std::shared_ptr<lldb_private::QueueImpl> m_opaque_sp;
 };
 
 } // namespace lldb
 
-#endif  // LLDB_SBQueue_h_
+#endif // LLDB_API_SBQUEUE_H

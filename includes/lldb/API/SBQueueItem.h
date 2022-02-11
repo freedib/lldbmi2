@@ -1,57 +1,49 @@
 //===-- SBQueueItem.h -------------------------------------------*- C++ -*-===//
 //
-//                     The LLVM Compiler Infrastructure
-//
-// This file is distributed under the University of Illinois Open Source
-// License. See LICENSE.TXT for details.
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLDB_SBQueueItem_h_
-#define LLDB_SBQueueItem_h_
+#ifndef LLDB_API_SBQUEUEITEM_H
+#define LLDB_API_SBQUEUEITEM_H
 
-#include "lldb/API/SBDefines.h"
 #include "lldb/API/SBAddress.h"
+#include "lldb/API/SBDefines.h"
 
 namespace lldb {
 
-class LLDB_API SBQueueItem
-{
+class LLDB_API SBQueueItem {
 public:
-    SBQueueItem ();
+  SBQueueItem();
 
-    SBQueueItem (const lldb::QueueItemSP& queue_item_sp);
-    
-   ~SBQueueItem();
+  SBQueueItem(const lldb::QueueItemSP &queue_item_sp);
 
-    bool
-    IsValid() const;
+  ~SBQueueItem();
 
-    void
-    Clear ();
+  explicit operator bool() const;
 
-    lldb::QueueItemKind
-    GetKind () const;
+  bool IsValid() const;
 
-    void
-    SetKind (lldb::QueueItemKind kind);
+  void Clear();
 
-    lldb::SBAddress
-    GetAddress () const;
+  lldb::QueueItemKind GetKind() const;
 
-    void
-    SetAddress (lldb::SBAddress addr);
+  void SetKind(lldb::QueueItemKind kind);
 
-    void
-    SetQueueItem (const lldb::QueueItemSP& queue_item_sp);
+  lldb::SBAddress GetAddress() const;
 
-    SBThread
-    GetExtendedBacktraceThread (const char *type);
+  void SetAddress(lldb::SBAddress addr);
+
+  void SetQueueItem(const lldb::QueueItemSP &queue_item_sp);
+
+  SBThread GetExtendedBacktraceThread(const char *type);
 
 private:
-    lldb::QueueItemSP           m_queue_item_sp;
+  lldb::QueueItemSP m_queue_item_sp;
 };
 
 } // namespace lldb
 
-#endif  // LLDB_SBQueueItem_h_
+#endif // LLDB_API_SBQUEUEITEM_H

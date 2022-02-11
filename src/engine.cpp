@@ -7,6 +7,7 @@
 #include <termios.h>
 
 #include "lldbmi2.h"
+#include "strlxxx.h"
 #include "log.h"
 #include "engine.h"
 #include "events.h"
@@ -89,7 +90,8 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 	}
 	else if (strcmp(cc.argv[0],"-list-features")==0) {
 		cdtprintf ("%d^done,%s\n(gdb)\n", cc.sequence,
-			"features=[\"frozen-varobjs\",\"pending-breakpoints\",\"thread-info\",\"data-read-memory-bytes\",\"breakpoint-notifications\",\"ada-task-info\",\"python\"]");
+		//	"features=[\"frozen-varobjs\",\"pending-breakpoints\",\"thread-info\",\"data-read-memory-bytes\",\"breakpoint-notifications\",\"ada-task-info\",\"python\"]");
+			"features=[\"frozen-varobjs\",\"pending-breakpoints\",\"thread-info\",\"breakpoint-notifications\",\"ada-task-info\",\"python\"]");
 	}
 	else if (strcmp(cc.argv[0],"-environment-cd")==0) {
 		// environment-cd /project_path/tests
@@ -126,9 +128,9 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 		// -gdb-set language c
 		if (strcmp(cc.argv[nextarg],"args") == 0) {
 			if (strcmp(cc.argv[++nextarg],"%s") == 0) {
+				logprintf (LOG_VARS, "YYYYYYYYYYYY\n");
 				sprintf ((char *)cc.argv[nextarg], "%2d", pstate->test_sequence);
-				if (strstr(cc.argv[nextarg],"%s")!=NULL)
-					logprintf (LOG_VARS, "%%s -> %s\n", cc.argv[nextarg]);
+				logprintf (LOG_VARS, "%%s -> %s\n", cc.argv[nextarg]);
 			}
 			int firstarg = nextarg;
 			for (; nextarg<cc.argc; nextarg++)
@@ -220,17 +222,10 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 			if (strstr(cc.argv[nextarg],"%s")!=NULL)
 				logprintf (LOG_VARS, "%%s -> %s\n", path);
 			strlcpy (programpath, path, sizeof(programpath));
-			// check file type
-			int fd;
-			unsigned int magic = 0xfeedfacf;		// x86_64
-			if ((fd = open (programpath, O_RDONLY)) > 0) {
-				read (fd, (void *)&magic, sizeof(magic));
-				close (fd);
-			}
-			if (magic==0xfeedface)
-				target = pstate->debugger.CreateTargetWithFileAndArch (programpath, "i386");
+			if (strlen(pstate->arch)>0)
+				target = pstate->debugger.CreateTargetWithFileAndArch (programpath, pstate->arch);
 			else
-				target = pstate->debugger.CreateTargetWithFileAndArch (programpath, "x86_64");
+				target = pstate->debugger.CreateTargetWithFileAndArch (programpath, LLDB_ARCH_DEFAULT);
 			if (!target.IsValid())
 				cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
 			else 
@@ -254,7 +249,11 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 		processname[0] = '\0';
 		if (cc.argv[nextarg] != NULL) {
 			if (isdigit(*cc.argv[nextarg]))
+#ifdef __APPLE__
 				sscanf (cc.argv[nextarg], "%llu", &pid);
+#else
+				sscanf (cc.argv[nextarg], "%lu", &pid);
+#endif
 			else
 				strlcpy (processname, cc.argv[nextarg], PATH_MAX);
 		}
@@ -308,7 +307,7 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 		SBError error;
 		SBLaunchInfo targLaunchInfo(NULL);
 		const char *largv[] = {0,0};
-		for (int i = 0; i < launchInfo.GetNumArguments(); i++) {
+		for (unsigned int i = 0; i < launchInfo.GetNumArguments(); i++) {
 			largv[0] = launchInfo.GetArgumentAtIndex(i);
 			targLaunchInfo.SetArguments(largv, true);
 		}
@@ -541,7 +540,11 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 		else if ((pline=strchr(path,'*')) != NULL) { // address
 			*pline++ = '\0';
 			addr_t addr=0;
+#ifdef __APPLE__
 			sscanf (pline, "%lld", &addr);
+#else
+			sscanf (pline, "%lu", &addr);
+#endif
 			breakpoint = target.BreakpointCreateByAddress(addr);
 		}
 		else		// function
@@ -586,7 +589,7 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 		// -break-watch [-r|-a] expression
 		// Set a watch on address that results from evaluating 'expression'
 		char expression[LINE_MAX];
-		char watchExpr[LINE_MAX];
+		char watchExpr[LINE_MAX+10];
 		bool isRead = false;
 		bool isWrite = true;
 		if (strcmp(cc.argv[nextarg],"-a")==0) {
@@ -783,10 +786,10 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 			cdtprintf ("%d^error\n(gdb)\n", cc.sequence);
 	}
 	else if (strcmp(cc.argv[0],"-stack-select-frame")==0) {
-		int selectframe = 0;
+		unsigned int selectframe = 0;
 		if (cc.argv[nextarg] != NULL)
 				if (isdigit(*cc.argv[nextarg]))
-					sscanf (cc.argv[nextarg++], "%d", &selectframe);
+					sscanf (cc.argv[nextarg++], "%u", &selectframe);
 		SBThread thread = pstate->process.GetSelectedThread();
 		if (thread.IsValid()) {
 			if ((selectframe >= 0) && (selectframe < thread.GetNumFrames())) {
@@ -1304,14 +1307,14 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 		   	}
 			cdtprintf ("%d^done,section-info={filename=\"%s\",filetype=\"%s\",entry-point=\"%p\",sections={", 
 				cc.sequence, filename, filetype, entrypt);
-			for (int mndx = 0; mndx < target.GetNumModules(); mndx++) {
+			for (unsigned int mndx = 0; mndx < target.GetNumModules(); mndx++) {
 				SBModule mod = target.GetModuleAtIndex(mndx);
 				if (!mod.IsValid())
 					continue;
 				SBFileSpec modfilespec = mod.GetFileSpec();
 				char modfilename[PATH_MAX];
 				modfilespec.GetPath(modfilename, sizeof(modfilename));
-				for (int sndx = 0; sndx < mod.GetNumSections(); sndx++) {
+				for (unsigned int sndx = 0; sndx < mod.GetNumSections(); sndx++) {
 					SBSection sect = mod.GetSectionAtIndex(sndx);
 					if (!sect.IsValid())
 						continue;
@@ -1324,7 +1327,7 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 						cdtprintf(",");
 					cdtprintf("section={addr=\"%p\",endaddr=\"%p\",name=\"%s\",filename=\"%s\"}",
 							faddr, eaddr, sectName, modfilename);
-					for (int sbndx = 0; sbndx < sect.GetNumSubSections(); sbndx++) {
+					for (unsigned int sbndx = 0; sbndx < sect.GetNumSubSections(); sbndx++) {
 						SBSection subsect = sect.GetSubSectionAtIndex(sbndx);
 						if (!subsect.IsValid())
 							continue;
@@ -1406,7 +1409,7 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 				else {
 					SBAddress startaddr = symb.GetStartAddress();
 					addr_t vaddr = startaddr.GetLoadAddress(target);
-					if (vaddr == -1)
+					if (vaddr == LLDB_INVALID_ADDRESS)
 						vaddr = startaddr.GetFileAddress();
 					if (symb.GetType() == eSymbolTypeCode) 
 						srlprintf("Symbol \"%s\" is a function at address %p.\n", symb.GetName(), vaddr);
@@ -1532,7 +1535,7 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 
 		if (foundCU.IsValid()) {
 			cdtprintf("%d^done,lines={", cc.sequence);
-			for (int ndx = 0; ndx < foundCU.GetNumLineEntries(); ndx++) {
+			for (unsigned int ndx = 0; ndx < foundCU.GetNumLineEntries(); ndx++) {
 				SBLineEntry line = foundCU.GetLineEntryAtIndex(ndx);
 				addr_t startaddr = line.GetStartAddress().GetFileAddress();
 				SBFileSpec searchspec(path, true);
@@ -1570,9 +1573,9 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 			SBFrame frame = thread.GetSelectedFrame();
 			SBValueList reglist = frame.GetRegisters();
 			cdtprintf ("%d^done,register-names=[", cc.sequence);
-			for (int i = 0; i < reglist.GetSize(); i++) {
+			for (unsigned int i = 0; i < reglist.GetSize(); i++) {
 				SBValue val = reglist.GetValueAtIndex(i);
-				for (int k = 0; k < val.GetNumChildren(); k++) {
+				for (unsigned int k = 0; k < val.GetNumChildren(); k++) {
 					const char *name = val.GetChildAtIndex(k).GetName();
 					if ((i == 0) && (k == 0))
 						cdtprintf("\"%s\"", name);
@@ -1592,9 +1595,9 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 			SBValueList reglist = frame.GetRegisters();
 			int regnum = 0;
 			cdtprintf ("%d^done,register-values=[", cc.sequence);
-			for (int i = 0; i < reglist.GetSize(); i++) {
+			for (unsigned int i = 0; i < reglist.GetSize(); i++) {
 				SBValue val = reglist.GetValueAtIndex(i);
-				for (int k = 0; k < val.GetNumChildren(); k++) {
+				for (unsigned int k = 0; k < val.GetNumChildren(); k++) {
 					const char *value = val.GetChildAtIndex(k).GetValue();
 					if (regnum == 0)
 						cdtprintf("{number=\"%d\",value=\"%s\"}", regnum, value);
@@ -1615,13 +1618,21 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 		addr_t endaddr = -1;
 		if ((strcmp(cc.argv[nextarg], "-s") == 0) && isdigit(*cc.argv[nextarg+1])) {
 			nextarg+=1;
+#ifdef __APPLE__
 			sscanf (cc.argv[nextarg++], "%lld", &startaddr);
+#else
+			sscanf (cc.argv[nextarg++], "%lu", &startaddr);
+#endif
 		}
 		if ((strcmp(cc.argv[nextarg], "-e") == 0) && isdigit(*cc.argv[nextarg+1])) {
 			nextarg+=1;
+#ifdef __APPLE__
 			sscanf (cc.argv[nextarg++], "%lld", &endaddr);
+#else
+			sscanf (cc.argv[nextarg++], "%lu", &endaddr);
+#endif
 		}
-		if ((startaddr != -1) && (endaddr != -1)) {
+		if ((startaddr != LLDB_INVALID_ADDRESS) && (endaddr != LLDB_INVALID_ADDRESS)) {
 			SBAddress saddr = target.ResolveFileAddress(startaddr);
 			SBAddress eaddr = target.ResolveFileAddress(endaddr);
 			int cnt = eaddr.GetFileAddress() - saddr.GetFileAddress();
@@ -1655,25 +1666,32 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 		else
 			cdtprintf ("%d^error,msg=\"%s\"\n(gdb)\n", cc.sequence, "Could not parse addresses");
 	}
-	else if (strcmp(cc.argv[0],"-data-read-memory")==0) {
+	else if (strcmp(cc.argv[0],"-data-read-memory")==0 || strcmp(cc.argv[0],"-data-read-memory-bytes")==0) {
 		//-data-read-memory 4297035496 x 1 1 1359
 		//-data-read-memory 4297035496 x 2 1 679
 		//-data-read-memory 4297035496 x 4 1 339
 		//-data-read-memory 4297035496 x 8 1 169
+		//-data-read-memory-bytes 93824992260560 320
 		addr_t address = -1;
 		int wordSize = 0, nrRows = 0, nrCols = 0;
 		char wordFormat = 'x';
 		char expression[NAME_MAX];
 		if (nextarg<cc.argc)
 			strlcpy (expression, cc.argv[nextarg++], sizeof(expression));
-		if ((nextarg<cc.argc) && (strlen(cc.argv[nextarg]) == 1)) {
-			wordFormat = cc.argv[nextarg++][0];
+		if (strcmp(cc.argv[0],"-data-read-memory-bytes")==0) {
+			wordSize = 1;
+			nrRows = 1;
 		}
-		if ((nextarg<cc.argc) && isdigit(*cc.argv[nextarg])) {
-			sscanf (cc.argv[nextarg++], "%d", &wordSize);
-		}
-		if ((nextarg<cc.argc) && isdigit(*cc.argv[nextarg])) {
-			sscanf (cc.argv[nextarg++], "%d", &nrRows);
+		else {
+			if ((nextarg<cc.argc) && (strlen(cc.argv[nextarg]) == 1)) {
+				wordFormat = cc.argv[nextarg++][0];
+			}
+			if ((nextarg<cc.argc) && isdigit(*cc.argv[nextarg])) {
+				sscanf (cc.argv[nextarg++], "%d", &wordSize);
+			}
+			if ((nextarg<cc.argc) && isdigit(*cc.argv[nextarg])) {
+				sscanf (cc.argv[nextarg++], "%d", &nrRows);
+			}
 		}
 		if ((nextarg<cc.argc) && isdigit(*cc.argv[nextarg])) {
 			sscanf (cc.argv[nextarg++], "%d", &nrCols);
@@ -1706,6 +1724,30 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 						cc.sequence, (void *)address, readCnt, size);
 					cdtprintf ("next-row=\"%p\",prev-row=\"%p\",next-page=\"%p\",prev-page=\"%p\",",
 						rowAddr + (wordSize * nrCols), rowAddr - (wordSize * nrCols), rowAddr + size, rowAddr - size);
+
+					char format_string[NAME_MAX];
+					const char* prefix;
+
+					switch(wordFormat) {
+					case 'x': prefix = "0x";
+						break;
+					case 'o': prefix = "0";
+						break;
+					case 't': prefix = "0b";
+						break;
+					default: prefix = "";
+						break;
+					}
+					switch(wordSize) {
+						case 1: sprintf (format_string, "\"%s%%02%c\"", prefix, wordFormat);
+								break;
+						case 2:sprintf (format_string, "\"%s%%04%c\"",prefix, wordFormat);
+								break;
+						case 4: sprintf (format_string, "\"%s%%08%c\"", prefix, wordFormat);
+								break;
+						case 8: sprintf (format_string, "\"%s%%016ll%c\"", prefix, wordFormat);
+					}
+
 					cdtprintf ("memory=[");
 					for (int row = 0; row < nrRows; row++) {
 						if (row != 0)
@@ -1715,13 +1757,13 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 							if (col != 0)
 								cdtprintf(",");
 							switch(wordSize) {
-								case 1: cdtprintf ("\"0x%02x\"", *(uint8_t *)(bufAddr + col*1));
+								case 1: cdtprintf (format_string, *(uint8_t *)(bufAddr + col*1));
 										break;
-								case 2: cdtprintf ("\"0x%04x\"", *(uint16_t *)(bufAddr + col*2));
+								case 2: cdtprintf (format_string, *(uint16_t *)(bufAddr + col*2));
 										break;
-								case 4: cdtprintf ("\"0x%08x\"", *(uint32_t *)(bufAddr + col*4));
+								case 4: cdtprintf (format_string, *(uint32_t *)(bufAddr + col*4));
 										break;
-								case 8: cdtprintf ("\"0x%016llx\"", *(uint64_t *)(bufAddr + col*8));
+								case 8: cdtprintf (format_string, *(uint64_t *)(bufAddr + col*8));
 										break;
 							} 
 						}
@@ -1778,11 +1820,11 @@ evalCDTCommand (STATE *pstate, const char *cdtcommand, CDT_COMMAND *cc)
 	cc->arguments[0] = '\0';
 	if (cdtcommand[0] == '\0')	// just ENTER
 		return 0;
-	// decode command with sequence number
-	int fields = sscanf (cdtcommand, "%d%[^\0]", &cc->sequence, cc->arguments);
+	// decode command with sequence number. ^\n should be ^\0
+	int fields = sscanf (cdtcommand, "%d%[^\n]", &cc->sequence, cc->arguments);
 	if (fields == 0) {
-		// try decode command without sequence number
-		fields = sscanf (cdtcommand, "%[^\0]", cc->arguments);
+		// try decode command without sequence number. ^\n should be ^\0
+		fields = sscanf (cdtcommand, "%[^\n]", cc->arguments);
 		if (fields != 1)
 			return 0;
 		cc->sequence = 0;

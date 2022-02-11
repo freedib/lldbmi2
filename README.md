@@ -1,6 +1,6 @@
 # LLDBMI2
 
-A simple MI interface to LLDB.
+A simple MI interface to LLDB for **Mac OS X** and **Linux**.
 
 Usable with Eclipse IDE (C, C++) and Lazarus IDE (Pascal)
 

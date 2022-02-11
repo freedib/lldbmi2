@@ -1,114 +1,113 @@
 //===-- SBStream.h ----------------------------------------------*- C++ -*-===//
 //
-//                     The LLVM Compiler Infrastructure
-//
-// This file is distributed under the University of Illinois Open Source
-// License. See LICENSE.TXT for details.
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLDB_SBStream_h_
-#define LLDB_SBStream_h_
+#ifndef LLDB_API_SBSTREAM_H
+#define LLDB_API_SBSTREAM_H
 
-#include <stdio.h>
+#include <cstdio>
 
 #include "lldb/API/SBDefines.h"
 
 namespace lldb {
 
-class LLDB_API SBStream
-{
+class LLDB_API SBStream {
 public:
+  SBStream();
 
-    SBStream ();
-    
-    ~SBStream ();
+  SBStream(SBStream &&rhs);
 
-    bool
-    IsValid() const;
+  ~SBStream();
 
-    // If this stream is not redirected to a file, it will maintain a local
-    // cache for the stream data which can be accessed using this accessor.
-    const char *
-    GetData ();
+  explicit operator bool() const;
 
-    // If this stream is not redirected to a file, it will maintain a local
-    // cache for the stream output whose length can be accessed using this 
-    // accessor.
-    size_t
-    GetSize();
+  bool IsValid() const;
 
-    void
-    Printf (const char *format, ...)  __attribute__ ((format (printf, 2, 3)));
+  // If this stream is not redirected to a file, it will maintain a local cache
+  // for the stream data which can be accessed using this accessor.
+  const char *GetData();
 
-    void
-    RedirectToFile (const char *path, bool append);
+  // If this stream is not redirected to a file, it will maintain a local cache
+  // for the stream output whose length can be accessed using this accessor.
+  size_t GetSize();
 
-    void
-    RedirectToFileHandle (FILE *fh, bool transfer_fh_ownership);
+  void Printf(const char *format, ...) __attribute__((format(printf, 2, 3)));
 
-    void
-    RedirectToFileDescriptor (int fd, bool transfer_fh_ownership);
+  void Print(const char *str);
 
-    // If the stream is redirected to a file, forget about the file and if
-    // ownership of the file was transferred to this object, close the file.
-    // If the stream is backed by a local cache, clear this cache.
-    void
-    Clear ();
+  void RedirectToFile(const char *path, bool append);
+
+  void RedirectToFile(lldb::SBFile file);
+
+  void RedirectToFile(lldb::FileSP file);
+
+  void RedirectToFileHandle(FILE *fh, bool transfer_fh_ownership);
+
+  void RedirectToFileDescriptor(int fd, bool transfer_fh_ownership);
+
+  // If the stream is redirected to a file, forget about the file and if
+  // ownership of the file was transferred to this object, close the file. If
+  // the stream is backed by a local cache, clear this cache.
+  void Clear();
 
 protected:
-    friend class SBAddress;
-    friend class SBBlock;
-    friend class SBBreakpoint;
-    friend class SBBreakpointLocation;
-    friend class SBCommandReturnObject;
-    friend class SBCompileUnit;
-    friend class SBData;
-    friend class SBDebugger;
-    friend class SBDeclaration;
-    friend class SBEvent;
-    friend class SBFileSpec;
-    friend class SBFileSpecList;
-    friend class SBFrame;
-    friend class SBFunction;
-    friend class SBInstruction;
-    friend class SBInstructionList;
-    friend class SBLineEntry;
-    friend class SBModule;
-    friend class SBModuleSpec;
-    friend class SBModuleSpecList;
-    friend class SBProcess;
-    friend class SBSection;
-    friend class SBSourceManager;
-    friend class SBSymbol;
-    friend class SBSymbolContext;
-    friend class SBSymbolContextList;
-    friend class SBTarget;
-    friend class SBThread;
-    friend class SBThreadPlan;
-    friend class SBType;
-    friend class SBTypeEnumMember;
-    friend class SBTypeMemberFunction;
-    friend class SBTypeMember;
-    friend class SBValue;
-    friend class SBWatchpoint;
+  friend class SBAddress;
+  friend class SBBlock;
+  friend class SBBreakpoint;
+  friend class SBBreakpointLocation;
+  friend class SBBreakpointName;
+  friend class SBCommandReturnObject;
+  friend class SBCompileUnit;
+  friend class SBData;
+  friend class SBDebugger;
+  friend class SBDeclaration;
+  friend class SBEvent;
+  friend class SBFileSpec;
+  friend class SBFileSpecList;
+  friend class SBFrame;
+  friend class SBFunction;
+  friend class SBInstruction;
+  friend class SBInstructionList;
+  friend class SBLaunchInfo;
+  friend class SBLineEntry;
+  friend class SBMemoryRegionInfo;
+  friend class SBModule;
+  friend class SBModuleSpec;
+  friend class SBModuleSpecList;
+  friend class SBProcess;
+  friend class SBSection;
+  friend class SBSourceManager;
+  friend class SBStructuredData;
+  friend class SBSymbol;
+  friend class SBSymbolContext;
+  friend class SBSymbolContextList;
+  friend class SBTarget;
+  friend class SBThread;
+  friend class SBThreadPlan;
+  friend class SBType;
+  friend class SBTypeEnumMember;
+  friend class SBTypeMemberFunction;
+  friend class SBTypeMember;
+  friend class SBValue;
+  friend class SBWatchpoint;
 
-    lldb_private::Stream *
-    operator->();
+  lldb_private::Stream *operator->();
 
-    lldb_private::Stream *
-    get();
+  lldb_private::Stream *get();
 
-    lldb_private::Stream &
-    ref();
+  lldb_private::Stream &ref();
 
 private:
-
-    DISALLOW_COPY_AND_ASSIGN (SBStream);
-    std::unique_ptr<lldb_private::Stream> m_opaque_ap;
-    bool m_is_file;
+  SBStream(const SBStream &) = delete;
+  const SBStream &operator=(const SBStream &) = delete;
+  std::unique_ptr<lldb_private::Stream> m_opaque_up;
+  bool m_is_file = false;
 };
 
 } // namespace lldb
 
-#endif // LLDB_SBStream_h_
+#endif // LLDB_API_SBSTREAM_H

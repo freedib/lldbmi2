@@ -1,14 +1,21 @@
 #!/bin/sh
-mkdir build
-mkdir logs
+# format: build.sh or build.sh opt opt ... opt tag
+if [ ! -d "build" ]; then
+	mkdir build
+fi
+if [ ! -d "logs" ]; then
+	mkdir logs
+fi
 cd build
-# separates cmake options from make tag which is last
-# OPT = -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=1 -DUSE_LIB_PATH=/lldb_tree/debug/lib  ...
-# TAG = all, clean
 OPT=
 TAG=
-for F; do OPT="$OPT $TAG"; TAG=$F; done
+# separates build.sh args from cmake options and tag which is last
+# OPT = -DCMAKE_BUILD_TYPE=Debug -DBUILD_TESTS=1 -DUSE_LIB_PATH=~/sources/llvm-project/build/lib
+# TAG = all, clean, lldbmi2, tests, inheritance
+for ARG; do OPT="$OPT $TAG"; TAG=$ARG; done
 # create cmake tree
-/usr/local/bin/cmake .. $OPT
+echo "cmake" $OPT
+cmake .. $OPT
 # build
+echo "make" $TAG
 make $TAG

@@ -1,98 +1,83 @@
 
 //===-- SBTypeEnumMember.h --------------------------------------*- C++ -*-===//
 //
-//                     The LLVM Compiler Infrastructure
-//
-// This file is distributed under the University of Illinois Open Source
-// License. See LICENSE.TXT for details.
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLDB_SBTypeEnumMember_h_
-#define LLDB_SBTypeEnumMember_h_
+#ifndef LLDB_API_SBTYPEENUMMEMBER_H
+#define LLDB_API_SBTYPEENUMMEMBER_H
 
 #include "lldb/API/SBDefines.h"
 
 namespace lldb {
 
-class LLDB_API SBTypeEnumMember
-{
+class LLDB_API SBTypeEnumMember {
 public:
-    SBTypeEnumMember ();
+  SBTypeEnumMember();
 
-    SBTypeEnumMember (const SBTypeEnumMember& rhs);
+  SBTypeEnumMember(const SBTypeEnumMember &rhs);
 
-    ~SBTypeEnumMember();
+  ~SBTypeEnumMember();
 
-    SBTypeEnumMember&
-    operator = (const SBTypeEnumMember& rhs);
+  SBTypeEnumMember &operator=(const SBTypeEnumMember &rhs);
 
-    bool
-    IsValid() const;
+  explicit operator bool() const;
 
-    int64_t
-    GetValueAsSigned();
+  bool IsValid() const;
 
-    uint64_t
-    GetValueAsUnsigned();
+  int64_t GetValueAsSigned();
 
-    const char *
-    GetName ();
+  uint64_t GetValueAsUnsigned();
 
-    lldb::SBType
-    GetType ();
+  const char *GetName();
 
-    bool
-    GetDescription (lldb::SBStream &description,
-                    lldb::DescriptionLevel description_level);
+  lldb::SBType GetType();
+
+  bool GetDescription(lldb::SBStream &description,
+                      lldb::DescriptionLevel description_level);
 
 protected:
-    friend class SBType;
-    friend class SBTypeEnumMemberList;
+  friend class SBType;
+  friend class SBTypeEnumMemberList;
 
-    void
-    reset (lldb_private::TypeEnumMemberImpl *);
+  void reset(lldb_private::TypeEnumMemberImpl *);
 
-    lldb_private::TypeEnumMemberImpl &
-    ref ();
+  lldb_private::TypeEnumMemberImpl &ref();
 
-    const lldb_private::TypeEnumMemberImpl &
-    ref () const;
+  const lldb_private::TypeEnumMemberImpl &ref() const;
 
-    lldb::TypeEnumMemberImplSP m_opaque_sp;
+  lldb::TypeEnumMemberImplSP m_opaque_sp;
 
-    SBTypeEnumMember (const lldb::TypeEnumMemberImplSP &);
+  SBTypeEnumMember(const lldb::TypeEnumMemberImplSP &);
 };
 
-class SBTypeEnumMemberList
-{
+class SBTypeEnumMemberList {
 public:
-    SBTypeEnumMemberList();
+  SBTypeEnumMemberList();
 
-    SBTypeEnumMemberList(const SBTypeEnumMemberList& rhs);
+  SBTypeEnumMemberList(const SBTypeEnumMemberList &rhs);
 
-    ~SBTypeEnumMemberList();
+  ~SBTypeEnumMemberList();
 
-    SBTypeEnumMemberList&
-    operator = (const SBTypeEnumMemberList& rhs);
+  SBTypeEnumMemberList &operator=(const SBTypeEnumMemberList &rhs);
 
-    bool
-    IsValid();
+  explicit operator bool() const;
 
-    void
-    Append (SBTypeEnumMember entry);
+  bool IsValid();
 
-    SBTypeEnumMember
-    GetTypeEnumMemberAtIndex (uint32_t index);
+  void Append(SBTypeEnumMember entry);
 
-    uint32_t
-    GetSize();
+  SBTypeEnumMember GetTypeEnumMemberAtIndex(uint32_t index);
 
+  uint32_t GetSize();
 
 private:
-    std::unique_ptr<lldb_private::TypeEnumMemberListImpl> m_opaque_ap;
+  std::unique_ptr<lldb_private::TypeEnumMemberListImpl> m_opaque_up;
 };
 
 } // namespace lldb
 
-#endif // LLDB_SBTypeEnumMember_h_
+#endif // LLDB_API_SBTYPEENUMMEMBER_H

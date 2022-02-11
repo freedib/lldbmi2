@@ -1,0 +1,10 @@
+// test file for view memory
+-environment-cd %s/tests
+-file-exec-and-symbols --thread-group i1 %s/build/tests
+-gdb-set --thread-group i1 args %s %s
+-inferior-tty-set --thread-group i1 %s								// stdout instead of /dev/ptyxx
+-break-insert --thread-group i1 %s/tests/src/tests.cpp:98			// breakpoint 1 test_LARGE_CHAR_ARRAY
+-exec-run --thread-group i1
+-data-read-memory --thread 1 140737488346352 x 1 1 4
+-data-read-memory-bytes --thread 1 140737488346352 4
+-gdb-exit

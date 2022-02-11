@@ -9,7 +9,15 @@ using namespace lldb;
 // PATH_MAX = 1024
 // LINE_MAX = 2048
 // NAME_MAX = 255
+#ifdef __APPLE__
 #include <sys/syslimits.h>
+#else
+#include <limits.h>
+#include <string.h>
+#include <unistd.h>
+
+#include "strlxxx.h"
+#endif
 #include "stringb.h"
 
 #define WAIT_DATA  0
@@ -25,7 +33,7 @@ using namespace lldb;
 #define BIG_VALUE_MAX (NAME_MAX<<3)
 #define BIG_LINE_MAX (LINE_MAX<<3)
 
-#define ENV_ENTRIES 100
+#define ENV_ENTRIES 200
 
 // static context
 typedef struct {
@@ -44,6 +52,7 @@ typedef struct {
 	bool procstop;
 	bool isrunning;
 	bool wanttokill;
+	char arch[NAME_MAX];
 	int test_sequence;
 	char test_script[PATH_MAX];
 	const char *envp[ENV_ENTRIES];

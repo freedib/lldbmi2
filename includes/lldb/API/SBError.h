@@ -1,108 +1,99 @@
 //===-- SBError.h -----------------------------------------------*- C++ -*-===//
 //
-//                     The LLVM Compiler Infrastructure
-//
-// This file is distributed under the University of Illinois Open Source
-// License. See LICENSE.TXT for details.
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLDB_SBError_h_
-#define LLDB_SBError_h_
+#ifndef LLDB_API_SBERROR_H
+#define LLDB_API_SBERROR_H
 
 #include "lldb/API/SBDefines.h"
+
+namespace lldb_private {
+class ScriptInterpreter;
+} // namespace lldb_private
 
 namespace lldb {
 
 class LLDB_API SBError {
 public:
-    SBError ();
+  SBError();
 
-    SBError (const lldb::SBError &rhs);
+  SBError(const lldb::SBError &rhs);
 
-    ~SBError();
+  ~SBError();
 
-    const SBError &
-    operator =(const lldb::SBError &rhs);
+  const SBError &operator=(const lldb::SBError &rhs);
 
-    const char *
-    GetCString () const;
+  const char *GetCString() const;
 
-    void
-    Clear ();
+  void Clear();
 
-    bool
-    Fail () const;
+  bool Fail() const;
 
-    bool
-    Success () const;
+  bool Success() const;
 
-    uint32_t
-    GetError () const;
+  uint32_t GetError() const;
 
-    lldb::ErrorType
-    GetType () const;
+  lldb::ErrorType GetType() const;
 
-    void
-    SetError (uint32_t err, lldb::ErrorType type);
+  void SetError(uint32_t err, lldb::ErrorType type);
 
-    void
-    SetErrorToErrno ();
+  void SetErrorToErrno();
 
-    void
-    SetErrorToGenericError ();
+  void SetErrorToGenericError();
 
-    void
-    SetErrorString (const char *err_str);
+  void SetErrorString(const char *err_str);
 
-    int
-    SetErrorStringWithFormat (const char *format, ...) __attribute__ ((format (printf, 2, 3)));
+  int SetErrorStringWithFormat(const char *format, ...)
+      __attribute__((format(printf, 2, 3)));
 
-    bool
-    IsValid () const;
+  explicit operator bool() const;
 
-    bool
-    GetDescription (lldb::SBStream &description);
+  bool IsValid() const;
+
+  bool GetDescription(lldb::SBStream &description);
 
 protected:
+  friend class SBBreakpoint;
+  friend class SBBreakpointLocation;
+  friend class SBBreakpointName;
+  friend class SBCommandReturnObject;
+  friend class SBCommunication;
+  friend class SBData;
+  friend class SBDebugger;
+  friend class SBHostOS;
+  friend class SBPlatform;
+  friend class SBProcess;
+  friend class SBReproducer;
+  friend class SBStructuredData;
+  friend class SBTarget;
+  friend class SBThread;
+  friend class SBTrace;
+  friend class SBValue;
+  friend class SBWatchpoint;
+  friend class SBFile;
 
-    friend class SBCommandReturnObject;
-    friend class SBData;
-    friend class SBDebugger;
-    friend class SBCommunication;
-    friend class SBHostOS;
-    friend class SBPlatform;
-    friend class SBProcess;
-    friend class SBThread;
-    friend class SBTarget;
-    friend class SBValue;
-    friend class SBWatchpoint;
-    friend class SBBreakpoint;
-    friend class SBBreakpointLocation;
+  friend class lldb_private::ScriptInterpreter;
 
-    lldb_private::Error *
-    get();
+  lldb_private::Status *get();
 
-    lldb_private::Error *
-    operator->();
+  lldb_private::Status *operator->();
 
-    const lldb_private::Error &
-    operator*() const;
+  const lldb_private::Status &operator*() const;
 
-    lldb_private::Error &
-    ref();
+  lldb_private::Status &ref();
 
-    void
-    SetError (const lldb_private::Error &lldb_error);
+  void SetError(const lldb_private::Status &lldb_error);
 
 private:
-    std::unique_ptr<lldb_private::Error> m_opaque_ap;
+  std::unique_ptr<lldb_private::Status> m_opaque_up;
 
-    void
-    CreateIfNeeded ();
+  void CreateIfNeeded();
 };
-
 
 } // namespace lldb
 
-#endif // LLDB_SBError_h_
+#endif // LLDB_API_SBERROR_H

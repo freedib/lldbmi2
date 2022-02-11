@@ -5,7 +5,10 @@
 #include <unistd.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#include <signal.h>
+#ifdef __APPLE__
 #include <util.h>
+#endif
 #include <sys/stat.h>
 #include <sys/timeb.h>
 #include <stdarg.h>
@@ -39,6 +42,7 @@ void help (STATE *pstate)
 	fprintf (stderr, "Options:\n");
 	fprintf (stderr, "   --log:                Create log file in project root directory.\n");
 	fprintf (stderr, "   --logmask mask:       Select log categories. 0xFFF. See source code for values.\n");
+	fprintf (stderr, "   --arch arch_name:     Force a different architecture from host architecture: arm64, x86_64, i386\n");
 	fprintf (stderr, "   --test n:             Execute test sequence (to debug lldmi2).\n");
 	fprintf (stderr, "   --script file_path:   Execute test script or replay logfile (to debug lldmi2).\n");
 	fprintf (stderr, "   --nx:                 Ignored.\n");
@@ -64,7 +68,7 @@ main (int argc, char **argv, char **envp)
 	int isVersion=0, isInterpreter=0;
 	const char *testCommand=NULL;
 	int  isLog=0;
-	int  logmask=LOG_ALL;
+	unsigned int logmask=LOG_ALL;
 
 	state.ptyfd = EOF;
 	state.gdbPrompt = "GNU gdb (GDB) 7.7.1\n";
@@ -90,6 +94,10 @@ main (int argc, char **argv, char **envp)
 			isInterpreter = 1;
 		else if ((strcmp (argv[narg],"-i") == 0) && (strcmp (argv[narg+1], "mi") == 0))
 			isInterpreter = 1;
+		else if (strcmp (argv[narg],"--arch") == 0 ) {
+			if (++narg<argc)
+				strcpy (state.arch, logarg(argv[narg]));
+		}
 		else if (strcmp (argv[narg],"--test") == 0 ) {
 			limits.istest = true;
 			if (++narg<argc)
@@ -135,7 +143,7 @@ main (int argc, char **argv, char **envp)
 			setlogfile (state.logfilename, sizeof(state.logfilename), argv[0], "lldbmi2t.log");
 		else
 			setlogfile (state.logfilename, sizeof(state.logfilename), argv[0], "lldbmi2.log");
-		openlog (state.logfilename);
+		openlogfile (state.logfilename);
 		setlogmask (logmask);
 	}
 
@@ -236,7 +244,7 @@ main (int argc, char **argv, char **envp)
 	terminateSB ();
 
 	logprintf (LOG_INFO, "main exit\n");
-	closelog ();
+	closelogfile ();
 
 	return EXIT_SUCCESS;
 }
@@ -254,7 +262,7 @@ writetocdt (const char *line)
 {
 	logprintf (LOG_NONE, "writetocdt (...)\n", line);
 	logdata (LOG_CDT_OUT, line, strlen(line));
-	write (STDOUT_FILENO, line, strlen(line));
+	writelog (STDOUT_FILENO, line, strlen(line));
 }
 
 void

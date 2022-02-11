@@ -1,104 +1,95 @@
 //===-- SBFileSpec.h --------------------------------------------*- C++ -*-===//
 //
-//                     The LLVM Compiler Infrastructure
-//
-// This file is distributed under the University of Illinois Open Source
-// License. See LICENSE.TXT for details.
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLDB_SBFileSpec_h_
-#define LLDB_SBFileSpec_h_
+#ifndef LLDB_API_SBFILESPEC_H
+#define LLDB_API_SBFILESPEC_H
 
 #include "lldb/API/SBDefines.h"
 
 namespace lldb {
 
-class LLDB_API SBFileSpec
-{
+class LLDB_API SBFileSpec {
 public:
-    SBFileSpec ();
+  SBFileSpec();
 
-    SBFileSpec (const lldb::SBFileSpec &rhs);
+  SBFileSpec(const lldb::SBFileSpec &rhs);
 
-    SBFileSpec (const char *path);// Deprecated, use SBFileSpec (const char *path, bool resolve)
+  SBFileSpec(const char *path); // Deprecated, use SBFileSpec (const char *path,
+                                // bool resolve)
 
-    SBFileSpec (const char *path, bool resolve);
+  SBFileSpec(const char *path, bool resolve);
 
-    ~SBFileSpec ();
+  ~SBFileSpec();
 
-    const SBFileSpec &
-    operator = (const lldb::SBFileSpec &rhs);
+  const SBFileSpec &operator=(const lldb::SBFileSpec &rhs);
 
-    bool
-    IsValid() const;
+  explicit operator bool() const;
 
-    bool
-    Exists () const;
+  bool operator==(const SBFileSpec &rhs) const;
 
-    bool
-    ResolveExecutableLocation ();
+  bool operator!=(const SBFileSpec &rhs) const;
 
-    const char *
-    GetFilename() const;
+  bool IsValid() const;
 
-    const char *
-    GetDirectory() const;
+  bool Exists() const;
 
-    void
-    SetFilename(const char *filename);
-    
-    void
-    SetDirectory(const char *directory);
+  bool ResolveExecutableLocation();
 
-    uint32_t
-    GetPath (char *dst_path, size_t dst_len) const;
+  const char *GetFilename() const;
 
-    static int
-    ResolvePath (const char *src_path, char *dst_path, size_t dst_len);
+  const char *GetDirectory() const;
 
-    bool
-    GetDescription (lldb::SBStream &description) const;
+  void SetFilename(const char *filename);
+
+  void SetDirectory(const char *directory);
+
+  uint32_t GetPath(char *dst_path, size_t dst_len) const;
+
+  static int ResolvePath(const char *src_path, char *dst_path, size_t dst_len);
+
+  bool GetDescription(lldb::SBStream &description) const;
+
+  void AppendPathComponent(const char *file_or_directory);
 
 private:
-    friend class SBAttachInfo;
-    friend class SBBlock;
-    friend class SBCommandInterpreter;
-    friend class SBCompileUnit;
-    friend class SBDeclaration;
-    friend class SBFileSpecList;
-    friend class SBHostOS;
-    friend class SBLaunchInfo;
-    friend class SBLineEntry;
-    friend class SBModule;
-    friend class SBModuleSpec;
-    friend class SBPlatform;
-    friend class SBProcess;
-    friend class SBSourceManager;
-    friend class SBThread;
-    friend class SBTarget;
+  friend class SBAttachInfo;
+  friend class SBBlock;
+  friend class SBCommandInterpreter;
+  friend class SBCompileUnit;
+  friend class SBDeclaration;
+  friend class SBFileSpecList;
+  friend class SBHostOS;
+  friend class SBLaunchInfo;
+  friend class SBLineEntry;
+  friend class SBModule;
+  friend class SBModuleSpec;
+  friend class SBPlatform;
+  friend class SBProcess;
+  friend class SBProcessInfo;
+  friend class SBSourceManager;
+  friend class SBTarget;
+  friend class SBThread;
 
-    SBFileSpec (const lldb_private::FileSpec& fspec);
+  SBFileSpec(const lldb_private::FileSpec &fspec);
 
-    void
-    SetFileSpec (const lldb_private::FileSpec& fspec);
+  void SetFileSpec(const lldb_private::FileSpec &fspec);
 
-    const lldb_private::FileSpec *
-    operator->() const;
+  const lldb_private::FileSpec *operator->() const;
 
-    const lldb_private::FileSpec *
-    get() const;
+  const lldb_private::FileSpec *get() const;
 
-    const lldb_private::FileSpec &
-    operator*() const;
+  const lldb_private::FileSpec &operator*() const;
 
-    const lldb_private::FileSpec &
-    ref() const;
+  const lldb_private::FileSpec &ref() const;
 
-    std::unique_ptr<lldb_private::FileSpec> m_opaque_ap;
+  std::unique_ptr<lldb_private::FileSpec> m_opaque_up;
 };
-
 
 } // namespace lldb
 
-#endif // LLDB_SBFileSpec_h_
+#endif // LLDB_API_SBFILESPEC_H

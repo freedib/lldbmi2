@@ -52,7 +52,7 @@ getPeudoArrayVariable (SBFrame frame, const char *expression, SBValue &var)
 	if ((pe = strchr (newvartype,'[')) == NULL)
 		return false;
 	*pe = '\0';
-	char newexpression[NAME_MAX];				// create expression
+	char newexpression[NAME_MAX+20];				// create expression
 	snprintf (newexpression, sizeof(newexpression), "%s*(%s[%s])&%s[%s]%s",	// (char(*)[100])&c[0] or &((char(*)[100])&c[0])
 			ampersand?"&(":"", newvartype, varlength, varname, varoffset, ampersand?")":"");
 	var = getVariable (frame, newexpression, false);
@@ -311,7 +311,7 @@ updateVarState (SBValue var, int depth)
 SBType
 findClassOfType(SBTypeList list, TypeClass type)
 {
-	int ndx;
+	unsigned int  ndx;
 	SBType found;
 	for (ndx = 0; ndx < list.GetSize(); ndx++) {
 		if ((list.GetTypeAtIndex(ndx).GetTypeClass() & type) != 0)
@@ -327,15 +327,15 @@ findCUForFile(char *filePath, SBTarget target, SBFileSpec &file)
 {
 	SBFileSpec searchSpec(filePath, true);
 	SBCompileUnit foundCU;
-	int modNdx = -1;
-	while (!foundCU.IsValid() && (++modNdx < target.GetNumModules())) {
-		SBModule mod = target.GetModuleAtIndex(modNdx);
-		int cuNdx = -1;
-		while(!foundCU.IsValid() && (++cuNdx < mod.GetNumCompileUnits())) {
-			SBCompileUnit cu = mod.GetCompileUnitAtIndex(cuNdx);
-			int fNdx = -1;
-			while(!foundCU.IsValid() && (++fNdx < cu.GetNumSupportFiles())) {
-				SBFileSpec fs = cu.GetSupportFileAtIndex(fNdx);
+	unsigned int modNdx = 0;
+	while (!foundCU.IsValid() && (modNdx++ < target.GetNumModules())) {
+		SBModule mod = target.GetModuleAtIndex(modNdx-1);
+		unsigned int cuNdx = 0;
+		while(!foundCU.IsValid() && (cuNdx++ < mod.GetNumCompileUnits())) {
+			SBCompileUnit cu = mod.GetCompileUnitAtIndex(cuNdx-1);
+			unsigned int fNdx = 0;
+			while(!foundCU.IsValid() && (fNdx++ < cu.GetNumSupportFiles())) {
+				SBFileSpec fs = cu.GetSupportFileAtIndex(fNdx-1);
 				if (strcmp(searchSpec.GetFilename(), fs.GetFilename()) == 0) {
 					if (searchSpec.GetDirectory() == NULL)
 						foundCU = cu;
@@ -444,7 +444,7 @@ formatChildrenList (StringB &childrendescB, SBValue var, char *expression, int t
 				logprintf (LOG_ALL, "formatChildrenList: Var=%-5s: children=%-2d, typeclass=%-10s, basictype=%-10s, bytesize=%-2d, Pointee: typeclass=%-10s, basictype=%-10s, bytesize=%-2d\n",
 						getName(var), var.GetNumChildren(), getNameForTypeClass(vartype.GetTypeClass()), getNameForBasicType(vartype.GetBasicType()), vartype.GetByteSize(),
 						getNameForTypeClass(vartype.GetPointeeType().GetTypeClass()), getNameForBasicType(vartype.GetPointeeType().GetBasicType()), vartype.GetPointeeType().GetByteSize());
-				if (childnumchildren>0)
+				if (childnumchildren>0)							// breakpoint 1 in largearray.log
 					// special case with casts like StringB or Vector. Add the name to the expression
 					childrendescB.catsprintf (".%s", childname);
 			}
@@ -615,18 +615,19 @@ formatSummary (StringB &summarydescB, SBValue var)
 		}
 		return summarydescB.c_str();
 	}
-	int datasize=0;
 	TypeClass vartypeclass = vartype.GetTypeClass();
 	SBType pointeetype = vartype.GetPointeeType();
 	int numchildren = var.GetNumChildren();
+#if 0
+	int datasize=0;
 	if (vartype.IsArrayType())
 		datasize = var.GetByteSize();
 	else if (vartype.IsReferenceType())
 		datasize = pointeetype.GetByteSize();
-	else if (vartype.IsPointerType()) {
+	else if (vartype.IsPointerType())
 		datasize = pointeetype.GetByteSize();
-	}
-
+#endif
+	
 	if (vartypeclass==eTypeClassClass || vartypeclass==eTypeClassStruct || vartypeclass==eTypeClassUnion || vartype.IsArrayType()) {
 		const char *separator="";
 		static StringB vardescB(VALUE_MAX);
@@ -682,9 +683,9 @@ formatDesc (StringB &s, SBValue var)
     if (basecnt > 0) {
     	const char *newn = type.GetDirectBaseClassAtIndex(0).GetName();
     	int first;
-    	int ndx = var.GetIndexOfChildWithName(newn);
-    	if (ndx > -1) {
-    		SBValue child = var.GetChildAtIndex(ndx);
+    	int index = var.GetIndexOfChildWithName(newn);
+    	if (index > -1) {
+    		SBValue child = var.GetChildAtIndex(index);
     		formatDesc(s, child);
    			first = 1;
     	}
@@ -692,7 +693,7 @@ formatDesc (StringB &s, SBValue var)
     		s.catsprintf("{ %s, }, ", newn);
     		first = 0;
     	}
-    	for (ndx = first; ndx < var.GetNumChildren(); ndx++ ) {
+    	for (unsigned ndx = first; ndx < var.GetNumChildren(); ndx++ ) {
     		SBValue child = var.GetChildAtIndex(ndx);
 	    	SBStream l;
     		child.GetDescription(l);
@@ -701,8 +702,9 @@ formatDesc (StringB &s, SBValue var)
     		char *desc = strfind(tmp, ") ");
     		if (desc != nullptr)
     			desc+=2;
-    		else
+    		else {
     			desc = tmp;
+    		}
 	   		while(*desc) {
     			if (*desc == '\n')
     				s.append(' ');
@@ -725,7 +727,7 @@ char *
 formatStruct (StringB &s, SBValue var)
 {
 	s.append("{");
-   	for (int ndx = 0; ndx < var.GetNumChildren(); ndx++ ) {
+   	for (unsigned int ndx = 0; ndx < var.GetNumChildren(); ndx++ ) {
    		SBValue child = var.GetChildAtIndex(ndx);
     	if (ndx > 0)
    			s.append(", ");

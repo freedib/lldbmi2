@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <string.h>
 
+#include "strlxxx.h"
 #include "stringb.h"
 
 

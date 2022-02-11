@@ -1,8 +1,8 @@
 
+#include <lldb/API/SBUnixSignals.h>
 #include <chrono>
 #include <thread>
-#include "lldb/API/SBUnixSignals.h"
-
+#include <unistd.h>
 #include "lldbmi2.h"
 #include "log.h"
 #include "events.h"
@@ -150,12 +150,12 @@ processListener (void *arg)
 						}
 						*pd++ = *ps++;
 					} while (*(ps-1));
-					write ((pstate->ptyfd!=EOF)?pstate->ptyfd:STDOUT_FILENO, iobuffer, iobytes);
+					writelog ((pstate->ptyfd!=EOF)?pstate->ptyfd:STDOUT_FILENO, iobuffer, iobytes);
 				}
 				logdata (LOG_PROG_IN, iobuffer, iobytes);
 				break;
 			default:
-				logprintf (LOG_WARN, "unknown event type %s\n", eventtype);
+				logprintf (LOG_WARN, "unknown event type 0x%x\n", eventtype);
 				break;
 			}
 		}
@@ -163,7 +163,7 @@ processListener (void *arg)
 			printf("Is Watchpoint event\n");
 		}
 		else
-			logprintf (LOG_EVENTS, "event type %s\n", eventtype);
+			logprintf (LOG_EVENTS, "event type 0x%x\n", eventtype);
 	}
 	logprintf (LOG_EVENTS, "processlistener exited. pstate->eof=%d\n", pstate->eof);
 	return NULL;
@@ -233,9 +233,17 @@ onStopped (STATE *pstate, SBProcess process)
 			const char *desc = str.GetData();
 			uint64_t oldValue=0, newValue=0;
 			const char *s = strstr(desc, "old value:");
+#ifdef __APPLE__
 			sscanf(s, "%*[^0-9]%lli", &oldValue);
+#else
+			sscanf(s, "%*[^0-9]%lu", &oldValue);
+#endif
 			s = strstr(desc, "new value:");
+#ifdef __APPLE__
 			sscanf(s, "%*[^0-9]%lli", &newValue);
+#else
+			sscanf(s, "%*[^0-9]%lu", &newValue);
+#endif
 			cdtprintf ("value={old=\"%llu\",new=\"%llu\"},", oldValue, newValue);
 			SBFrame frame = thread.GetSelectedFrame();
 			SBLineEntry lentry = frame.GetLineEntry();
@@ -276,9 +284,9 @@ onStopped (STATE *pstate, SBProcess process)
 		//  "*stopped,reason=\"exception-received\",exception=\"%s\",thread-id=\"%d\",stopped-threads=\"all\""
 		char exceptiondesc[LINE_MAX];
 		thread.GetStopDescription(exceptiondesc,LINE_MAX);
-		write ((pstate->ptyfd!=EOF)?pstate->ptyfd:STDOUT_FILENO, exceptiondesc, strlen(exceptiondesc));
-		write ((pstate->ptyfd!=EOF)?pstate->ptyfd:STDOUT_FILENO, "\n", 1);
-		char reasondesc[LINE_MAX];
+		writelog ((pstate->ptyfd!=EOF)?pstate->ptyfd:STDOUT_FILENO, exceptiondesc, strlen(exceptiondesc));
+		writelog ((pstate->ptyfd!=EOF)?pstate->ptyfd:STDOUT_FILENO, "\n", 1);
+		char reasondesc[LINE_MAX+50];
 		snprintf (reasondesc, sizeof(reasondesc), "reason=\"exception-received\",exception=\"%s\",", exceptiondesc);
 		int threadindexid = thread.GetIndexID();
 		cdtprintf ("*stopped,%sthread-id=\"%d\",stopped-threads=\"all\"\n(gdb)\n",

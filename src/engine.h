@@ -4,7 +4,7 @@
 #include "lldbmi2.h"
 
 
-#define MAX_ARGS 20
+#define MAX_ARGS 200
 
 
 typedef struct {

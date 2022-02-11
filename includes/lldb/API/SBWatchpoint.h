@@ -1,104 +1,85 @@
 //===-- SBWatchpoint.h ----------------------------------*- C++ -*-===//
 //
-//                     The LLVM Compiler Infrastructure
-//
-// This file is distributed under the University of Illinois Open Source
-// License. See LICENSE.TXT for details.
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLDB_SBWatchpoint_h_
-#define LLDB_SBWatchpoint_h_
+#ifndef LLDB_API_SBWATCHPOINT_H
+#define LLDB_API_SBWATCHPOINT_H
 
 #include "lldb/API/SBDefines.h"
 
 namespace lldb {
 
-class LLDB_API SBWatchpoint
-{
+class LLDB_API SBWatchpoint {
 public:
+  SBWatchpoint();
 
-    SBWatchpoint ();
+  SBWatchpoint(const lldb::SBWatchpoint &rhs);
 
-    SBWatchpoint (const lldb::SBWatchpoint &rhs);
+  SBWatchpoint(const lldb::WatchpointSP &wp_sp);
 
-    SBWatchpoint (const lldb::WatchpointSP &wp_sp);
+  ~SBWatchpoint();
 
-    ~SBWatchpoint ();
+  const lldb::SBWatchpoint &operator=(const lldb::SBWatchpoint &rhs);
 
-    const lldb::SBWatchpoint &
-    operator = (const lldb::SBWatchpoint &rhs);
+  explicit operator bool() const;
 
-    bool
-    IsValid() const;
+  bool operator==(const SBWatchpoint &rhs) const;
 
-    SBError
-    GetError();
+  bool operator!=(const SBWatchpoint &rhs) const;
 
-    watch_id_t
-    GetID ();
+  bool IsValid() const;
 
-    /// With -1 representing an invalid hardware index.
-    int32_t
-    GetHardwareIndex ();
+  SBError GetError();
 
-    lldb::addr_t
-    GetWatchAddress ();
+  watch_id_t GetID();
 
-    size_t
-    GetWatchSize();
+  /// With -1 representing an invalid hardware index.
+  int32_t GetHardwareIndex();
 
-    void
-    SetEnabled(bool enabled);
+  lldb::addr_t GetWatchAddress();
 
-    bool
-    IsEnabled ();
+  size_t GetWatchSize();
 
-    uint32_t
-    GetHitCount ();
+  void SetEnabled(bool enabled);
 
-    uint32_t
-    GetIgnoreCount ();
+  bool IsEnabled();
 
-    void
-    SetIgnoreCount (uint32_t n);
+  uint32_t GetHitCount();
 
-    const char *
-    GetCondition ();
+  uint32_t GetIgnoreCount();
 
-    void 
-    SetCondition (const char *condition);
-    
-    bool
-    GetDescription (lldb::SBStream &description, DescriptionLevel level);
+  void SetIgnoreCount(uint32_t n);
 
-    void
-    Clear ();
+  const char *GetCondition();
 
-    lldb::WatchpointSP
-    GetSP () const;
+  void SetCondition(const char *condition);
 
-    void
-    SetSP (const lldb::WatchpointSP &sp);
+  bool GetDescription(lldb::SBStream &description, DescriptionLevel level);
 
-    static bool
-    EventIsWatchpointEvent (const lldb::SBEvent &event);
-    
-    static lldb::WatchpointEventType
-    GetWatchpointEventTypeFromEvent (const lldb::SBEvent& event);
+  void Clear();
 
-    static lldb::SBWatchpoint
-    GetWatchpointFromEvent (const lldb::SBEvent& event);
+  lldb::WatchpointSP GetSP() const;
+
+  void SetSP(const lldb::WatchpointSP &sp);
+
+  static bool EventIsWatchpointEvent(const lldb::SBEvent &event);
+
+  static lldb::WatchpointEventType
+  GetWatchpointEventTypeFromEvent(const lldb::SBEvent &event);
+
+  static lldb::SBWatchpoint GetWatchpointFromEvent(const lldb::SBEvent &event);
 
 private:
-    friend class SBTarget;
-    friend class SBValue;
+  friend class SBTarget;
+  friend class SBValue;
 
-    
-    lldb::WatchpointSP m_opaque_sp;
-
+  std::weak_ptr<lldb_private::Watchpoint> m_opaque_wp;
 };
 
 } // namespace lldb
 
-#endif  // LLDB_SBWatchpoint_h_
+#endif // LLDB_API_SBWATCHPOINT_H

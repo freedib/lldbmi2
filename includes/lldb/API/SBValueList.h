@@ -1,14 +1,13 @@
 //===-- SBValueList.h -------------------------------------------*- C++ -*-===//
 //
-//                     The LLVM Compiler Infrastructure
-//
-// This file is distributed under the University of Illinois Open Source
-// License. See LICENSE.TXT for details.
+// Part of the LLVM Project, under the Apache License v2.0 with LLVM Exceptions.
+// See https://llvm.org/LICENSE.txt for license information.
+// SPDX-License-Identifier: Apache-2.0 WITH LLVM-exception
 //
 //===----------------------------------------------------------------------===//
 
-#ifndef LLDB_SBValueList_h_
-#define LLDB_SBValueList_h_
+#ifndef LLDB_API_SBVALUELIST_H
+#define LLDB_API_SBVALUELIST_H
 
 #include "lldb/API/SBDefines.h"
 
@@ -16,81 +15,61 @@ class ValueListImpl;
 
 namespace lldb {
 
-class LLDB_API SBValueList
-{
+class LLDB_API SBValueList {
 public:
+  SBValueList();
 
-    SBValueList ();
+  SBValueList(const lldb::SBValueList &rhs);
 
-    SBValueList (const lldb::SBValueList &rhs);
+  ~SBValueList();
 
-    ~SBValueList();
+  explicit operator bool() const;
 
-    bool
-    IsValid() const;
-    
-    void
-    Clear();
+  bool IsValid() const;
 
-    void
-    Append (const lldb::SBValue &val_obj);
+  void Clear();
 
-    void
-    Append (const lldb::SBValueList& value_list);
+  void Append(const lldb::SBValue &val_obj);
 
-    uint32_t
-    GetSize() const;
+  void Append(const lldb::SBValueList &value_list);
 
-    lldb::SBValue
-    GetValueAtIndex (uint32_t idx) const;
-    
-    lldb::SBValue
-    GetFirstValueByName (const char* name) const;
+  uint32_t GetSize() const;
 
-    lldb::SBValue
-    FindValueObjectByUID (lldb::user_id_t uid);
+  lldb::SBValue GetValueAtIndex(uint32_t idx) const;
 
-    const lldb::SBValueList &
-    operator = (const lldb::SBValueList &rhs);
+  lldb::SBValue GetFirstValueByName(const char *name) const;
+
+  lldb::SBValue FindValueObjectByUID(lldb::user_id_t uid);
+
+  const lldb::SBValueList &operator=(const lldb::SBValueList &rhs);
 
 protected:
-    
-    // only useful for visualizing the pointer or comparing two SBValueLists
-    // to see if they are backed by the same underlying Impl.
-    void *
-    opaque_ptr ();
+  // only useful for visualizing the pointer or comparing two SBValueLists to
+  // see if they are backed by the same underlying Impl.
+  void *opaque_ptr();
 
 private:
-    friend class SBFrame;
-    
-    SBValueList (const ValueListImpl *lldb_object_ptr);
+  friend class SBFrame;
 
-    void
-    Append (lldb::ValueObjectSP& val_obj_sp);
+  SBValueList(const ValueListImpl *lldb_object_ptr);
 
-    void
-    CreateIfNeeded ();
+  void Append(lldb::ValueObjectSP &val_obj_sp);
 
-    ValueListImpl *
-    operator -> ();
-    
-    ValueListImpl &
-    operator* ();
-    
-    const ValueListImpl *
-    operator -> () const;
-    
-    const ValueListImpl &
-    operator* () const;
-    
-    
-    ValueListImpl &
-    ref ();
-    
-    std::unique_ptr<ValueListImpl> m_opaque_ap;
+  void CreateIfNeeded();
+
+  ValueListImpl *operator->();
+
+  ValueListImpl &operator*();
+
+  const ValueListImpl *operator->() const;
+
+  const ValueListImpl &operator*() const;
+
+  ValueListImpl &ref();
+
+  std::unique_ptr<ValueListImpl> m_opaque_up;
 };
-
 
 } // namespace lldb
 
-#endif  // LLDB_SBValueList_h_
+#endif // LLDB_API_SBVALUELIST_H

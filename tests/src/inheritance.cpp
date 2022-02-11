@@ -22,7 +22,7 @@ namespace H
 			D () : d(4){};
 			int test ()
 			{
-				H::D* d = this;						// breakpoint 1 LONG_INHERITANCE
+				H::D* d = this;						// breakpoint 1 in inheritance.txt
 				return d->a;
 			};
 	};

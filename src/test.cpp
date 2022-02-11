@@ -3,7 +3,11 @@
 #include <unistd.h>
 #include <ctype.h>
 #include <string.h>
+#ifdef __APPLE__
 #include <sys/syslimits.h>
+#else
+#include <limits.h>
+#endif
 #include "log.h"
 #include "test.h"
 
@@ -13,14 +17,14 @@
 
 // test commands will pause after a exec-run, exec-continue or target-attach
 
-#define WITH_TESTS
-#define WITH_LO_TESTS
+#define WITH_TESTS				// standard tests
+//#define WITH_LO_TESTS			// LibreOffice tests
 
 const char *testcommands_NONE[] = {
 	"51-environment-cd %s/tests",
 	"52-file-exec-and-symbols --thread-group i1 %s/build/tests",
 	"53-gdb-set --thread-group i1 args %s",
-	"61-inferior-tty-set --thread-group i1 %s",		// stdout instead of /dev/ptyxx
+	"61-inferior-tty-set --thread-group i1 %s",							// stdout instead of /dev/ptyxx
 	"62-exec-run --thread-group i1",
 	"80-gdb-exit",
 	NULL
@@ -32,9 +36,9 @@ const char *testcommands_THREAD[] = {
 	"51-environment-cd %s/tests",
 	"52-file-exec-and-symbols --thread-group i1 %s/build/tests",
 	"53-gdb-set --thread-group i1 args %s",
-	"58-break-insert --thread-group i1 %s/tests/src/tests.cpp:34",
-	"58-break-insert --thread-group i1 %s/tests/src/tests.cpp:77",
-	"61-inferior-tty-set --thread-group i1 %s",		// stdout instead of /dev/ptyxx
+	"58-break-insert --thread-group i1 %s/tests/src/tests.cpp:34",		// breakpoint 1 in hellothread()
+	"58-break-insert --thread-group i1 %s/tests/src/tests.cpp:83",		// breakpoint 3 in test_BASE()
+	"61-inferior-tty-set --thread-group i1 %s",							// stdout instead of /dev/ptyxx
 	"62-exec-run --thread-group i1",
 	"64-list-thread-groups",
 	"65-list-thread-groups i1",
@@ -62,8 +66,8 @@ const char *testcommands_VARS[] = {
 	"51-environment-cd %s/tests",
 	"52-file-exec-and-symbols --thread-group i1 %s/build/tests",
 	"53-gdb-set --thread-group i1 args %s",
-	"58-break-insert --thread-group i1 %s/tests/src/tests.cpp:74",
-	"61-inferior-tty-set --thread-group i1 %s",		// stdout instead of /dev/ptyxx
+	"58-break-insert --thread-group i1 %s/tests/src/tests.cpp:80",		// breakpoint 1 in test_BASE()
+	"61-inferior-tty-set --thread-group i1 %s",							// stdout instead of /dev/ptyxx
 	"62-exec-run --thread-group i1",
 	"76-var-evaluate-expression c",
 	"37-var-create --thread 1 --frame 0 - * pz",
@@ -78,8 +82,8 @@ const char *testcommands_UPDATE[] = {
 	"51-environment-cd %s/tests",
 	"52-file-exec-and-symbols --thread-group i1 %s/build/tests",
 	"53-gdb-set --thread-group i1 args %s",
-	"58-break-insert --thread-group i1 %s/tests/src/tests.cpp:76",
-	"61-inferior-tty-set --thread-group i1 %s",		// stdout instead of /dev/ptyxx
+	"58-break-insert --thread-group i1 %s/tests/src/tests.cpp:82",		// breakpoint 2 in test_BASE()
+	"61-inferior-tty-set --thread-group i1 %s",							// stdout instead of /dev/ptyxx
 	"62-exec-run --thread-group i1",
 	"41-stack-list-locals --thread 1 --frame 0 1",
 	"42-stack-info-depth --thread 1 11",
@@ -102,7 +106,7 @@ const char *testcommands_LARGE_CHAR_ARRAY[] = {
 	"17-file-exec-and-symbols --thread-group i1 %s/build/tests",
 //	"19-gdb-show --thread-group i1 language",
 	"53-gdb-set --thread-group i1 args %s",
-	"26-break-insert -f %s/tests/src/tests.cpp:92",
+	"26-break-insert -f %s/tests/src/tests.cpp:98",						// breakpoint 1 in test_LARGE_CHAR_ARRAY()
 	"28-exec-run --thread-group i1",
 	"35-stack-list-locals --thread 1 --frame 0 1",
 	"36-var-create --thread 1 --frame 0 - * ccc",
@@ -125,7 +129,7 @@ const char *testcommands_LARGE_ARRAY[] = {
 	"17-file-exec-and-symbols --thread-group i1 %s/build/tests",
 //	"19-gdb-show --thread-group i1 language",
 	"53-gdb-set --thread-group i1 args %s",
-	"26-break-insert -f %s/tests/src/tests.cpp:112",
+	"26-break-insert -f %s/tests/src/tests.cpp:123",					// breakpoint 1 in test_LARGE_ARRAY()
 	"28-exec-run --thread-group i1",
 	"39-var-create --thread 1 --frame 0 - * *((i)+0)@100",
 	"39-var-create --thread 1 --frame 0 - * *((s)+0)@100",
@@ -137,7 +141,7 @@ const char *testcommands_POINTERS[] = {
 	"51-environment-cd %s/tests",
 	"52-file-exec-and-symbols --thread-group i1 %s/build/tests",
 	"53-gdb-set --thread-group i1 args %s",
-	"58-break-insert --thread-group i1 %s/tests/src/tests.cpp:125",
+	"58-break-insert --thread-group i1 %s/tests/src/tests.cpp:136",		// breakpoint 1 in test_POINTERS()
 	"62-exec-run --thread-group i1",
 	"64-list-thread-groups",
 	"65-list-thread-groups i1",
@@ -177,8 +181,8 @@ const char *testcommands_POINTERS[] = {
 const char *testcommands_ATTACH[] = {
 	"51-environment-cd %s/tests",
 	"62-target-attach --thread-group i1 tests",
-	"58-break-insert --thread-group i1 %s/tests/src/tests.cpp:34",
-	"61-inferior-tty-set --thread-group i1 %s",		// stdout instead of /dev/ptyxx
+	"58-break-insert --thread-group i1 %s/tests/src/tests.cpp:34",		// adjust with tests.cpp
+	"61-inferior-tty-set --thread-group i1 %s",							// stdout instead of /dev/ptyxx
 	"65-list-thread-groups i1",
 	"69-thread-info 1",
 	"79-thread-info 2",
@@ -194,7 +198,7 @@ const char *testcommands_MEMBERS[] = {
 	"52-file-exec-and-symbols --thread-group i1 %s/build/tests",
 	"53-gdb-set --thread-group i1 args %s",
 	"64-list-thread-groups",
-	"58-break-insert --thread-group i1 %s/tests/src/tests.cpp:175",
+	"58-break-insert --thread-group i1 %s/tests/src/tests.cpp:186",		// breakpoint 1 in AB::sumab()
 	"62-exec-run --thread-group i1",
 	"64-list-thread-groups",
 	"65-list-thread-groups i1",
@@ -217,7 +221,7 @@ const char *testcommands_STRING[] = {
 	"52-file-exec-and-symbols --thread-group i1 %s/build/tests",
 	"53-gdb-set --thread-group i1 args %s",
 	"64-list-thread-groups",
-	"58-break-insert --thread-group i1 %s/tests/src/tests.cpp:263",
+	"58-break-insert --thread-group i1 %s/tests/src/tests.cpp:274",		// breakpoint 1 test_STRING()
 	"62-exec-run --thread-group i1",
 	"64-list-thread-groups",
 	"65-list-thread-groups i1",
@@ -248,9 +252,9 @@ const char *testcommands_ARGS[] = {
 	"53-gdb-set --thread-group i1 args %s",
 	"64-list-thread-groups",
 	"19-gdb-show --thread-group i1 language",
-	"58-break-insert --thread-group i1 %s/tests/src/tests.cpp:210",
-	"58-break-insert --thread-group i1 %s/tests/src/tests.cpp:224",
-	"58-break-insert --thread-group i1 %s/tests/src/tests.cpp:226",
+	"58-break-insert --thread-group i1 %s/tests/src/tests.cpp:221",		// breakpoint 1 in testfunction()
+	"58-break-insert --thread-group i1 %s/tests/src/tests.cpp:235",		// breakpoint 1 in test_ARGS()
+	"58-break-insert --thread-group i1 %s/tests/src/tests.cpp:237",		// breakpoint 2 in test_ARGS()
 	"62-exec-run --thread-group i1",
 	"64-list-thread-groups",
 	"65-list-thread-groups i1",
@@ -311,7 +315,7 @@ const char *testcommands_OTHER[] = {
 	"55-interpreter-exec --thread-group i1 console \"p/x (char)-1\"",
 	"56-interpreter-exec --thread-group i1 console \"show endian\"",
 	"57-data-evaluate-expression \"sizeof (void*)\"",
-	"59-break-insert --thread-group i1 -t -f main",
+	"59-break-insert --thread-group i1 -t -f main",					// breakpoint in main()
 	"60-break-delete 2",
 	"37info sharedlibrary",
 	"63-list-thread-groups --available",
@@ -337,8 +341,8 @@ const char *testcommands_CRASH[] = {
 	"51-environment-cd %s/tests",
 	"52-file-exec-and-symbols --thread-group i1 %s/build/tests",
 	"53-gdb-set --thread-group i1 args %s",
-	"58-break-insert --thread-group i1 %s/tests/src/tests.cpp:202",
-	"61-inferior-tty-set --thread-group i1 %s",		// stdout instead of /dev/ptyxx
+	"58-break-insert --thread-group i1 %s/tests/src/tests.cpp:213",		// breakpoint 1 in test_CRASH()
+	"61-inferior-tty-set --thread-group i1 %s",							// stdout instead of /dev/ptyxx
 	"62-exec-run --thread-group i1",
 	"76-var-evaluate-expression err",
 	"80-gdb-exit",
@@ -349,8 +353,8 @@ const char *testcommands_INPUT[] = {
 	"51-environment-cd %s/tests",
 	"52-file-exec-and-symbols --thread-group i1 %s/build/tests",
 	"53-gdb-set --thread-group i1 args %s",
-	"58-break-insert --thread-group i1 %s/tests/src/tests.cpp:274",
-	"61-inferior-tty-set --thread-group i1 %s",		// stdout instead of /dev/ptyxx
+	"58-break-insert --thread-group i1 %s/tests/src/tests.cpp:285",		// breakpoint 1 in test_INPUT()
+	"61-inferior-tty-set --thread-group i1 %s",							// stdout instead of /dev/ptyxx
 	"62-exec-run --thread-group i1",
 	"80-gdb-exit",
 	NULL
@@ -360,7 +364,7 @@ const char *testcommands_CATCH_THROW[] = {
 	"51-environment-cd %s/tests",
 	"52-file-exec-and-symbols --thread-group i1 %s/build/tests",
 	"53-gdb-set --thread-group i1 args %s",
-	"61-inferior-tty-set --thread-group i1 %s",		// stdout instead of /dev/ptyxx
+	"61-inferior-tty-set --thread-group i1 %s",							// stdout instead of /dev/ptyxx
 	"41catch catch",
 	"62-exec-run --thread-group i1",
 	"53-stack-list-frames --thread 1",
@@ -372,8 +376,8 @@ const char *testcommands_BIG_CLASS[] = {
 	"51-environment-cd %s/tests",
 	"52-file-exec-and-symbols --thread-group i1 %s/build/tests",
 	"53-gdb-set --thread-group i1 args %s",
-	"61-inferior-tty-set --thread-group i1 %s",		// stdout instead of /dev/ptyxx
-	"58-break-insert --thread-group i1 %s/tests/src/tests.cpp:338",
+	"61-inferior-tty-set --thread-group i1 %s",							// stdout instead of /dev/ptyxx
+	"58-break-insert --thread-group i1 %s/tests/src/tests.cpp:349",		// breakpoint 1 in test_BIG_CLASS()
 	"62-exec-run --thread-group i1",
 	"53-stack-list-frames --thread 1",
 	"80-gdb-exit",
@@ -385,7 +389,7 @@ const char *testcommands_LONG_INHERITANCE[] = {
 	"32-file-exec-and-symbols --thread-group i1 %s/build/tests",
 	"33-gdb-set --thread-group i1 args %s",
 	"34-inferior-tty-set --thread-group i1 %s",
-	"35-break-insert --thread-group i1 %s/tests/src/tests.cpp:366",
+	"35-break-insert --thread-group i1 %s/tests/src/tests.cpp:377",		// breakpoint 1 in class D : public C : test()
 	"36-exec-run --thread-group i1",
 	"40-stack-list-frames --thread 1",
 	"41-stack-list-arguments --thread 1 1",
@@ -505,8 +509,8 @@ getTestSequenceCommand ()
 		logprintf (LOG_NONE, "getTestCommand (0x%x)\n", idTestCommand);
 		commandLine = testCommands[idTestCommand];
 		++idTestCommand;
-		write(STDOUT_FILENO, commandLine, strlen(commandLine));
-		write(STDOUT_FILENO, "\n", 1);
+		writelog(STDOUT_FILENO, commandLine, strlen(commandLine));
+		writelog(STDOUT_FILENO, "\n", 1);
 		return commandLine;
 	}
 	else
@@ -518,11 +522,11 @@ const char *
 getTestScriptCommand ()
 {
 #define SEQUENCE_SIZE 5
-	static char commandLine[LINE_MAX], sequenceNumber[SEQUENCE_SIZE+1], *pl, *ps, *pe;
+	static char commandLine[LINE_MAX], sequenceNumber[SEQUENCE_SIZE], *pl, *ps, *pe;
 	if (fps != NULL) {
 		logprintf (LOG_NONE, "getScriptCommand ()\n");
 		pl = commandLine+SEQUENCE_SIZE;			// leave place for a command sequence id
-		if (fgets (pl, LINE_MAX, fps) == NULL)
+		if (fgets (pl, LINE_MAX-SEQUENCE_SIZE, fps) == NULL)
 			return NULL;
 		if (isdigit(*pl)) {						// it is a logfile
 			while (strstr(pl,">>=") == NULL)	// find a valid command line
@@ -552,12 +556,20 @@ getTestScriptCommand ()
 				return NULL;					// empty line
 			if (*pe=='\n')
 				*pe = '\0';
+#pragma GCC diagnostic push
+#ifndef __clang__
+#pragma GCC diagnostic ignored "-Wformat-overflow="
+#endif
 			sprintf (sequenceNumber, "%d", ++idTestCommand);	// create a sequence id
 			ps = pl - strlen(sequenceNumber);
+#ifndef __clang__
+#pragma GCC diagnostic ignored "-Wstringop-overflow="
+#endif
 			strncpy (ps, sequenceNumber, strlen(sequenceNumber));
+#pragma GCC diagnostic pop
 		}
-		write(STDOUT_FILENO, pl, strlen(pl));
-		write(STDOUT_FILENO, "\n", 1);
+		writelog(STDOUT_FILENO, pl, strlen(pl));
+		writelog(STDOUT_FILENO, "\n", 1);
 		return ps;
 	}
 	else
