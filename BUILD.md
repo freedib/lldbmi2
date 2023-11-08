@@ -23,7 +23,11 @@ The default installation directory is /usr/local/bin.
 - Mac framework (LLDB.framework) is searched on `/Applications/Xcode.app/Contents/SharedFrameworks` and
   `/Library/Developer/CommandLineTools/Library/PrivateFrameworks`
 - Linux library (liblldb.so) is searched on `/usr/lib` and `/usr/local/lib`
-- On Linux, you can install with apt. You need **lldb-12** and **liblldb-12**. You must create the following link: (package bug?)
+- On Linux, you can install with apt. You need **lldb-XX** and **liblldb-XX**.
+  You MUST specify the location of the debug-server with somthing like this:
+  `export LLDB_DEBUGSERVER_PATH=$(which lldb-server)`
+
+  or alternatively: You must create the following link: (package bug?)
   `sudo mkdir /usr/lib/bin; sudo ln -s /usr/bin/lldb-server-12 /usr/lib/bin/lldb-server-12.0.0`
  
 # Build LLDBMI2 from Eclipse (if exending the code)
