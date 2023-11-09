@@ -72,7 +72,7 @@ main (int argc, char **argv, char **envp)
 
 	state.ptyfd = EOF;
 	state.gdbPrompt = "GNU gdb (GDB) 7.7.1\n";
-	sprintf (state.lldbmi2Prompt, "lldbmi2 version %s\n", LLDBMI2_VERSION);
+	snprintf (state.lldbmi2Prompt, NAME_MAX, "lldbmi2 version %s\n", LLDBMI2_VERSION);
 	state.cdtbufferB.grow(BIG_LINE_MAX);
 
 	limits.frames_max = FRAMES_MAX;
