@@ -2,6 +2,7 @@ cmake_minimum_required(VERSION 3.1)
 
 set(CMAKE_CXX_STANDARD 14)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64" CACHE STRING "" FORCE)
 
 if(BUILD_TESTS)
 	file(GLOB_RECURSE tests_paths ${CMAKE_CURRENT_SOURCE_DIR}/tests/src/*.cpp)
@@ -36,7 +37,7 @@ endif(USE_LIB_PATH)
 
 mark_as_advanced(LLDB_LIBRARY)
 get_filename_component(LLDB_LIBRARY_PATH ${LLDB_LIBRARY} DIRECTORY)
-set(CMAKE_INSTALL_RPATH ${LLDB_LIBRARY_PATH})
+set(CMAKE_BUILD_RPATH "/Applications/Xcode.app/Contents/SharedFrameworks;/Library/Developer/CommandLineTools/Library/PrivateFrameworks")
 
 message(LLDB_LIBRARY: ${LLDB_LIBRARY} " @ " ${USE_LIB_PATH} " ^ " ${LLDB_LIBRARY_PATH} )
 
