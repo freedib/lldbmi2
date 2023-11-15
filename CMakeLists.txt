@@ -31,7 +31,7 @@ else(USE_LIB_PATH)
     if(APPLE)
     	find_library(LLDB_LIBRARY NAMES LLDB lldb PATHS "/Applications/Xcode.app/Contents/SharedFrameworks" "/Library/Developer/CommandLineTools/Library/PrivateFrameworks")
 	else(APPLE)
-		find_library(LLDB_LIBRARY NAMES lldb-19 lldb-18 lldb-17 lldb-16 lldb-15 lldb-14 lldb-13 lldb-12 lldb-11 lldb-10 PATHS /usr/lib /usr/local/lib)
+		find_library(LLDB_LIBRARY NAMES lldb-19 lldb-18 lldb-17 lldb-16 lldb-15 lldb-14 lldb-13 lldb-12 lldb-11 lldb-10 lldb PATHS /usr/lib /usr/local/lib /usr/lib64 /usr/local/lib64)
 	endif(APPLE)
 endif(USE_LIB_PATH)
 
