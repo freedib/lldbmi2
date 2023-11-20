@@ -519,13 +519,15 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 		// break-insert --thread-group i1 -t -f main
 		bool isoneshot=false;
 		bool ispending=false;
+		bool isenabled=true;
 		char path[PATH_MAX];
 		for (; nextarg<cc.argc; nextarg++) {
 			if (strcmp(cc.argv[nextarg],"-t")==0)
 				isoneshot = true;
-			else if (strcmp(cc.argv[nextarg],"-f")==0) {
+			else if (strcmp(cc.argv[nextarg],"-f")==0)
 				ispending = true;
-			}
+			else if (strcmp(cc.argv[nextarg],"-d")==0)
+				isenabled = false;
 			snprintf (path, sizeof(path), cc.argv[nextarg], pstate->project_loc);
 			if (strstr(cc.argv[nextarg],"%s")!=NULL)
 				logprintf (LOG_VARS, "%%s -> %s\n", path);
@@ -550,6 +552,7 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 		}
 		else		// function
 			breakpoint = target.BreakpointCreateByName (path, target.GetExecutable().GetFilename());
+		breakpoint.SetEnabled(isenabled);
 		if ((breakpoint.GetNumLocations() > 0) || ispending) {
 			breakpoint.SetOneShot(isoneshot);
 			char *breakpointdesc = formatBreakpoint (breakpoint, pstate);
