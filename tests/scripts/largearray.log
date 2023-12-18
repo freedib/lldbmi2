@@ -834,7 +834,7 @@
 083803.174 >>=  |56-var-create --thread 1 --frame 0 - * *((ccc)+0)@100|
 083803.174 $$$  getVariable: expression=&ccc, name=&ccc, value=0x00007fff5fbff520, changed=0
 083803.177 $$$  getVariable: expression=*(char (*)[100])&ccc[0], name=$5, value=(null), changed=0
-083803.177 $$$  getPeudoArrayVariable: expression *((ccc)+0)@100 -> *(char (*)[100])&ccc[0]
+083803.177 $$$  getPseudoArrayVariable: expression *((ccc)+0)@100 -> *(char (*)[100])&ccc[0]
 083803.177 $$$  getVariable: expression=*((ccc)+0)@100, name=$5, value=(null), changed=0
 083803.177 $$$  updateVarState: Var=$5   : children=100, typeclass=Array     , basictype=Invalid   , bytesize=100, Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
 083803.177 $$$  formatExpressionPath: expressionpathdesc=$5
@@ -847,7 +847,7 @@
 083803.178 >>=  |57-var-create --thread 1 --frame 0 - * *((ccc)+100)@2|
 083803.178 $$$  getVariable: expression=&ccc, name=&ccc, value=0x00007fff5fbff520, changed=0
 083803.181 $$$  getVariable: expression=*(char (*)[2])&ccc[100], name=$6, value=(null), changed=0
-083803.181 $$$  getPeudoArrayVariable: expression *((ccc)+100)@2 -> *(char (*)[2])&ccc[100]
+083803.181 $$$  getPseudoArrayVariable: expression *((ccc)+100)@2 -> *(char (*)[2])&ccc[100]
 083803.181 $$$  getVariable: expression=*((ccc)+100)@2, name=$6, value=(null), changed=0
 083803.181 $$$  updateVarState: Var=$6   : children=2 , typeclass=Array     , basictype=Invalid   , bytesize=2 , Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
 083803.181 $$$  formatExpressionPath: expressionpathdesc=$6
@@ -860,7 +860,7 @@
 083803.192 >>=  |58-var-create --thread 1 --frame 0 - * &(*((ccc)+0)@100)|
 083803.192 $$$  getVariable: expression=&ccc, name=&ccc, value=0x00007fff5fbff520, changed=0
 083803.205 $$$  getVariable: expression=&(*(char (*)[100])&ccc[0]), name=$7, value=0x00007fff5fbff520, changed=0
-083803.205 $$$  getPeudoArrayVariable: expression &(*((ccc)+0)@100) -> &(*(char (*)[100])&ccc[0])
+083803.205 $$$  getPseudoArrayVariable: expression &(*((ccc)+0)@100) -> &(*(char (*)[100])&ccc[0])
 083803.205 $$$  getVariable: expression=&(*((ccc)+0)@100), name=$7, value=0x00007fff5fbff520, changed=0
 083803.205 $$$  updateVarState: Var=$7   : children=100, typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Array     , basictype=Invalid   , bytesize=100
 083803.205 $$$  formatExpressionPath: expressionpathdesc=$7
@@ -1173,7 +1173,7 @@
 083803.222 >>=  |59-var-create --thread 1 --frame 0 - * &(*((ccc)+100)@2)|
 083803.223 $$$  getVariable: expression=&ccc, name=&ccc, value=0x00007fff5fbff520, changed=0
 083803.244 $$$  getVariable: expression=&(*(char (*)[2])&ccc[100]), name=$8, value=0x00007fff5fbff584, changed=0
-083803.244 $$$  getPeudoArrayVariable: expression &(*((ccc)+100)@2) -> &(*(char (*)[2])&ccc[100])
+083803.244 $$$  getPseudoArrayVariable: expression &(*((ccc)+100)@2) -> &(*(char (*)[2])&ccc[100])
 083803.244 $$$  getVariable: expression=&(*((ccc)+100)@2), name=$8, value=0x00007fff5fbff584, changed=0
 083803.244 $$$  updateVarState: Var=$8   : children=2 , typeclass=Pointer   , basictype=Invalid   , bytesize=8 , Pointee: typeclass=Array     , basictype=Invalid   , bytesize=2 
 083803.244 $$$  formatExpressionPath: expressionpathdesc=$8
@@ -1192,7 +1192,7 @@
 083804.057 >>=  |60-data-evaluate-expression --thread 1 --frame 0 *((ccc)+0)@100|
 083804.057 $$$  getVariable: expression=&ccc, name=&ccc, value=0x00007fff5fbff520, changed=0
 083804.060 $$$  getVariable: expression=*(char (*)[100])&ccc[0], name=$9, value=(null), changed=0
-083804.060 $$$  getPeudoArrayVariable: expression *((ccc)+0)@100 -> *(char (*)[100])&ccc[0]
+083804.060 $$$  getPseudoArrayVariable: expression *((ccc)+0)@100 -> *(char (*)[100])&ccc[0]
 083804.060 $$$  getVariable: expression=*((ccc)+0)@100, name=$9, value=(null), changed=0
 083804.060 $$$  formatValue: Var=$9   : children=100, typeclass=Array     , basictype=Invalid   , bytesize=100, Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
 083804.060 $$$  formatSummary: Var=$9   : children=100, typeclass=Array     , basictype=Invalid   , bytesize=100, Pointee: typeclass=Invalid   , basictype=Invalid   , bytesize=0 
