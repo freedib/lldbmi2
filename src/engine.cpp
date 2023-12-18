@@ -1791,11 +1791,11 @@ addEnvironment (STATE *pstate, const char *entrystring)
 	logprintf (LOG_NONE, "addEnvironment (0x%x, %s)\n", pstate, entrystring);
 	size_t entrysize = strlen (entrystring);
 	if (pstate->envpentries >= ENV_ENTRIES-2) {		// keep size for final NULL
-		logprintf (LOG_ERROR, "addEnvironement: envp size (%d) too small\n", sizeof(pstate->envs));
+		logprintf (LOG_ERROR, "addEnvironment: envp size (%d) too small\n", sizeof(pstate->envs));
 		return false;
 	}
 	if (pstate->envspointer-pstate->envs+1+entrysize >= sizeof(pstate->envs)) {
-		logprintf (LOG_ERROR, "addEnvironement: envs size (%d) too small\n", sizeof(pstate->envs));
+		logprintf (LOG_ERROR, "addEnvironment: envs size (%d) too small\n", sizeof(pstate->envs));
 		return false;
 	}
 	pstate->envp[pstate->envpentries++] = pstate->envspointer;
