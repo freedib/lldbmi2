@@ -20,7 +20,7 @@ typedef enum
 
 #define min(a,b) ((a) < (b) ? (a) : (b))
 
-bool  getPeudoArrayVariable (SBFrame frame, const char *expression, SBValue &var);
+bool  getPseudoArrayVariable (SBFrame frame, const char *expression, SBValue &var);
 bool  getStandardPathVariable (SBFrame frame, const char *expression, SBValue &var);
 const char *getName ( SBValue &var);
 char *strfind (char *string, const char *find, int way=1, const char *except=NULL);

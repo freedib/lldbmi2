@@ -10,9 +10,9 @@ extern LIMITS limits;
 
 // TODO: implement @ formats for structures like struct S. seems to be a bug in lldb
 bool
-getPeudoArrayVariable (SBFrame frame, const char *expression, SBValue &var)
+getPseudoArrayVariable (SBFrame frame, const char *expression, SBValue &var)
 {
-	logprintf (LOG_TRACE, "getPeudoArrayVariable (0x%x, %s, 0x%x)\n", &frame, expression, &var);
+	logprintf (LOG_TRACE, "getPseudoArrayVariable (0x%x, %s, 0x%x)\n", &frame, expression, &var);
 // just support *((var)+0)@100 and &(*((var)+0)@100) forms
 // char c[101];
 // -var-create * *((c)+0)@100
@@ -56,7 +56,7 @@ getPeudoArrayVariable (SBFrame frame, const char *expression, SBValue &var)
 	snprintf (newexpression, sizeof(newexpression), "%s*(%s[%s])&%s[%s]%s",	// (char(*)[100])&c[0] or &((char(*)[100])&c[0])
 			ampersand?"&(":"", newvartype, varlength, varname, varoffset, ampersand?")":"");
 	var = getVariable (frame, newexpression, false);
-	logprintf (LOG_DEBUG, "getPeudoArrayVariable: expression %s -> %s\n", expression, newexpression);
+	logprintf (LOG_DEBUG, "getPseudoArrayVariable: expression %s -> %s\n", expression, newexpression);
 	if (!var.IsValid() || var.GetError().Fail())
 		return false;
 	return true;
@@ -252,7 +252,7 @@ getVariable (SBFrame frame, const char *expression, bool tryDirect)
 	logprintf (LOG_TRACE, "getVariable (0x%x, %s)\n", &frame, expression);
 	SBValue var;
 	if (strchr(expression,'@') != NULL)
-		getPeudoArrayVariable (frame, expression, var);
+		getPseudoArrayVariable (frame, expression, var);
 	if ((!var.IsValid() || var.GetError().Fail()) && *expression=='$')
 		var = frame.FindRegister(expression);
 	if ((!var.IsValid() || var.GetError().Fail()) && tryDirect) {
