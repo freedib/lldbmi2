@@ -560,7 +560,7 @@ getTestScriptCommand ()
 #ifndef __clang__
 #pragma GCC diagnostic ignored "-Wformat-overflow="
 #endif
-			sprintf (sequenceNumber, "%d", ++idTestCommand);	// create a sequence id
+			snprintf (sequenceNumber, SEQUENCE_SIZE, "%d", ++idTestCommand);	// create a sequence id
 			ps = pl - strlen(sequenceNumber);
 #ifndef __clang__
 #pragma GCC diagnostic ignored "-Wstringop-overflow="

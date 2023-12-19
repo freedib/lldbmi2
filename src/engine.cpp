@@ -129,7 +129,7 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 		if (strcmp(cc.argv[nextarg],"args") == 0) {
 			if (strcmp(cc.argv[++nextarg],"%s") == 0) {
 				logprintf (LOG_VARS, "YYYYYYYYYYYY\n");
-				sprintf ((char *)cc.argv[nextarg], "%2d", pstate->test_sequence);
+				snprintf ((char *)cc.argv[nextarg], 12, "%2d", pstate->test_sequence);
 				logprintf (LOG_VARS, "%%s -> %s\n", cc.argv[nextarg]);
 			}
 			int firstarg = nextarg;
@@ -1742,13 +1742,13 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 						break;
 					}
 					switch(wordSize) {
-						case 1: sprintf (format_string, "\"%s%%02%c\"", prefix, wordFormat);
+						case 1: snprintf (format_string, NAME_MAX, "\"%s%%02%c\"", prefix, wordFormat);
 								break;
-						case 2:sprintf (format_string, "\"%s%%04%c\"",prefix, wordFormat);
+						case 2: snprintf (format_string, NAME_MAX, "\"%s%%04%c\"",prefix, wordFormat);
 								break;
-						case 4: sprintf (format_string, "\"%s%%08%c\"", prefix, wordFormat);
+						case 4: snprintf (format_string, NAME_MAX, "\"%s%%08%c\"", prefix, wordFormat);
 								break;
-						case 8: sprintf (format_string, "\"%s%%016ll%c\"", prefix, wordFormat);
+						case 8: snprintf (format_string, NAME_MAX, "\"%s%%016ll%c\"", prefix, wordFormat);
 					}
 
 					cdtprintf ("memory=[");
