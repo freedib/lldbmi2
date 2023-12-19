@@ -99,8 +99,8 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 		snprintf (path, sizeof(path), cc.argv[nextarg], pstate->project_loc);
 		if (strstr(cc.argv[nextarg],"%s")!=NULL)
 			logprintf (LOG_VARS, "%%s -> %s\n", path);
-		launchInfo.SetWorkingDirectory (path);
-		logprintf (LOG_NONE, "cwd=%s pwd=%s\n", path, launchInfo.GetWorkingDirectory());
+		chdir(path);
+		logprintf (LOG_NONE, "pwd=%s\n", path);
 		cdtprintf ("%d^done\n(gdb)\n", cc.sequence);
 	}
 	else if (strcmp(cc.argv[0],"unset")==0) {
