@@ -966,6 +966,8 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 				if (var.IsValid() && var.GetError().Success()) {
 					int varnumchildren = 0;
 					int threadindexid = thread.GetIndexID();
+					var.SetPreferDynamicValue(DynamicValueType::eDynamicCanRunTarget);
+					var.SetPreferSyntheticValue(true);
 					char *childrendesc = formatChildrenList (var, expression, threadindexid, varnumchildren);
 					// 34^done,numchild="1",children=[child={name="var2.*b",exp="*b",numchild="0",type="char",thread-id="1"}],has_more="0"
 					cdtprintf ("%d^done,numchild=\"%d\",children=[%s]\",has_more=\"0\"\n(gdb)\n",
