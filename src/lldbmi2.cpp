@@ -15,6 +15,8 @@
 #include <string.h>
 #include <iostream>
 
+#include <lldb/API/SBDebugger.h>
+
 #include "lldbmi2.h"
 #include "engine.h"
 #include "variables.h"
@@ -25,7 +27,7 @@
 
 void help (STATE *pstate)
 {
-	fprintf (stderr, "%s", pstate->lldbmi2Prompt);
+	fprintf (stderr, "%s\n", pstate->lldbmi2Prompt);
 	fprintf (stderr, "Description:\n");
 	fprintf (stderr, "   A MI2 interface to LLDB\n");
 	fprintf (stderr, "Authors:\n");
@@ -71,8 +73,8 @@ main (int argc, char **argv, char **envp)
 	unsigned int logmask=LOG_ALL;
 
 	state.ptyfd = EOF;
-	state.gdbPrompt = "GNU gdb (GDB) 7.7.1\n";
-	snprintf (state.lldbmi2Prompt, NAME_MAX, "lldbmi2 version %s\n", LLDBMI2_VERSION);
+	state.gdbPrompt = "GNU gdb (GDB) 7.7.1";
+	snprintf (state.lldbmi2Prompt, NAME_MAX, "lldbmi2 version %s", LLDBMI2_VERSION);
 	state.cdtbufferB.grow(BIG_LINE_MAX);
 
 	limits.frames_max = FRAMES_MAX;
@@ -165,8 +167,7 @@ main (int argc, char **argv, char **envp)
 
 	// return gdb version if --version
 	if (isVersion) {
-		writetocdt (state.gdbPrompt);
-		writetocdt (state.lldbmi2Prompt);
+		cdtprintf ("%s, %s, %s\n", state.gdbPrompt, state.lldbmi2Prompt, SBDebugger::GetVersionString());
 		return EXIT_SUCCESS;
 	}
 	// check if --interpreter mi2
