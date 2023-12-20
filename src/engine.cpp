@@ -5,6 +5,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <termios.h>
+#include <cstdlib>
 
 #include "lldbmi2.h"
 #include "strlxxx.h"
