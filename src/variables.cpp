@@ -495,19 +495,14 @@ formatChangedList (StringB &changedescB, SBValue var, bool &separatorvisible, in
 			varnumchildren = var.GetNumChildren();
 		}
 	}
-//	int varandchildrenchanged = updateVarState(var, limits.change_depth_max);
-	int varchanged = var.GetValueDidChange();
-	if (varchanged) {
-		const char *separator = separatorvisible? ",":"";
-		const char *varinscope = var.IsInScope()? "true": "false";
-		static StringB vardescB(VALUE_MAX);
-		vardescB.clear();								// clear previous buffer content
-		formatValue (vardescB,var, FULL_SUMMARY);		// was NO_SUMMARY
-		changedescB.catsprintf ("%s{name=\"%s\",value=\"%s\",in_scope=\"%s\",type_changed=\"false\",has_more=\"0\"}",
-			separator, expressionpathdescB.c_str(), vardescB.c_str(), varinscope);
-		separatorvisible = true;
-	//	return changedesc;
-	}
+	const char *separator = separatorvisible? ",":"";
+	const char *varinscope = var.IsInScope()? "true": "false";
+	static StringB vardescB(VALUE_MAX);
+	vardescB.clear();								// clear previous buffer content
+	formatValue (vardescB,var, FULL_SUMMARY);		// was NO_SUMMARY
+	changedescB.catsprintf ("%s{name=\"%s\",value=\"%s\",in_scope=\"%s\",type_changed=\"false\",has_more=\"0\"}",
+		separator, expressionpathdescB.c_str(), vardescB.c_str(), varinscope);
+	separatorvisible = true;
 	if (/*varandchildrenchanged>varchanged && */
 			/*!vartype.IsPointerType() && !vartype.IsReferenceType() && */ !vartype.IsArrayType()) {
 		for (int ichild = 0; ichild < min(varnumchildren,limits.children_max); ++ichild) {
