@@ -5,6 +5,7 @@
 #include <fcntl.h>
 #include <string.h>
 #include <termios.h>
+#include <cstdlib>
 
 #include "lldbmi2.h"
 #include "strlxxx.h"
@@ -84,8 +85,7 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 		terminateProcess (pstate, AND_EXIT);
 	}
 	else if (strcmp(cc.argv[0],"-gdb-version")==0) {
-		cdtprintf ("~\"%s\"\n", pstate->gdbPrompt);
-		cdtprintf ("~\"%s\"\n", pstate->lldbmi2Prompt);
+		cdtprintf ("~\"%s, %s, %s\\n\"\n", pstate->gdbPrompt, pstate->lldbmi2Prompt, SBDebugger::GetVersionString());
 		cdtprintf ("%d^done\n(gdb)\n", cc.sequence);
 	}
 	else if (strcmp(cc.argv[0],"-list-features")==0) {
@@ -894,8 +894,6 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 						else
 							formatValue (vardescB, var, FULL_SUMMARY);		// was NO_SUMMARY
 						char *vardesc = vardescB.c_str();
-						if (vartype.IsReferenceType() && varnumchildren==1)	// correct numchildren and value if reference
-							--varnumchildren;
 						cdtprintf ("%d^done,name=\"%s\",numchild=\"%d\",value=\"%s\","
 							"type=\"%s\",thread-id=\"%d\",has_more=\"0\"\n(gdb)\n",
 							cc.sequence, expressionpathdesc, varnumchildren, vardesc,
@@ -966,6 +964,8 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 				if (var.IsValid() && var.GetError().Success()) {
 					int varnumchildren = 0;
 					int threadindexid = thread.GetIndexID();
+					var.SetPreferDynamicValue(DynamicValueType::eDynamicCanRunTarget);
+					var.SetPreferSyntheticValue(true);
 					char *childrendesc = formatChildrenList (var, expression, threadindexid, varnumchildren);
 					// 34^done,numchild="1",children=[child={name="var2.*b",exp="*b",numchild="0",type="char",thread-id="1"}],has_more="0"
 					cdtprintf ("%d^done,numchild=\"%d\",children=[%s]\",has_more=\"0\"\n(gdb)\n",

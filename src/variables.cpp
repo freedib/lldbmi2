@@ -4,7 +4,7 @@
 #include "variables.h"
 #include "names.h"
 #include <ctype.h>
-
+#include <cstdlib>
 
 extern LIMITS limits;
 
@@ -484,17 +484,6 @@ formatChangedList (StringB &changedescB, SBValue var, bool &separatorvisible, in
 	var.GetSummary();				// required to get value to activate changes
 	SBType vartype = var.GetType();
 	int varnumchildren = var.GetNumChildren();
-	if (vartype.IsReferenceType() && varnumchildren==1) {
-		// use child if reference. class (*) [] format
-		logprintf (LOG_DEBUG, "formatValue: special case class (*) []\n");
-		SBValue child = var.GetChildAtIndex(0);
-		if (child.IsValid() && var.GetError().Success()) {
-			child.SetPreferSyntheticValue (false);
-			var = child;
-			vartype = var.GetType();
-			varnumchildren = var.GetNumChildren();
-		}
-	}
 	const char *separator = separatorvisible? ",":"";
 	const char *varinscope = var.IsInScope()? "true": "false";
 	static StringB vardescB(VALUE_MAX);
@@ -763,18 +752,6 @@ formatValue (StringB &vardescB, SBValue var, VariableDetails details)
 	logprintf (LOG_DEBUG, "formatValue: Var=%-5s: children=%-2d, typeclass=%-10s, basictype=%-10s, bytesize=%-2d, Pointee: typeclass=%-10s, basictype=%-10s, bytesize=%-2d\n",
 		getName(var), var.GetNumChildren(), getNameForTypeClass(vartype.GetTypeClass()), getNameForBasicType(vartype.GetBasicType()), vartype.GetByteSize(),
 		getNameForTypeClass(vartype.GetPointeeType().GetTypeClass()), getNameForBasicType(vartype.GetPointeeType().GetBasicType()), vartype.GetPointeeType().GetByteSize());
-	int varnumchildren = var.GetNumChildren();
-	if (vartype.IsReferenceType() && varnumchildren==1) {
-		// use child if reference. class (*) [] format
-		logprintf (LOG_DEBUG, "formatValue: special case class (*) []\n");
-		SBValue child = var.GetChildAtIndex(0);
-		if (child.IsValid() && var.GetError().Success()) {
-			child.SetPreferSyntheticValue (false);
-			var = child;
-			vartype = var.GetType();
-			varnumchildren = var.GetNumChildren();
-		}
-	}
 	const char *varname = getName(var);
 	static StringB summarydescB(BIG_LINE_MAX);
 	summarydescB.clear();								// clear previous buffer content
