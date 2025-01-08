@@ -7,6 +7,7 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <string.h>
+#include <stdint.h>
 
 /////////////////////////////
 
