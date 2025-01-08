@@ -84,8 +84,7 @@ fromCDT (STATE *pstate, const char *commandLine, int linesize)			// from cdt
 		terminateProcess (pstate, AND_EXIT);
 	}
 	else if (strcmp(cc.argv[0],"-gdb-version")==0) {
-		cdtprintf ("~\"%s\"\n", pstate->gdbPrompt);
-		cdtprintf ("~\"%s\"\n", pstate->lldbmi2Prompt);
+		cdtprintf ("~\"%s, %s, %s\\n\"\n", pstate->gdbPrompt, pstate->lldbmi2Prompt, SBDebugger::GetVersionString());
 		cdtprintf ("%d^done\n(gdb)\n", cc.sequence);
 	}
 	else if (strcmp(cc.argv[0],"-list-features")==0) {
