@@ -4,7 +4,7 @@
 #include "variables.h"
 #include "names.h"
 #include <ctype.h>
-
+#include <cstdlib>
 
 extern LIMITS limits;
 
